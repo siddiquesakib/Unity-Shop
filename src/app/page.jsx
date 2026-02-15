@@ -4,6 +4,7 @@ export default function Home() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
       <p>Hello world</p>
+      <p>HI! I'm Iqram</p>
     </div>
   );
 }
