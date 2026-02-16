@@ -34,7 +34,7 @@ export const categories = [
   // { name: 'Television', icon: Tv },
   { name: 'Smart Watch', icon: Watch },
   { name: 'Audio & Headphones', icon: Headphones },
-  { name: 'Cameras', icon: Camera },
+  // { name: 'Cameras', icon: Camera },
   { name: 'Gaming', icon: Gamepad2 },
 
   // Fashion
@@ -44,7 +44,7 @@ export const categories = [
   // { name: 'Jewelry', icon: Gem },
 
   // Home & Living
-  { name: 'Furniture', icon: Sofa },
+  // { name: 'Furniture', icon: Sofa },
   { name: 'Kitchen & Dining', icon: Utensils },
   { name: 'Lighting', icon: Lamp },
   { name: 'Home Decor', icon: Package },
