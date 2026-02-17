@@ -5,7 +5,7 @@ const RegisterPage = () => {
   return (
     <div
       className="min-h-screen flex items-center justify-center bg-cover bg-center relative"
-       style={{
+      style={{
         backgroundImage:
           "url('https://images.unsplash.com/photo-1555529669-e69e7aa0ba9a?auto=format&fit=crop&w=1740&q=80')",
       }}
@@ -15,13 +15,11 @@ const RegisterPage = () => {
 
       {/* Register Card */}
       <div className="relative z-10 bg-white/10 backdrop-blur-lg p-8 rounded-2xl shadow-2xl w-[90%] max-w-md border border-white/20">
-        
         <h2 className="text-3xl font-bold text-white text-center mb-6">
           Create Account 🛍️
         </h2>
 
         <form className="space-y-4">
-          
           {/* Name */}
           <div>
             <label className="text-white text-sm">Full Name</label>
