@@ -3,6 +3,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 
 const badgeStyles = {
   Sale: "bg-rose-100 text-rose-700",
@@ -42,7 +43,7 @@ export default function ProductCard({ product, view = "grid" }) {
   if (view === "list") {
     return (
       <div className="group flex gap-6 bg-white rounded-2xl border border-stone-200/70 overflow-hidden hover:shadow-xl hover:border-stone-300 transition-all duration-500 p-4">
-        <div className="relative w-36 h-36 shrink-0 rounded-xl overflow-hidden bg-stone-100">
+        <div className="relative w-36 h-36 flex-shrink-0 rounded-xl overflow-hidden bg-stone-100">
           <Image
             src={product.image}
             alt={product.name}
@@ -85,16 +86,24 @@ export default function ProductCard({ product, view = "grid" }) {
                 </span>
               )}
             </div>
-            <button
-              onClick={handleAddToCart}
-              className={`px-6 py-2.5 rounded-full text-sm font-medium tracking-wide transition-all duration-300 ${
-                addedToCart
-                  ? "bg-emerald-600 text-white"
-                  : "bg-stone-900 text-white hover:bg-amber-800"
-              }`}
-            >
-              {addedToCart ? "✓ Added" : "Add to Cart"}
-            </button>
+            <div className="flex items-center gap-2">
+              <Link
+                href={`/products/${product.id}`}
+                className="px-5 py-2.5 rounded-full text-sm font-medium tracking-wide border border-stone-200 text-stone-700 hover:border-stone-900 hover:text-stone-900 transition-all duration-200"
+              >
+                View Details
+              </Link>
+              <button
+                onClick={handleAddToCart}
+                className={`px-6 py-2.5 rounded-full text-sm font-medium tracking-wide transition-all duration-300 ${
+                  addedToCart
+                    ? "bg-emerald-600 text-white"
+                    : "bg-stone-900 text-white hover:bg-amber-800"
+                }`}
+              >
+                {addedToCart ? "✓ Added" : "Add to Cart"}
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -127,15 +136,17 @@ export default function ProductCard({ product, view = "grid" }) {
 
       {/* Image */}
       <div className="relative aspect-square overflow-hidden bg-stone-100">
-        <Image
-          src={product.image}
-          alt={product.name}
-          fill
-          className="object-cover group-hover:scale-110 transition-transform duration-700"
-          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-        />
+        <Link href={`/products/${product.id}`} className="block w-full h-full">
+          <Image
+            src={product.image}
+            alt={product.name}
+            fill
+            className="object-cover group-hover:scale-110 transition-transform duration-700"
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+          />
+        </Link>
         {/* Hover overlay + CTA */}
-        <div className="absolute inset-0 bg-linear-to-t from-stone-900/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+        <div className="absolute inset-0 bg-gradient-to-t from-stone-900/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
         <div className="absolute inset-x-0 bottom-4 flex justify-center translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500">
           <button
             onClick={handleAddToCart}
@@ -151,7 +162,7 @@ export default function ProductCard({ product, view = "grid" }) {
         {/* Badge */}
         {product.badge && (
           <span
-            className={`absolute top-3 left-3 text-xs font-medium px-2.5 py-1 rounded-full shadow-sm ${badgeStyles[product.badge]}`}
+            className={`absolute top-3 left-3 text-xs font-medium px-2.5 py-1 rounded-full shadow-sm pointer-events-none ${badgeStyles[product.badge]}`}
           >
             {product.badge}
           </span>
@@ -160,9 +171,11 @@ export default function ProductCard({ product, view = "grid" }) {
 
       {/* Info */}
       <div className="p-5">
-        <h3 className="font-display text-lg font-light text-stone-900 group-hover:text-amber-800 transition-colors leading-tight">
-          {product.name}
-        </h3>
+        <Link href={`/products/${product.id}`}>
+          <h3 className="font-display text-lg font-light text-stone-900 group-hover:text-amber-800 transition-colors leading-tight hover:underline underline-offset-2">
+            {product.name}
+          </h3>
+        </Link>
         <p className="font-body text-stone-500 text-sm mt-1 truncate">
           {product.description}
         </p>
@@ -187,6 +200,25 @@ export default function ProductCard({ product, view = "grid" }) {
             </span>
           )}
         </div>
+        <Link
+          href={`/products/${product.id}`}
+          className="mt-3 w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border border-stone-200 text-sm font-medium text-stone-600 hover:border-stone-900 hover:text-stone-900 hover:bg-stone-50 transition-all duration-200"
+        >
+          View Details
+          <svg
+            className="w-3.5 h-3.5"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={2}
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M17 8l4 4m0 0l-4 4m4-4H3"
+            />
+          </svg>
+        </Link>
       </div>
     </div>
   );
