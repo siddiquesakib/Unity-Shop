@@ -159,7 +159,7 @@ const FeaturedProducts = () => {
                   </div>
 
                   {/* Add to Cart Button */}
-                  <button className="w-full mt-4 py-3 bg-stone-900 text-white rounded-xl font-medium text-sm tracking-wider uppercase hover:bg-amber-800 transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98]">
+                  <button className="w-full mt-4 py-3 bg-stone-900 text-white rounded-xl font-medium text-sm tracking-wider uppercase hover:bg-amber-800 transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] cursor-pointer">
                     Add to Cart
                   </button>
                 </div>
