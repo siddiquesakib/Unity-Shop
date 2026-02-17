@@ -401,7 +401,7 @@ export default function ProductsClient() {
     <div className="min-h-screen bg-stone-50">
       {/* ── Page Header ───────────────────────────────────────────────────── */}
       <div className="bg-white border-b border-stone-200">
-        <div className="max-w-screen-xl mx-auto px-4 md:px-8 py-10 md:py-14">
+        <div className="max-w-7xl mx-auto px-4 md:px-8 py-10 md:py-14">
           <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6">
             <div>
               <p className="text-xs tracking-[0.3em] uppercase text-amber-800 font-medium mb-2">
@@ -452,10 +452,10 @@ export default function ProductsClient() {
       </div>
 
       {/* ── Body ─────────────────────────────────────────────────────────── */}
-      <div className="max-w-screen-xl mx-auto px-4 md:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-4 md:px-8 py-8">
         <div className="flex gap-8 lg:gap-12">
           {/* Desktop Sidebar */}
-          <div className="hidden lg:block w-60 flex-shrink-0">
+          <div className="hidden lg:block w-60 shrink-0">
             <div className="sticky top-8 bg-white rounded-2xl border border-stone-200 p-6">
               <ProductFilters
                 activeCategory={activeCategory}
