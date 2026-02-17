@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 
 const FeaturedProducts = () => {
   const [hoveredIndex, setHoveredIndex] = useState(null);
@@ -170,24 +171,29 @@ const FeaturedProducts = () => {
 
         {/* View All Link */}
         <div className="text-center mt-16">
-          <button className="group inline-flex items-center gap-3 text-stone-900 text-lg font-light hover:text-amber-800 transition-colors duration-300">
-            <span className="tracking-wide font-body">
-              View Full Collection
-            </span>
-            <svg
-              className="w-5 h-5 transform group-hover:translate-x-2 transition-transform duration-300"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M17 8l4 4m0 0l-4 4m4-4H3"
-              />
-            </svg>
-          </button>
+          <Link
+            href="/products"
+            className="group inline-flex items-center gap-3 text-stone-900 text-lg font-light hover:text-amber-800 transition-colors duration-300"
+          >
+            <button className="group inline-flex items-center gap-3 text-stone-900 text-lg font-light hover:text-amber-800 transition-colors duration-300">
+              <span className="tracking-wide font-body">
+                View Full Collection
+              </span>
+              <svg
+                className="w-5 h-5 transform group-hover:translate-x-2 transition-transform duration-300"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M17 8l4 4m0 0l-4 4m4-4H3"
+                />
+              </svg>
+            </button>
+          </Link>
         </div>
       </div>
     </section>
