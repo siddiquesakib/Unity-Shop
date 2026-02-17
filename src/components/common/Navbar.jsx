@@ -9,10 +9,10 @@ const Navbar = () => {
   return (
     <nav className="bg-gradient-to-r from-orange-300 via-orange-400 to-orange-500 text-white shadow-lg sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-        
+
         {/* ===== Logo Section ===== */}
         <Link href="/" className="flex items-center gap-3 group">
-          
+
           {/* SVG Logo */}
           <div className="bg-white p-2 rounded-full shadow-md group-hover:scale-110 transition duration-300">
             <img src="/logo.png" alt="UnityShope Logo" className="h-8 w-8" />
@@ -21,7 +21,7 @@ const Navbar = () => {
           {/* Brand Name */}
           <h1 className="text-2xl font-extrabold tracking-wide">
             <span className="text-white">Unity</span>
-              <span className="text-blue-800">Shope</span>
+            <span className="text-blue-800">Shope</span>
           </h1>
         </Link>
 
@@ -35,13 +35,19 @@ const Navbar = () => {
 
         {/* ===== Icons Section ===== */}
         <div className="flex items-center gap-5">
-          
+
           {/* Cart */}
-           <div className="bg-white text-orange-500 cursor-pointer p-2 rounded-full shadow-md group-hover:scale-110 transition duration-300">
+          <div className="bg-white text-orange-500 cursor-pointer p-2 rounded-full shadow-md group-hover:scale-110 transition duration-300">
             <FaShoppingCart size={20} />
           </div>
           {/* User */}
-            <button className="bg-white text-orange-500 px-4 py-1 rounded-full font-medium hover:bg-orange-50 transition cursor-pointer">Sign Up</button>
+          <Link
+            href="/login"
+            className="bg-white text-orange-500 px-4 py-1 rounded-full font-medium "
+          >
+            Login
+          </Link>
+
 
           {/* Mobile Menu Button */}
           <div
