@@ -1,6 +1,7 @@
 // app/page.jsx
 import Image from "next/image";
 import FeaturedProducts from "@/components/home/FeaturedProducts";
+import CategoryList from "@/components/home/CategoryList";
 
 export default function Home() {
   return (
@@ -33,6 +34,8 @@ export default function Home() {
           </button>
         </div>
       </section>
+
+      <CategoryList />
 
       {/* Featured Products Section */}
       <FeaturedProducts />
