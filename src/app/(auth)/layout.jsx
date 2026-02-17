@@ -1,11 +1,7 @@
-import React from 'react';
-
-const layout = () => {
-    return (
-        <div>
-            
-        </div>
-    );
-};
-
-export default layout;
+export default function AuthLayout({ children }) {
+  return (
+    <div>
+      {children}
+    </div>
+  );
+}

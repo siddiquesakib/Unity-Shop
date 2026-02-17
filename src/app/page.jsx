@@ -29,7 +29,7 @@ export default function Home() {
             Discover the best products at unbeatable prices. Shop now and enjoy
             fast shipping!
           </p>
-          <button className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-8 rounded-full text-lg transition-colors">
+          <button className="bg-orange-600 hover:bg-orange-700 text-white font-semibold py-3 px-14 cursor-pointer rounded-full text-lg transition-colors">
             Shop Now
           </button>
         </div>

@@ -55,7 +55,7 @@ const Navbar = () => {
           {/* User */}
           <Link
             href="/login"
-            className="bg-white text-orange-500 px-4 py-1 rounded-full font-medium "
+            className="bg-white text-orange-500 px-8 py-1 rounded-full font-medium "
           >
             Login
           </Link>
