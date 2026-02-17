@@ -33,7 +33,7 @@ export const categories = [
   // { name: 'Desktop & Monitor', icon: Monitor },
   // { name: 'Television', icon: Tv },
   { name: 'Smart Watch', icon: Watch },
-  { name: 'Audio & Headphones', icon: Headphones },
+  // { name: 'Audio & Headphones', icon: Headphones },
   // { name: 'Cameras', icon: Camera },
   { name: 'Gaming', icon: Gamepad2 },
 
