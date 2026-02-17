@@ -35,7 +35,7 @@ const Navbar = () => {
           <Link href="/" className="hover:text-gray-200 transition">
             Home
           </Link>
-          <Link href="/shop" className="hover:text-gray-200 transition">
+          <Link href="/products" className="hover:text-gray-200 transition">
             Shop
           </Link>
           <Link href="/about" className="hover:text-gray-200 transition">
@@ -76,7 +76,7 @@ const Navbar = () => {
           <Link href="/" className="block">
             Home
           </Link>
-          <Link href="/shop" className="block">
+          <Link href="/products" className="block">
             Shop
           </Link>
           <Link href="/about" className="block">
