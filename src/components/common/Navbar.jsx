@@ -44,6 +44,9 @@ const Navbar = () => {
           <Link href="/contact" className="hover:text-gray-200 transition">
             Contact
           </Link>
+          <Link href="/dashboard" className="hover:text-gray-200 transition">
+            Dashboard
+          </Link>
         </div>
 
         {/* ===== Icons Section ===== */}
@@ -84,6 +87,9 @@ const Navbar = () => {
           </Link>
           <Link href="/contact" className="block">
             Contact
+          </Link>
+          <Link href="/dashboard" className="block">
+            Dashboard
           </Link>
         </div>
       )}
