@@ -49,13 +49,30 @@ const DEMO_NOTIFICATIONS = [
 
 // Language options
 const LANGUAGES = [
-  { code: "en", name: "English", flag: "🇺🇸" },
-  { code: "es", name: "Español", flag: "🇪🇸" },
-  { code: "fr", name: "Français", flag: "🇫🇷" },
-  { code: "de", name: "Deutsch", flag: "🇩🇪" },
-  { code: "zh", name: "中文", flag: "🇨🇳" },
-  { code: "ar", name: "العربية", flag: "🇸🇦" },
-  { code: "bn", name: "বাংলা", flag: "🇧🇩" },
+  { code: "en", name: "English", flag: "🇺🇸", nativeName: "English" },
+  { code: "es", name: "Español", flag: "🇪🇸", nativeName: "Español" },
+  { code: "fr", name: "Français", flag: "🇫🇷", nativeName: "Français" },
+  { code: "de", name: "Deutsch", flag: "🇩🇪", nativeName: "Deutsch" },
+  { code: "zh", name: "中文", flag: "🇨🇳", nativeName: "中文" },
+  { code: "ar", name: "العربية", flag: "🇸🇦", nativeName: "العربية" },
+  { code: "bn", name: "বাংলা", flag: "🇧🇩", nativeName: "বাংলা" },
+  { code: "ja", name: "日本語", flag: "🇯🇵", nativeName: "日本語" },
+  { code: "ko", name: "한국어", flag: "🇰🇷", nativeName: "한국어" },
+  { code: "pt", name: "Português", flag: "🇧🇷", nativeName: "Português" },
+];
+
+// Currency options
+const CURRENCIES = [
+  { code: "USD", symbol: "$", name: "US Dollar", flag: "🇺🇸" },
+  { code: "EUR", symbol: "€", name: "Euro", flag: "🇪🇺" },
+  { code: "GBP", symbol: "£", name: "British Pound", flag: "🇬🇧" },
+  { code: "JPY", symbol: "¥", name: "Japanese Yen", flag: "🇯🇵" },
+  { code: "CNY", symbol: "¥", name: "Chinese Yuan", flag: "🇨🇳" },
+  { code: "AUD", symbol: "A$", name: "Australian Dollar", flag: "🇦🇺" },
+  { code: "CAD", symbol: "C$", name: "Canadian Dollar", flag: "🇨🇦" },
+  { code: "CHF", symbol: "Fr", name: "Swiss Franc", flag: "🇨🇭" },
+  { code: "INR", symbol: "₹", name: "Indian Rupee", flag: "🇮🇳" },
+  { code: "BDT", symbol: "৳", name: "Bangladeshi Taka", flag: "🇧🇩" },
 ];
 
 // Demo user (for testing - replace with real auth)
@@ -71,17 +88,24 @@ const DEMO_USER = {
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
-  const [showLanguages, setShowLanguages] = useState(false);
+  const [showPreferences, setShowPreferences] = useState(false);
   const [showUserDropdown, setShowUserDropdown] = useState(false);
-  const [selectedLanguage, setSelectedLanguage] = useState("en");
   const [notifications, setNotifications] = useState(DEMO_NOTIFICATIONS);
+
+  // Active (saved) preferences
+  const [selectedLanguage, setSelectedLanguage] = useState("en");
+  const [selectedCurrency, setSelectedCurrency] = useState("USD");
+
+  // Temporary (pending) selections - only saved when user clicks "Save Preferences"
+  const [pendingLanguage, setPendingLanguage] = useState("en");
+  const [pendingCurrency, setPendingCurrency] = useState("USD");
 
   // Demo: Toggle this to true to see logged-in state
   const [isLoggedIn, setIsLoggedIn] = useState(true);
   const [user, setUser] = useState(DEMO_USER);
 
   const notifRef = useRef(null);
-  const langRef = useRef(null);
+  const prefRef = useRef(null);
   const userRef = useRef(null);
 
   // Close dropdowns when clicking outside
@@ -90,8 +114,8 @@ const Navbar = () => {
       if (notifRef.current && !notifRef.current.contains(event.target)) {
         setShowNotifications(false);
       }
-      if (langRef.current && !langRef.current.contains(event.target)) {
-        setShowLanguages(false);
+      if (prefRef.current && !prefRef.current.contains(event.target)) {
+        setShowPreferences(false);
       }
       if (userRef.current && !userRef.current.contains(event.target)) {
         setShowUserDropdown(false);
@@ -108,11 +132,34 @@ const Navbar = () => {
     setNotifications(notifications.map((n) => ({ ...n, unread: false })));
   };
 
-  const handleLanguageChange = (code) => {
-    setSelectedLanguage(code);
-    setShowLanguages(false);
-    // TODO: Implement actual i18n translation logic here
-    console.log("Language changed to:", code);
+  const handleSavePreferences = () => {
+    // Apply pending selections to active state
+    setSelectedLanguage(pendingLanguage);
+    setSelectedCurrency(pendingCurrency);
+    setShowPreferences(false);
+
+    // TODO: Implement actual i18n + currency conversion logic
+    console.log("Preferences saved:", {
+      language: pendingLanguage,
+      currency: pendingCurrency,
+    });
+
+    // TODO: Save to localStorage or backend
+    // localStorage.setItem('user_language', pendingLanguage);
+    // localStorage.setItem('user_currency', pendingCurrency);
+
+    // TODO: Trigger currency conversion across site
+    // updateCurrency(pendingCurrency);
+
+    // TODO: Trigger language change (i18n)
+    // i18n.changeLanguage(pendingLanguage);
+  };
+
+  const handleCancelPreferences = () => {
+    // Reset pending selections to current active state
+    setPendingLanguage(selectedLanguage);
+    setPendingCurrency(selectedCurrency);
+    setShowPreferences(false);
   };
 
   const handleLogout = () => {
@@ -124,6 +171,7 @@ const Navbar = () => {
   };
 
   const currentLang = LANGUAGES.find((l) => l.code === selectedLanguage);
+  const currentCurrency = CURRENCIES.find((c) => c.code === selectedCurrency);
 
   return (
     <nav className="bg-gradient-to-r from-orange-300 via-orange-400 to-orange-500 text-white shadow-lg sticky top-0 z-50">
@@ -163,46 +211,152 @@ const Navbar = () => {
 
         {/* ===== Icons Section ===== */}
         <div className="flex items-center gap-3 md:gap-5">
-          {/* Language Selector */}
-          <div className="relative hidden md:block" ref={langRef}>
+          {/* Language & Currency Selector (Alibaba Style) */}
+          <div className="relative hidden md:block" ref={prefRef}>
             <button
-              onClick={() => setShowLanguages(!showLanguages)}
-              className="bg-white text-orange-500 p-2 rounded-full shadow-md hover:scale-110 transition duration-300 flex items-center gap-1"
-              title="Change Language"
+              onClick={() => setShowPreferences(!showPreferences)}
+              className="flex items-center gap-2 bg-white text-orange-500 px-3 py-2 rounded-full shadow-md hover:scale-105 transition duration-300"
+              title="Language & Currency"
             >
-              <FaGlobe size={20} />
+              <FaGlobe size={16} />
+              <span className="text-xs font-semibold">
+                {currentLang?.flag} {currentCurrency?.symbol}
+              </span>
             </button>
 
-            {/* Language Dropdown */}
-            {showLanguages && (
-              <div className="absolute right-0 mt-3 w-56 bg-white rounded-xl shadow-2xl border border-gray-100 py-2 animate-fadeIn">
-                <div className="px-4 py-2 border-b border-gray-100">
-                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                    Select Language
+            {/* Preferences Dropdown (Alibaba Style) */}
+            {showPreferences && (
+              <div className="absolute right-0 mt-3 w-96 bg-white rounded-xl shadow-2xl border border-gray-100 overflow-hidden animate-fadeIn">
+                {/* Header */}
+                <div className="bg-gradient-to-r from-orange-400 to-orange-500 px-5 py-4 border-b border-orange-600">
+                  <h3 className="text-white font-bold text-base flex items-center gap-2">
+                    <FaGlobe size={18} />
+                    Preferences
+                  </h3>
+                  <p className="text-orange-100 text-xs mt-1">
+                    Choose your language and currency
                   </p>
                 </div>
-                <div className="max-h-80 overflow-y-auto">
-                  {LANGUAGES.map((lang) => (
-                    <button
-                      key={lang.code}
-                      onClick={() => handleLanguageChange(lang.code)}
-                      className={`w-full px-4 py-2.5 text-left hover:bg-orange-50 transition flex items-center gap-3 ${
-                        selectedLanguage === lang.code ? "bg-orange-50" : ""
-                      }`}
-                    >
-                      <span className="text-2xl">{lang.flag}</span>
-                      <span
-                        className={`text-sm ${selectedLanguage === lang.code ? "font-semibold text-orange-600" : "text-gray-700"}`}
-                      >
-                        {lang.name}
+
+                <div className="p-5 space-y-5">
+                  {/* Language Section */}
+                  <div>
+                    <label className="text-sm font-semibold text-gray-700 mb-3 block flex items-center gap-2">
+                      <span className="text-lg">🌐</span>
+                      Language
+                    </label>
+                    <div className="grid grid-cols-2 gap-2 max-h-56 overflow-y-auto custom-scrollbar">
+                      {LANGUAGES.map((lang) => (
+                        <button
+                          key={lang.code}
+                          onClick={() => setPendingLanguage(lang.code)}
+                          className={`flex items-center gap-2 px-3 py-2.5 rounded-lg border-2 text-left transition-all duration-200 hover:border-orange-400 hover:bg-orange-50 ${
+                            pendingLanguage === lang.code
+                              ? "border-orange-500 bg-orange-50 shadow-sm"
+                              : "border-gray-200 bg-white"
+                          }`}
+                        >
+                          <span className="text-xl flex-shrink-0">
+                            {lang.flag}
+                          </span>
+                          <div className="flex-1 min-w-0">
+                            <p
+                              className={`text-sm font-medium truncate ${
+                                pendingLanguage === lang.code
+                                  ? "text-orange-600"
+                                  : "text-gray-700"
+                              }`}
+                            >
+                              {lang.nativeName}
+                            </p>
+                          </div>
+                          {pendingLanguage === lang.code && (
+                            <span className="text-orange-500 text-sm flex-shrink-0">
+                              ✓
+                            </span>
+                          )}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Divider */}
+                  <div className="border-t border-gray-200"></div>
+
+                  {/* Currency Section */}
+                  <div>
+                    <label className="text-sm font-semibold text-gray-700 mb-3 block flex items-center gap-2">
+                      <span className="text-lg">💰</span>
+                      Currency
+                    </label>
+                    <div className="grid grid-cols-2 gap-2 max-h-56 overflow-y-auto custom-scrollbar">
+                      {CURRENCIES.map((curr) => (
+                        <button
+                          key={curr.code}
+                          onClick={() => setPendingCurrency(curr.code)}
+                          className={`flex items-center gap-2 px-3 py-2.5 rounded-lg border-2 text-left transition-all duration-200 hover:border-orange-400 hover:bg-orange-50 ${
+                            pendingCurrency === curr.code
+                              ? "border-orange-500 bg-orange-50 shadow-sm"
+                              : "border-gray-200 bg-white"
+                          }`}
+                        >
+                          <span className="text-xl flex-shrink-0">
+                            {curr.flag}
+                          </span>
+                          <div className="flex-1 min-w-0">
+                            <p
+                              className={`text-sm font-bold ${
+                                pendingCurrency === curr.code
+                                  ? "text-orange-600"
+                                  : "text-gray-700"
+                              }`}
+                            >
+                              {curr.symbol} {curr.code}
+                            </p>
+                            <p className="text-xs text-gray-500 truncate">
+                              {curr.name}
+                            </p>
+                          </div>
+                          {pendingCurrency === curr.code && (
+                            <span className="text-orange-500 text-sm flex-shrink-0">
+                              ✓
+                            </span>
+                          )}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Footer with Buttons */}
+                <div className="bg-gray-50 px-5 py-4 flex items-center justify-between gap-3 border-t border-gray-200">
+                  <button
+                    onClick={handleCancelPreferences}
+                    className="flex-1 px-4 py-2.5 border-2 border-gray-300 text-gray-700 rounded-lg font-semibold text-sm hover:bg-gray-100 transition-all duration-200"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleSavePreferences}
+                    className="flex-1 px-4 py-2.5 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-lg font-semibold text-sm hover:from-orange-600 hover:to-orange-700 shadow-md hover:shadow-lg transition-all duration-200 flex items-center justify-center gap-2"
+                  >
+                    <span>💾</span>
+                    Save Preferences
+                  </button>
+                </div>
+
+                {/* Current Selection Summary */}
+                <div className="bg-blue-50 px-5 py-3 border-t border-blue-100">
+                  <p className="text-xs text-blue-800">
+                    <strong>Current:</strong> {currentLang?.name} •{" "}
+                    {currentCurrency?.code}
+                    {(pendingLanguage !== selectedLanguage ||
+                      pendingCurrency !== selectedCurrency) && (
+                      <span className="ml-2 text-orange-600 font-semibold">
+                        (Unsaved changes)
                       </span>
-                      {selectedLanguage === lang.code && (
-                        <span className="ml-auto text-orange-500 text-xs">
-                          ✓
-                        </span>
-                      )}
-                    </button>
-                  ))}
+                    )}
+                  </p>
                 </div>
               </div>
             )}
@@ -526,33 +680,18 @@ const Navbar = () => {
             </button>
           </div>
 
-          {/* Mobile Language */}
+          {/* Mobile Preferences */}
           <div>
             <button
-              onClick={() => setShowLanguages(!showLanguages)}
+              onClick={() => setShowPreferences(!showPreferences)}
               className="flex items-center gap-2 py-2 text-gray-700 hover:text-orange-500 transition w-full"
             >
               <FaGlobe size={16} />
-              <span>Language: {currentLang?.name}</span>
+              <span>Language & Currency</span>
+              <span className="ml-auto text-xs text-gray-500">
+                {currentLang?.flag} {currentCurrency?.symbol}
+              </span>
             </button>
-            {showLanguages && (
-              <div className="pl-6 space-y-2 mt-2">
-                {LANGUAGES.map((lang) => (
-                  <button
-                    key={lang.code}
-                    onClick={() => handleLanguageChange(lang.code)}
-                    className={`flex items-center gap-2 py-1 text-sm w-full ${
-                      selectedLanguage === lang.code
-                        ? "text-orange-500 font-semibold"
-                        : "text-gray-600"
-                    }`}
-                  >
-                    <span>{lang.flag}</span>
-                    <span>{lang.name}</span>
-                  </button>
-                ))}
-              </div>
-            )}
           </div>
 
           {/* Login/Logout Button */}
@@ -579,7 +718,7 @@ const Navbar = () => {
         </div>
       )}
 
-      {/* Add animation CSS */}
+      {/* Add animation CSS and custom scrollbar */}
       <style jsx>{`
         @keyframes fadeIn {
           from {
@@ -593,6 +732,22 @@ const Navbar = () => {
         }
         .animate-fadeIn {
           animation: fadeIn 0.2s ease-out;
+        }
+
+        /* Custom Scrollbar for dropdowns */
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: #f1f1f1;
+          border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: #fb923c;
+          border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: #f97316;
         }
       `}</style>
     </nav>
