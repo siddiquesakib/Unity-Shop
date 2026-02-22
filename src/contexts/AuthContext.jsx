@@ -1,6 +1,7 @@
 "use client";
 import { createContext, useContext, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { signIn, signOut, useSession } from "next-auth/react";
 
 const AuthContext = createContext();
 
@@ -8,15 +9,40 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
+  const { data: session, status } = useSession();
 
   useEffect(() => {
-    // Check for stored user/token on load
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
+    // If NextAuth session exists (Google login), use that
+    if (status === "authenticated" && session?.user) {
+      const sessionUser = {
+        _id: session.user.id,
+        name: session.user.name,
+        email: session.user.email,
+        image: session.user.image,
+        role: session.user.role || "user",
+        provider: "google",
+      };
+      setUser(sessionUser);
+      localStorage.setItem("user", JSON.stringify(sessionUser));
+      if (session.backendToken) {
+        localStorage.setItem("token", session.backendToken);
+      }
+      setLoading(false);
+      return;
     }
-    setLoading(false);
-  }, []);
+
+    // If no NextAuth session, check localStorage (email/password login)
+    if (status === "unauthenticated" || status === "loading") {
+      const storedUser = localStorage.getItem("user");
+      if (storedUser) {
+        setUser(JSON.parse(storedUser));
+      }
+    }
+
+    if (status !== "loading") {
+      setLoading(false);
+    }
+  }, [session, status]);
 
   const login = async (email, password) => {
     try {
@@ -32,12 +58,11 @@ export const AuthProvider = ({ children }) => {
         throw new Error(data.message || "Login failed");
       }
 
-      // Save user and token
-      localStorage.setItem("user", JSON.stringify(data.user)); // Adjust based on API structure
+      localStorage.setItem("user", JSON.stringify(data.user));
       localStorage.setItem("token", data.token);
-      
+
       setUser(data.user);
-      router.push("/dashboard"); 
+      router.push("/dashboard");
       return { success: true };
     } catch (error) {
       console.error("Login Error:", error);
@@ -45,13 +70,25 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const googleLogin = async () => {
+    try {
+      await signIn("google", { callbackUrl: "/dashboard" });
+    } catch (error) {
+      console.error("Google Login Error:", error);
+      return { success: false, error: error.message };
+    }
+  };
+
   const register = async (name, email, password) => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/register`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, password }),
-      });
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/auth/register`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name, email, password }),
+        },
+      );
 
       const data = await res.json();
 
@@ -59,7 +96,6 @@ export const AuthProvider = ({ children }) => {
         throw new Error(data.message || "Registration failed");
       }
 
-      // Automatically login or redirect to login (Design choice: redirect to login usually)
       router.push("/login");
       return { success: true };
     } catch (error) {
@@ -68,15 +104,19 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const logout = () => {
+  const logout = async () => {
     localStorage.removeItem("user");
     localStorage.removeItem("token");
     setUser(null);
+    // Sign out from NextAuth too (for Google sessions)
+    await signOut({ redirect: false });
     router.push("/login");
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout }}>
+    <AuthContext.Provider
+      value={{ user, loading, login, googleLogin, register, logout }}
+    >
       {children}
     </AuthContext.Provider>
   );

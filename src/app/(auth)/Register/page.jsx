@@ -3,14 +3,16 @@ import Link from "next/link";
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
+import { FcGoogle } from "react-icons/fc";
 
 const RegisterPage = () => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const { register } = useAuth();
+  const { register, googleLogin } = useAuth();
   const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
   const handleSubmit = async (e) => {
@@ -22,12 +24,21 @@ const RegisterPage = () => {
       return;
     }
 
+    setIsLoading(true);
     const res = await register(name, email, password);
     if (res.success) {
       router.push("/login");
     } else {
       setError(res.error);
     }
+    setIsLoading(false);
+  };
+
+  const handleGoogleSignUp = async () => {
+    setError("");
+    setIsLoading(true);
+    await googleLogin();
+    setIsLoading(false);
   };
 
   return (
@@ -48,6 +59,23 @@ const RegisterPage = () => {
         </h2>
 
         {error && <p className="text-red-400 text-center mb-4">{error}</p>}
+
+        {/* Google Sign Up Button */}
+        <button
+          onClick={handleGoogleSignUp}
+          disabled={isLoading}
+          className="w-full flex items-center justify-center gap-3 bg-white hover:bg-gray-100 text-gray-800 font-semibold py-2.5 px-4 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed mb-5"
+        >
+          <FcGoogle className="text-xl" />
+          Sign up with Google
+        </button>
+
+        {/* Divider */}
+        <div className="flex items-center gap-3 mb-5">
+          <div className="flex-1 h-px bg-white/30"></div>
+          <span className="text-white/60 text-sm">or register with email</span>
+          <div className="flex-1 h-px bg-white/30"></div>
+        </div>
 
         <form className="space-y-4" onSubmit={handleSubmit}>
           {/* Name */}
@@ -105,9 +133,10 @@ const RegisterPage = () => {
           {/* Register Button */}
           <button
             type="submit"
-            className="w-full bg-gradient-to-r from-orange-400 to-orange-600 hover:scale-105 transition transform text-white py-2 rounded-lg font-semibold shadow-lg"
+            disabled={isLoading}
+            className="w-full bg-gradient-to-r from-orange-400 to-orange-600 hover:scale-105 transition transform text-white py-2 rounded-lg font-semibold shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Register
+            {isLoading ? "Creating account..." : "Register"}
           </button>
 
           {/* Login Link */}
