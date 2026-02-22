@@ -10,6 +10,7 @@ import {
 import { FiUser, FiLogOut, FiSettings, FiPackage } from "react-icons/fi";
 import Link from "next/link";
 import Image from "next/image";
+import { useAuth } from "@/hooks/useAuth";
 
 // Demo notifications
 const DEMO_NOTIFICATIONS = [
@@ -100,9 +101,9 @@ const Navbar = () => {
   const [pendingLanguage, setPendingLanguage] = useState("en");
   const [pendingCurrency, setPendingCurrency] = useState("USD");
 
-  // Demo: Toggle this to true to see logged-in state
-  const [isLoggedIn, setIsLoggedIn] = useState(true);
-  const [user, setUser] = useState(DEMO_USER);
+  // Removed old state: isLoggedIn, user
+  const { user, logout } = useAuth();
+  const isLoggedIn = !!user;
 
   const notifRef = useRef(null);
   const prefRef = useRef(null);
@@ -164,10 +165,7 @@ const Navbar = () => {
 
   const handleLogout = () => {
     setShowUserDropdown(false);
-    setIsLoggedIn(false);
-    setUser(null);
-    // TODO: Implement actual logout logic (clear session, redirect, etc.)
-    console.log("User logged out");
+    logout();
   };
 
   const currentLang = LANGUAGES.find((l) => l.code === selectedLanguage);
