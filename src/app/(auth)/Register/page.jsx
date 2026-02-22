@@ -1,7 +1,35 @@
 "use client";
 import Link from "next/link";
+import { useState } from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import { useRouter } from "next/navigation";
 
 const RegisterPage = () => {
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const { register } = useAuth();
+  const [error, setError] = useState("");
+  const router = useRouter();
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError("");
+
+    if (password !== confirmPassword) {
+      setError("Passwords do not match!");
+      return;
+    }
+
+    const res = await register(name, email, password);
+    if (res.success) {
+      router.push("/login");
+    } else {
+      setError(res.error);
+    }
+  };
+
   return (
     <div
       className="min-h-screen flex items-center justify-center bg-cover bg-center relative"
@@ -19,14 +47,19 @@ const RegisterPage = () => {
           Create Account 🛍️
         </h2>
 
-        <form className="space-y-4">
+        {error && <p className="text-red-400 text-center mb-4">{error}</p>}
+
+        <form className="space-y-4" onSubmit={handleSubmit}>
           {/* Name */}
           <div>
             <label className="text-white text-sm">Full Name</label>
             <input
               type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
               placeholder="Enter your name"
               className="w-full mt-1 px-4 py-2 rounded-lg bg-white/20 text-white placeholder-gray-200 outline-none focus:ring-2 focus:ring-orange-400"
+              required
             />
           </div>
 
@@ -35,8 +68,11 @@ const RegisterPage = () => {
             <label className="text-white text-sm">Email</label>
             <input
               type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               placeholder="Enter your email"
               className="w-full mt-1 px-4 py-2 rounded-lg bg-white/20 text-white placeholder-gray-200 outline-none focus:ring-2 focus:ring-orange-400"
+              required
             />
           </div>
 
@@ -45,8 +81,11 @@ const RegisterPage = () => {
             <label className="text-white text-sm">Password</label>
             <input
               type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
               placeholder="Create password"
               className="w-full mt-1 px-4 py-2 rounded-lg bg-white/20 text-white placeholder-gray-200 outline-none focus:ring-2 focus:ring-orange-400"
+              required
             />
           </div>
 
@@ -55,8 +94,11 @@ const RegisterPage = () => {
             <label className="text-white text-sm">Confirm Password</label>
             <input
               type="password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
               placeholder="Confirm password"
               className="w-full mt-1 px-4 py-2 rounded-lg bg-white/20 text-white placeholder-gray-200 outline-none focus:ring-2 focus:ring-orange-400"
+              required
             />
           </div>
 
