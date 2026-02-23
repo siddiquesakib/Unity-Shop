@@ -20,7 +20,7 @@ const allProducts = [
     badge: "Sale",
     description: "Cloud-soft textured fabric",
     image:
-      "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=600&q=80",
+      "https://www.lunafurn.com/cdn/shop/products/Bonita-Ivory-Boucle-Accent-Chair-Luna-Furniture-24362493116470.jpg?v=1766894286&width=1214",
     rating: 4.8,
     reviews: 124,
   },
@@ -33,7 +33,7 @@ const allProducts = [
     badge: "New",
     description: "Set of 4, hand-thrown clay",
     image:
-      "https://images.unsplash.com/photo-1514228742587-6b1558fcca3d?w=600&q=80",
+      "https://m.media-amazon.com/images/I/61vDW+CrR4L._AC_UF894,1000_QL80_.jpg",
     rating: 4.9,
     reviews: 88,
   },
@@ -46,7 +46,7 @@ const allProducts = [
     badge: "Best Seller",
     description: "Organic linen shade, brass base",
     image:
-      "https://images.unsplash.com/photo-1507473885765-e6ed057f782c?w=600&q=80",
+      "https://i.etsystatic.com/50833053/r/il/70f652/6203456555/il_1080xN.6203456555_79uz.jpg",
     rating: 4.7,
     reviews: 210,
   },
@@ -59,7 +59,7 @@ const allProducts = [
     badge: null,
     description: "Full-grain leather, 200 pages",
     image:
-      "https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=600&q=80",
+      "https://m.media-amazon.com/images/I/81nm0wY-T5L._AC_UF894,1000_QL80_.jpg",
     rating: 4.6,
     reviews: 56,
   },
@@ -72,7 +72,7 @@ const allProducts = [
     badge: "Trending",
     description: "Ethically sourced merino wool",
     image:
-      "https://images.unsplash.com/photo-1584100936595-c0654b55a2e2?w=600&q=80",
+      "https://m.media-amazon.com/images/I/61mL5eF+sUL._AC_UF894,1000_QL80_.jpg",
     rating: 4.9,
     reviews: 175,
   },
@@ -84,8 +84,7 @@ const allProducts = [
     originalPrice: 129,
     badge: "Sale",
     description: "Hand-thrown, reactive glaze",
-    image:
-      "https://images.unsplash.com/photo-1578500494198-246f612d3b3d?w=600&q=80",
+    image: "https://m.media-amazon.com/images/I/81XKT5k3Y-L.jpg",
     rating: 4.5,
     reviews: 43,
   },
@@ -98,7 +97,7 @@ const allProducts = [
     badge: null,
     description: "Single-piece solid olive wood",
     image:
-      "https://images.unsplash.com/photo-1591814468924-caf88d1232e1?w=600&q=80",
+      "https://m.media-amazon.com/images/I/81Dvha78PXL._AC_UF894,1000_QL80_.jpg",
     rating: 4.8,
     reviews: 97,
   },
@@ -111,7 +110,7 @@ const allProducts = [
     badge: "Sale",
     description: "Matte black, adjustable arm",
     image:
-      "https://images.unsplash.com/photo-1540932239986-30128078f3c5?w=600&q=80",
+      "https://m.media-amazon.com/images/S/aplus-media-library-service-media/c179a522-e3f9-4c09-b693-8ead32a8bec5.__CR0,0,970,600_PT0_SX970_V1___.png",
     rating: 4.6,
     reviews: 62,
   },
@@ -124,7 +123,7 @@ const allProducts = [
     badge: "New",
     description: "Belgian linen, set of 2",
     image:
-      "https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?w=600&q=80",
+      "https://m.media-amazon.com/images/I/61IKiWblD6L._AC_UF894,1000_QL80_.jpg",
     rating: 4.7,
     reviews: 134,
   },
@@ -137,7 +136,7 @@ const allProducts = [
     badge: null,
     description: "Handwoven, weather-resistant",
     image:
-      "https://images.unsplash.com/photo-1601999009399-68f5db215851?w=600&q=80",
+      "https://m.media-amazon.com/images/I/816gjPfgJnL._AC_UF894,1000_QL80_.jpg",
     rating: 4.4,
     reviews: 29,
   },
@@ -150,7 +149,7 @@ const allProducts = [
     badge: "New",
     description: "Solid brass, refillable ink",
     image:
-      "https://images.unsplash.com/photo-1585336261022-680e295ce3fe?w=600&q=80",
+      "https://m.media-amazon.com/images/I/618wX9Rtd7L._AC_UF894,1000_QL80_.jpg",
     rating: 4.5,
     reviews: 41,
   },
@@ -163,7 +162,7 @@ const allProducts = [
     badge: "Sale",
     description: "2.5m × 3m, natural dyes",
     image:
-      "https://images.unsplash.com/photo-1558997519-83ea9252eef8?w=600&q=80",
+      "https://m.media-amazon.com/images/I/91aDxPFbj5L._AC_UF894,1000_QL80_.jpg",
     rating: 4.9,
     reviews: 88,
   },
@@ -176,7 +175,7 @@ const allProducts = [
     badge: "Best Seller",
     description: "Pre-seasoned, 26cm diameter",
     image:
-      "https://images.unsplash.com/photo-1593759608142-e976b9c4d73a?w=600&q=80",
+      "https://www.southernliving.com/thmb/6au1bFnqJOguxeJ7IkdRJJSI8WY=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/slv-primary-cast-iron-skillets-sep-24-dburreson-001-1-1-eefaede19519484693c0f7c9cdbb3a0b.jpeg",
     rating: 4.8,
     reviews: 302,
   },
@@ -189,7 +188,7 @@ const allProducts = [
     badge: null,
     description: "Vetiver & cedar, 40hr burn",
     image:
-      "https://images.unsplash.com/photo-1603905342474-5b83bf4b8520?w=600&q=80",
+      "https://m.media-amazon.com/images/I/717I73p5evL._AC_UF894,1000_QL80_.jpg",
     rating: 4.6,
     reviews: 77,
   },
@@ -202,7 +201,7 @@ const allProducts = [
     badge: "Trending",
     description: "Hand-woven rattan shade",
     image:
-      "https://images.unsplash.com/photo-1565814329452-e1efa11c5b89?w=600&q=80",
+      "https://m.media-amazon.com/images/I/51dTgdO9c7L._AC_UF894,1000_QL80_.jpg",
     rating: 4.7,
     reviews: 53,
   },
@@ -215,7 +214,7 @@ const allProducts = [
     badge: null,
     description: "A5 size, set of 3, ruled",
     image:
-      "https://images.unsplash.com/photo-1531346878377-a5be20888e57?w=600&q=80",
+      "https://m.media-amazon.com/images/I/71Etky4MukL._AC_UF894,1000_QL80_.jpg",
     rating: 4.4,
     reviews: 35,
   },
@@ -227,8 +226,7 @@ const allProducts = [
     originalPrice: null,
     badge: "New",
     description: "Aged copper finish, drainage hole",
-    image:
-      "https://images.unsplash.com/photo-1485955900006-10f4d324d411?w=600&q=80",
+    image: "https://m.media-amazon.com/images/I/81JlCy5DKuL.jpg",
     rating: 4.5,
     reviews: 21,
   },
@@ -240,8 +238,7 @@ const allProducts = [
     originalPrice: null,
     badge: null,
     description: "Natural stone top, powder-coated",
-    image:
-      "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=600&q=80",
+    image: "https://urban-road.neto.com.au/assets/images/Oro-Archer%20copy.jpg",
     rating: 4.8,
     reviews: 66,
   },
@@ -254,7 +251,7 @@ const allProducts = [
     badge: "Sale",
     description: "Reactive glaze, oven-safe",
     image:
-      "https://images.unsplash.com/photo-1493770348161-369560ae357d?w=600&q=80",
+      "https://m.media-amazon.com/images/I/51TMxzmGD6L._AC_UF894,1000_QL80_.jpg",
     rating: 4.6,
     reviews: 49,
   },
@@ -267,7 +264,7 @@ const allProducts = [
     badge: null,
     description: "Solid walnut with lip edge",
     image:
-      "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=600&q=80",
+      "https://m.media-amazon.com/images/I/714sIKrRmKL._AC_UF894,1000_QL80_.jpg",
     rating: 4.7,
     reviews: 38,
   },
@@ -280,7 +277,7 @@ const allProducts = [
     badge: "New",
     description: "Chunky weave, collapsible",
     image:
-      "https://images.unsplash.com/photo-1558997519-83ea9252eef8?w=600&q=80",
+      "https://m.media-amazon.com/images/I/51xhPxlDa5L._AC_UF894,1000_QL80_.jpg",
     rating: 4.5,
     reviews: 55,
   },
@@ -292,8 +289,7 @@ const allProducts = [
     originalPrice: null,
     badge: null,
     description: "Poured concrete base, linen shade",
-    image:
-      "https://images.unsplash.com/photo-1507473885765-e6ed057f782c?w=600&q=80",
+    image: "https://cdn01.pinkoi.com/product/skkib4QV/0/9/640x530.jpg",
     rating: 4.6,
     reviews: 44,
   },
@@ -305,8 +301,7 @@ const allProducts = [
     originalPrice: null,
     badge: null,
     description: "Washed Belgian linen, adjustable",
-    image:
-      "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=600&q=80",
+    image: "https://m.media-amazon.com/images/I/71c8e5o7vRL.jpg",
     rating: 4.7,
     reviews: 81,
   },
@@ -319,9 +314,139 @@ const allProducts = [
     badge: "Trending",
     description: "Solid white Carrara marble",
     image:
-      "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=600&q=80",
+      "https://m.media-amazon.com/images/I/61QAf3NfTVL._AC_UF894,1000_QL80_.jpg",
     rating: 4.8,
     reviews: 72,
+  },
+  {
+    id: 25,
+    category: "stationery",
+    name: "Fountain Pen Set",
+    price: 55,
+    originalPrice: null,
+    badge: "Trending",
+    description: "Vintage style, with ink bottles",
+    image:
+      "https://newellbrands.imgix.net/b77a014a-442c-30e7-a6f9-de2925b1aa90/b77a014a-442c-30e7-a6f9-de2925b1aa90.jpg?fm=jpg",
+    rating: 4.7,
+    reviews: 65,
+  },
+  {
+    id: 26,
+    category: "bedroom",
+    name: "Silk Pillowcase",
+    price: 45,
+    originalPrice: null,
+    badge: "New",
+    description: "100% mulberry silk, 300 thread count",
+    image:
+      "https://m.media-amazon.com/images/I/41KHic6Ra-L._AC_UF894,1000_QL80_.jpg",
+    rating: 4.8,
+    reviews: 120,
+  },
+  {
+    id: 27,
+    category: "kitchen",
+    name: "Bamboo Steamer",
+    price: 35,
+    originalPrice: null,
+    badge: "Trending",
+    description: "Two-tier, natural bamboo",
+    image:
+      "https://m.media-amazon.com/images/I/610g-C4Uu8L._AC_UF894,1000_QL80_.jpg",
+    rating: 4.6,
+    reviews: 89,
+  },
+  {
+    id: 28,
+    category: "living",
+    name: "LED Strip Lights",
+    price: 28,
+    originalPrice: null,
+    badge: "Best Seller",
+    description: "5m, RGB color changing LED strip",
+    image:
+      "https://m.media-amazon.com/images/I/61sd9XlMzpL._AC_UF894,1000_QL80_.jpg",
+    rating: 4.5,
+    reviews: 200,
+  },
+  {
+    id: 29,
+    category: "living",
+    name: "Wall Art Print",
+    price: 120,
+    originalPrice: null,
+    badge: "Sale",
+    description: "Framed abstract art",
+    image:
+      "https://m.media-amazon.com/images/I/71c+zy+x-3L._AC_UF894,1000_QL80_.jpg",
+    rating: 4.7,
+    reviews: 45,
+  },
+  {
+    id: 30,
+    category: "outdoor",
+    name: "Hammock Chair",
+    price: 99,
+    originalPrice: null,
+    badge: "Trending",
+    description: "Cotton rope, with stand",
+    image:
+      "https://m.media-amazon.com/images/I/81d6sEGXtEL._AC_UF894,1000_QL80_.jpg",
+    rating: 4.8,
+    reviews: 110,
+  },
+  {
+    id: 31,
+    category: "stationery",
+    name: "Planner 2024",
+    price: 25,
+    originalPrice: null,
+    badge: "Trending",
+    description: "Daily planner with stickers",
+    image:
+      "https://i.fbcd.co/products/resized/resized-750-500/preview-01-2af35ed048a87bab0395b56e9457941df72e58ea65fff77a33ed1c8692dee1c2.jpg",
+    rating: 4.6,
+    reviews: 78,
+  },
+  {
+    id: 32,
+    category: "bedroom",
+    name: "Memory Foam Pillow",
+    price: 60,
+    originalPrice: null,
+    badge: "Trending",
+    description: "Ergonomic design",
+    image:
+      "https://m.media-amazon.com/images/I/51E3IUhCAOL._AC_UF894,1000_QL80_.jpg",
+    rating: 4.9,
+    reviews: 150,
+  },
+  {
+    id: 33,
+    category: "kitchen",
+    name: "Spice Rack",
+    price: 40,
+    originalPrice: null,
+    badge: "Trending",
+    description: "Wooden, 16 jars",
+    image:
+      "https://m.media-amazon.com/images/I/61kIUbjJ5gL._AC_UF894,1000_QL80_.jpg",
+    rating: 4.7,
+    reviews: 95,
+  },
+  {
+    id: 34,
+    category: "lighting",
+    name: "Solar Garden Lights",
+    price: 55,
+    originalPrice: null,
+    badge: "New",
+    description: "Set of 6, waterproof",
+    image:
+      "https://m.media-amazon.com/images/S/aplus-media-library-service-media/59f98b23-c97e-4443-93b9-cd9ad61c362f.__CR0,0,970,600_PT0_SX970_V1___.jpg",
+    rating: 4.5,
+    reviews: 67,
   },
 ];
 
