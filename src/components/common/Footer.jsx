@@ -289,11 +289,12 @@ const Footer = () => {
                 Get the latest deals and offers
               </p>
             </div>
-            <form className="flex w-full md:w-auto">
+            <form className="flex w-full md:w-auto" suppressHydrationWarning>
               <input
                 type="email"
                 placeholder="Your email address"
                 className="px-4 py-2 bg-gray-800 text-white rounded-l-lg focus:outline-none focus:ring-1 focus:ring-orange-500 w-full md:w-64"
+                suppressHydrationWarning
               />
               <button className="px-6 py-2 bg-orange-500 text-white rounded-r-lg hover:bg-orange-600 transition">
                 Subscribe
