@@ -1,170 +1,336 @@
-import React from "react";
+// components/common/Footer.jsx
+"use client";
+
+import Link from "next/link";
 import {
-  FacebookIcon,
-  InstagramIcon,
-  TwitterIcon,
-  Mail,
-  Phone,
-  MapPin,
-  CreditCard,
-  Truck,
-  RefreshCcw,
-} from "lucide-react";
+  FiFacebook,
+  FiTwitter,
+  FiLinkedin,
+  FiInstagram,
+  FiYoutube,
+  FiMail,
+  FiPhone,
+  FiMapPin,
+} from "react-icons/fi";
 
 const Footer = () => {
   return (
-    <footer className="w-full bg-black text-gray-300 border-t border-gray-800">
-      {/* Top Features Section - eCom Highlight */}
-      <div className="">
-        <div className="max-w-7xl border-b border-gray-800 mx-auto px-6 py-8 grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
-          <div className="flex flex-col items-center space-y-2">
-            <Truck className="text-blue-500" size={24} />
-            <h4 className="text-white font-medium">Free Shipping</h4>
-            <p className="text-xs text-gray-500">
-              Free Shipping on based on oder amount
-            </p>
-          </div>{" "}
-          <div className="flex flex-col items-center space-y-2">
-            <RefreshCcw className="text-blue-500" size={24} />
-            <h4 className="text-white font-medium">7 Days Return</h4>
-            <p className="text-xs text-gray-500">Easy Return Policy</p>
-          </div>
-          <div className="flex flex-col items-center space-y-2">
-            <CreditCard className="text-blue-500" size={24} />
-            <h4 className="text-white font-medium">Secure Payment</h4>
-            <p className="text-xs text-gray-500">100% Secure Payment System</p>
-          </div>
-        </div>
-      </div>
-
-      <div className="max-w-7xl mx-auto px-6 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
-          {/* Brand & About */}
-          <div className="space-y-6">
-            <h2 className="text-white text-2xl font-bold tracking-tighter">
-              UNITY<span className="text-blue-500">-SHOP</span>
-            </h2>
-            <p className="text-sm leading-relaxed text-gray-400">
-              Your one-stop online shop for the latest trends in fashion,
-              electronics, and home essentials. Experience seamless shopping
-              with unbeatable prices and fast delivery.
-            </p>
-            <div className="flex space-x-4">
-              <a
-                href="#"
-                className="p-2 bg-gray-900 rounded-full hover:bg-blue-600 transition-all text-white"
-              >
-                <FacebookIcon size={18} />
-              </a>
-              <a
-                href="#"
-                className="p-2 bg-gray-900 rounded-full hover:bg-pink-600 transition-all text-white"
-              >
-                <InstagramIcon size={18} />
-              </a>
-              <a
-                href="#"
-                className="p-2 bg-gray-900 rounded-full hover:bg-sky-500 transition-all text-white"
-              >
-                <TwitterIcon size={18} />
-              </a>
-            </div>
-          </div>
-
-          {/* Categories */}
-          <div>
-            <h3 className="text-white font-semibold mb-6">Categories</h3>
-            <ul className="space-y-3 text-sm">
+    <footer className="bg-gradient-to-b from-gray-900 to-gray-950 text-gray-300 pt-16 pb-8 glass bg-base-200 border-t border-base-300 relative overflow-hidden">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 lg:gap-12">
+          {/* Column 1: About */}
+          <div className="lg:col-span-1">
+            <h3 className="text-white text-lg font-semibold mb-4">
+              About Unity Shop
+            </h3>
+            <ul className="space-y-2">
               <li>
-                <a href="#" className="hover:text-blue-400 transition-colors">
-                  Men`s Fashion
-                </a>
+                <Link
+                  href="/about"
+                  className="hover:text-orange-400 transition"
+                >
+                  About Us
+                </Link>
               </li>
               <li>
-                <a href="#" className="hover:text-blue-400 transition-colors">
-                  Women`s Fashion
-                </a>
+                <Link
+                  href="/how-it-works"
+                  className="hover:text-orange-400 transition"
+                >
+                  How It Works
+                </Link>
               </li>
               <li>
-                <a href="#" className="hover:text-blue-400 transition-colors">
-                  Electronics
-                </a>
+                <Link
+                  href="/contact"
+                  className="hover:text-orange-400 transition"
+                >
+                  Contact Us
+                </Link>
               </li>
               <li>
-                <a href="#" className="hover:text-blue-400 transition-colors">
-                  Home & Gadgets
-                </a>
+                <Link
+                  href="/careers"
+                  className="hover:text-orange-400 transition"
+                >
+                  Careers
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/press"
+                  className="hover:text-orange-400 transition"
+                >
+                  Press
+                </Link>
               </li>
             </ul>
           </div>
 
-          {/* Customer Care */}
+          {/* Column 2: Buy */}
           <div>
-            <h3 className="text-white font-semibold mb-6">Customer Care</h3>
-            <ul className="space-y-3 text-sm">
+            <h3 className="text-white text-lg font-semibold mb-4">
+              Buy on Unity Shop
+            </h3>
+            <ul className="space-y-2">
               <li>
-                <a href="#" className="hover:text-blue-400 transition-colors">
-                  Track Your Order
-                </a>
+                <Link href="/rfq" className="hover:text-orange-400 transition">
+                  Request for Quotation
+                </Link>
               </li>
               <li>
-                <a href="#" className="hover:text-blue-400 transition-colors">
-                  Return Policy
-                </a>
+                <Link
+                  href="/trade-assurance"
+                  className="hover:text-orange-400 transition"
+                >
+                  Trade Assurance
+                </Link>
               </li>
               <li>
-                <a href="#" className="hover:text-blue-400 transition-colors">
-                  Terms & Conditions
-                </a>
+                <Link
+                  href="/categories"
+                  className="hover:text-orange-400 transition"
+                >
+                  Product Categories
+                </Link>
               </li>
               <li>
-                <a href="#" className="hover:text-blue-400 transition-colors">
+                <Link
+                  href="/search"
+                  className="hover:text-orange-400 transition"
+                >
+                  Search Products
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/deals"
+                  className="hover:text-orange-400 transition"
+                >
+                  Deals & Promotions
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          {/* Column 3: Sell */}
+          <div>
+            <h3 className="text-white text-lg font-semibold mb-4">
+              Sell on Unity Shop
+            </h3>
+            <ul className="space-y-2">
+              <li>
+                <Link
+                  href="/become-seller"
+                  className="hover:text-orange-400 transition"
+                >
+                  Start Selling
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/sellers/dashboard"
+                  className="hover:text-orange-400 transition"
+                >
+                  Seller Central
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/sellers/verification"
+                  className="hover:text-orange-400 transition"
+                >
+                  Become Verified
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/sellers/resources"
+                  className="hover:text-orange-400 transition"
+                >
+                  Seller Resources
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/sellers/pricing"
+                  className="hover:text-orange-400 transition"
+                >
+                  Pricing Plans
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          {/* Column 4: Help */}
+          <div>
+            <h3 className="text-white text-lg font-semibold mb-4">
+              Help & Support
+            </h3>
+            <ul className="space-y-2">
+              <li>
+                <Link href="/help" className="hover:text-orange-400 transition">
                   Help Center
-                </a>
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/disputes"
+                  className="hover:text-orange-400 transition"
+                >
+                  Dispute Resolution
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/report"
+                  className="hover:text-orange-400 transition"
+                >
+                  Report Abuse
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/policies"
+                  className="hover:text-orange-400 transition"
+                >
+                  Policies
+                </Link>
+              </li>
+              <li>
+                <Link href="/faq" className="hover:text-orange-400 transition">
+                  FAQ
+                </Link>
               </li>
             </ul>
           </div>
 
-          {/* Contact Info */}
+          {/* Column 5: Connect */}
           <div>
-            <h3 className="text-white font-semibold mb-6">Get In Touch</h3>
-            <ul className="space-y-4 text-sm">
-              <li className="flex items-start space-x-3 text-gray-400">
-                <MapPin size={20} className="text-blue-500 shrink-0" />
-                <span>Dhaka, Bangladesh -1207</span>
-              </li>
-              <li className="flex items-center space-x-3 text-gray-400">
-                <Phone size={18} className="text-blue-500 shrink-0" />
-                <span>+880 1234 567 890</span>
-              </li>
-              <li className="flex items-center space-x-3 text-gray-400">
-                <Mail size={18} className="text-blue-500 shrink-0" />
+            <h3 className="text-white text-lg font-semibold mb-4">
+              Connect With Us
+            </h3>
+            <div className="flex space-x-4 mb-6">
+              <a
+                href="#"
+                className="text-gray-400 hover:text-orange-400 transition"
+              >
+                <FiFacebook size={20} />
+              </a>
+              <a
+                href="#"
+                className="text-gray-400 hover:text-orange-400 transition"
+              >
+                <FiTwitter size={20} />
+              </a>
+              <a
+                href="#"
+                className="text-gray-400 hover:text-orange-400 transition"
+              >
+                <FiLinkedin size={20} />
+              </a>
+              <a
+                href="#"
+                className="text-gray-400 hover:text-orange-400 transition"
+              >
+                <FiInstagram size={20} />
+              </a>
+              <a
+                href="#"
+                className="text-gray-400 hover:text-orange-400 transition"
+              >
+                <FiYoutube size={20} />
+              </a>
+            </div>
+            <div className="space-y-3">
+              <div className="flex items-center space-x-3">
+                <FiMail className="text-orange-400" />
                 <span>support@unityshop.com</span>
-              </li>
-            </ul>
+              </div>
+              <div className="flex items-center space-x-3">
+                <FiPhone className="text-orange-400" />
+                <span>+1 (800) 123-4567</span>
+              </div>
+              <div className="flex items-center space-x-3">
+                <FiMapPin className="text-orange-400" />
+                <span>123 Market St, San Francisco, CA</span>
+              </div>
+            </div>
+            <div className="mt-6">
+              <h4 className="text-white text-sm font-semibold mb-2">
+                Download App
+              </h4>
+              <div className="flex space-x-2">
+                <a
+                  href="#"
+                  className="bg-gray-800 hover:bg-gray-700 px-3 py-2 rounded-lg text-xs"
+                >
+                  App Store
+                </a>
+                <a
+                  href="#"
+                  className="bg-gray-800 hover:bg-gray-700 px-3 py-2 rounded-lg text-xs"
+                >
+                  Google Play
+                </a>
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* Payment Methods & Copyright */}
-        <div className="mt-16 pt-8 border-t border-gray-800 flex flex-col md:flex-row justify-between items-center space-y-6 md:space-y-0 text-xs">
-          <p>
-            © {new Date().getFullYear()}{" "}
-            <span className="text-white font-medium">Unity-Shop</span>. All
-            rights reserved.
-          </p>
+        {/* Newsletter signup */}
+        <div className="border-t border-gray-800 mt-12 pt-8">
+          <div className="flex flex-col md:flex-row items-center justify-between">
+            <div className="mb-4 md:mb-0">
+              <h4 className="text-white text-lg font-semibold">
+                Subscribe to our newsletter
+              </h4>
+              <p className="text-sm text-gray-400">
+                Get the latest deals and offers
+              </p>
+            </div>
+            <form className="flex w-full md:w-auto">
+              <input
+                type="email"
+                placeholder="Your email address"
+                className="px-4 py-2 bg-gray-800 text-white rounded-l-lg focus:outline-none focus:ring-1 focus:ring-orange-500 w-full md:w-64"
+              />
+              <button className="px-6 py-2 bg-orange-500 text-white rounded-r-lg hover:bg-orange-600 transition">
+                Subscribe
+              </button>
+            </form>
+          </div>
+        </div>
 
-          {/* Mock Payment Icons */}
-          <div className="flex items-center space-x-4 grayscale opacity-70">
-            <span className="text-gray-500">Payment Methods:</span>
-            <div className="h-6 w-10 bg-white rounded-sm flex items-center justify-center text-[8px] text-black font-bold italic">
-              VISA
-            </div>
-            <div className="h-6 w-10 bg-white rounded-sm flex items-center justify-center text-[8px] text-black font-bold italic">
-              bkash
-            </div>
-            <div className="h-6 w-10 bg-white rounded-sm flex items-center justify-center text-[8px] text-black font-bold italic">
-              NAGAD
-            </div>
+        {/* Bottom bar */}
+        <div className="border-t border-gray-800 mt-8 pt-8 flex flex-col md:flex-row items-center justify-between text-sm">
+          <div className="text-gray-400 mb-4 md:mb-0">
+            © 2026 Unity Shop. All rights reserved.
+          </div>
+          <div className="flex space-x-6">
+            <Link href="/privacy" className="hover:text-orange-400 transition">
+              Privacy Policy
+            </Link>
+            <Link href="/terms" className="hover:text-orange-400 transition">
+              Terms of Service
+            </Link>
+            <Link href="/sitemap" className="hover:text-orange-400 transition">
+              Sitemap
+            </Link>
+            <select className="bg-gray-800 text-gray-300 border border-gray-700 rounded px-2 py-1 text-sm">
+              <option>English</option>
+              <option>Spanish</option>
+              <option>French</option>
+              <option>German</option>
+              <option>Chinese</option>
+            </select>
+            <select className="bg-gray-800 text-gray-300 border border-gray-700 rounded px-2 py-1 text-sm">
+              <option>USD ($)</option>
+              <option>EUR (€)</option>
+              <option>GBP (£)</option>
+              <option>JPY (¥)</option>
+              <option>CNY (¥)</option>
+            </select>
           </div>
         </div>
       </div>
