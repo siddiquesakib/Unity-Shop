@@ -4,19 +4,24 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { 
-  LayoutDashboard, 
-  ShoppingBag, 
-  Heart, 
-  Settings, 
-  LogOut, 
-  Menu, 
-  X, 
-  Package, 
-  BarChart3, 
-  Users, 
-  PlusCircle, 
-  ListOrdered 
+import {
+  LayoutDashboard,
+  ShoppingBag,
+  PlusCircle,
+  ListOrdered,
+  ShieldCheck,
+  UserCog,
+  Settings2,
+  Activity,
+  Megaphone,
+  Truck,
+  Heart,
+  Package,
+  Users,
+  BarChart3,
+  X,
+  Menu,
+  LogOut
 } from "lucide-react";
 
 export default function Sidebar() {
@@ -40,16 +45,29 @@ export default function Sidebar() {
     { name: "Orders", href: "/dashboard/seller/orders", icon: ListOrdered },
   ];
 
+  const adminLinks = [
+    { name: "Overview", href: "/dashboard/admin", icon: ShieldCheck },
+    { name: "Manage Users", href: "/dashboard/admin/users", icon: Users },
+    { name: "Sellers Info", href: "/dashboard/admin/sellers", icon: UserCog },
+    { name: "System Settings", href: "/dashboard/admin/settings", icon: Settings2 },
+    { name: "Health Logs", href: "/dashboard/admin/health", icon: Activity },
+  ];
+
+  const managerLinks = [
+    { name: "Fulfillment", href: "/dashboard/manager/fulfillment", icon: Truck },
+    { name: "Marketing", href: "/dashboard/manager/marketing", icon: Megaphone },
+    { name: "Platform Stats", href: "/dashboard/manager/stats", icon: BarChart3 },
+  ];
+
   const SidebarItem = ({ item }) => {
     const isActive = pathname === item.href;
     return (
       <Link href={item.href}>
         <div
-          className={`flex items-center gap-3 px-4 py-3 my-1 rounded-xl transition-all duration-200 group ${
-            isActive
-              ? "bg-indigo-600 text-white shadow-lg shadow-indigo-500/30"
-              : "text-slate-400 hover:bg-slate-800/50 hover:text-white"
-          }`}
+          className={`flex items-center gap-3 px-4 py-3 my-1 rounded-xl transition-all duration-200 group ${isActive
+            ? "bg-indigo-600 text-white shadow-lg shadow-indigo-500/30"
+            : "text-slate-400 hover:bg-slate-800/50 hover:text-white"
+            }`}
         >
           <item.icon size={20} className={`${isActive ? "text-white" : "text-slate-400 group-hover:text-white"}`} />
           <span className="font-medium">{item.name}</span>
@@ -73,9 +91,8 @@ export default function Sidebar() {
         initial={{ x: -280 }}
         animate={{ x: isOpen ? 0 : -280 }}
         transition={{ duration: 0.3, ease: "easeInOut" }}
-        className={`fixed lg:static top-0 left-0 z-40 h-screen w-72 bg-slate-950 border-r border-slate-800/50 flex flex-col shadow-2xl ${
-          isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
-        }`}
+        className={`fixed lg:static top-0 left-0 z-40 h-screen w-72 bg-slate-950 border-r border-slate-800/50 flex flex-col shadow-2xl ${isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
+          }`}
       >
         {/* Logo Area */}
         <div className="p-6 border-b border-slate-800/50 flex items-center gap-3">
@@ -89,7 +106,7 @@ export default function Sidebar() {
 
         {/* Navigation Scroll Area */}
         <div className="flex-1 overflow-y-auto py-6 px-4 space-y-8 scrollbar-hide">
-          
+
           {/* User Section */}
           <div>
             <h3 className="px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">
@@ -114,6 +131,30 @@ export default function Sidebar() {
             </div>
           </div>
 
+          {/* Admin Section */}
+          <div>
+            <h3 className="px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">
+              Admin Control
+            </h3>
+            <div className="space-y-1">
+              {adminLinks.map((link) => (
+                <SidebarItem key={link.href} item={link} />
+              ))}
+            </div>
+          </div>
+
+          {/* Manager Section */}
+          <div>
+            <h3 className="px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">
+              Management
+            </h3>
+            <div className="space-y-1">
+              {managerLinks.map((link) => (
+                <SidebarItem key={link.href} item={link} />
+              ))}
+            </div>
+          </div>
+
         </div>
 
         {/* Footer Area */}
@@ -124,10 +165,10 @@ export default function Sidebar() {
           </button>
         </div>
       </motion.aside>
-      
+
       {/* Overlay for mobile */}
       {isOpen && (
-        <div 
+        <div
           onClick={() => setIsOpen(false)}
           className="lg:hidden fixed inset-0 z-30 bg-black/60 backdrop-blur-sm"
         />
