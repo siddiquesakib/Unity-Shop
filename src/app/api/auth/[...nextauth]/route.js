@@ -13,20 +13,36 @@ const handler = NextAuth({
       credentials: {
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
+        loginToken: { label: "Login Token", type: "text" },
       },
       async authorize(credentials) {
         try {
-          const res = await fetch(
-            `${process.env.NEXT_PUBLIC_API_URL}/auth/login`,
-            {
+          let res;
+
+          if (credentials.loginToken) {
+            // Token-based login (from email verification link)
+            res = await fetch(
+              `${process.env.NEXT_PUBLIC_API_URL}/auth/verify-email`,
+              {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  email: credentials.email,
+                  token: credentials.loginToken,
+                }),
+              },
+            );
+          } else {
+            // Normal password-based login
+            res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/login`, {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
                 email: credentials.email,
                 password: credentials.password,
               }),
-            },
-          );
+            });
+          }
 
           const data = await res.json();
 
@@ -40,6 +56,7 @@ const handler = NextAuth({
             name: data.user.name,
             email: data.user.email,
             role: data.user.role,
+            sellerRequest: data.user.sellerRequest || null,
             image: data.user.image || null,
             backendToken: data.token,
           };
@@ -74,6 +91,7 @@ const handler = NextAuth({
             // Attach backend data to user object
             user.id = data.user._id;
             user.role = data.user.role;
+            user.sellerRequest = data.user.sellerRequest || null;
             user.backendToken = data.token;
           }
         } catch (error) {
@@ -82,12 +100,20 @@ const handler = NextAuth({
       }
       return true;
     },
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger, session: updateData }) {
       // On first sign in, add custom fields to JWT
       if (user) {
         token.id = user.id;
         token.role = user.role;
+        token.sellerRequest = user.sellerRequest;
         token.backendToken = user.backendToken;
+      }
+      // When session is updated (e.g., role change), update token
+      if (trigger === "update" && updateData?.role) {
+        token.role = updateData.role;
+      }
+      if (trigger === "update" && updateData?.sellerRequest) {
+        token.sellerRequest = updateData.sellerRequest;
       }
       return token;
     },
@@ -95,6 +121,7 @@ const handler = NextAuth({
       // Send custom fields to the client session
       session.user.id = token.id;
       session.user.role = token.role;
+      session.user.sellerRequest = token.sellerRequest;
       session.backendToken = token.backendToken;
       return session;
     },
