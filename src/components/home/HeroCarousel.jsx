@@ -77,7 +77,7 @@ const HeroCarousel = () => {
 
   return (
     <div
-      className="relative w-full h-[500px] md:h-[600px] lg:h-[700px] overflow-hidden group"
+      className="relative w-full h-70 sm:h-85 md:h-100 lg:h-115 overflow-hidden group"
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
@@ -100,21 +100,21 @@ const HeroCarousel = () => {
           />
 
           {/* Gradient Overlay */}
-          <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-transparent" />
+          <div className="absolute inset-0 bg-linear-to-r from-black/70 via-black/50 to-transparent" />
 
           {/* Content */}
           <div className="absolute inset-0 flex items-center">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-              <div className="max-w-2xl text-white space-y-6 animate-fade-up">
-                <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight">
+              <div className="max-w-xl text-white space-y-3 sm:space-y-4 animate-fade-up">
+                <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold leading-tight">
                   {slide.title}
                 </h1>
-                <p className="text-lg md:text-xl text-gray-200">
+                <p className="text-sm sm:text-base md:text-lg text-gray-200/90 line-clamp-2">
                   {slide.description}
                 </p>
                 <Link
                   href={slide.link}
-                  className="inline-block px-8 py-4 bg-gradient-to-r from-orange-500 to-orange-600 text-white font-semibold rounded-full hover:shadow-lg hover:shadow-orange-500/30 hover:scale-105 transition-all duration-300"
+                  className="inline-block px-5 sm:px-7 py-2.5 sm:py-3 text-sm sm:text-base bg-linear-to-r from-orange-500 to-orange-600 text-white font-semibold rounded-full hover:shadow-lg hover:shadow-orange-500/30 hover:scale-105 transition-all duration-300"
                 >
                   {slide.cta}
                 </Link>
@@ -127,29 +127,29 @@ const HeroCarousel = () => {
       {/* Navigation Arrows */}
       <button
         onClick={prevSlide}
-        className="absolute left-4 top-1/2 -translate-y-1/2 z-20 w-12 h-12 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center text-white hover:bg-white/30 transition-all opacity-0 group-hover:opacity-100"
+        className="absolute left-3 top-1/2 -translate-y-1/2 z-20 w-9 h-9 sm:w-10 sm:h-10 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center text-white hover:bg-white/30 transition-all opacity-0 group-hover:opacity-100"
         aria-label="Previous slide"
       >
-        <FiChevronLeft size={24} />
+        <FiChevronLeft size={18} />
       </button>
       <button
         onClick={nextSlide}
-        className="absolute right-4 top-1/2 -translate-y-1/2 z-20 w-12 h-12 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center text-white hover:bg-white/30 transition-all opacity-0 group-hover:opacity-100"
+        className="absolute right-3 top-1/2 -translate-y-1/2 z-20 w-9 h-9 sm:w-10 sm:h-10 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center text-white hover:bg-white/30 transition-all opacity-0 group-hover:opacity-100"
         aria-label="Next slide"
       >
-        <FiChevronRight size={24} />
+        <FiChevronRight size={18} />
       </button>
 
       {/* Dots */}
-      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-20 flex space-x-3">
+      <div className="absolute bottom-4 sm:bottom-6 left-1/2 -translate-x-1/2 z-20 flex space-x-2">
         {slides.map((_, index) => (
           <button
             key={index}
             onClick={() => goToSlide(index)}
-            className={`w-3 h-3 rounded-full transition-all ${
+            className={`h-2 rounded-full transition-all ${
               index === currentSlide
-                ? "w-8 bg-orange-500"
-                : "bg-white/50 hover:bg-white/80"
+                ? "w-6 bg-orange-500"
+                : "w-2 bg-white/50 hover:bg-white/80"
             }`}
             aria-label={`Go to slide ${index + 1}`}
           />
