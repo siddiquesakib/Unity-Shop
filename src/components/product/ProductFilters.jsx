@@ -2,13 +2,15 @@
 "use client";
 
 const categories = [
-  { id: "all", label: "All Products", icon: "✦", count: 24 },
-  { id: "living", label: "Living Room", icon: "🛋", count: 6 },
-  { id: "kitchen", label: "Kitchen", icon: "🫙", count: 5 },
-  { id: "bedroom", label: "Bedroom", icon: "🕯", count: 4 },
-  { id: "lighting", label: "Lighting", icon: "💡", count: 4 },
-  { id: "stationery", label: "Stationery", icon: "📓", count: 3 },
-  { id: "outdoor", label: "Outdoor", icon: "🌿", count: 2 },
+  { id: "all", label: "All Products", icon: "✦" },
+  { id: "electronics", label: "Electronics", icon: "📱" },
+  { id: "fashion", label: "Fashion", icon: "👗" },
+  { id: "living", label: "Home & Living", icon: "🛋" },
+  { id: "kitchen", label: "Kitchen", icon: "🫙" },
+  { id: "bedroom", label: "Bedroom", icon: "🕯" },
+  { id: "lighting", label: "Lighting", icon: "💡" },
+  { id: "stationery", label: "Stationery", icon: "📓" },
+  { id: "outdoor", label: "Outdoor", icon: "🌿" },
 ];
 
 export default function ProductFilters({
@@ -48,15 +50,17 @@ export default function ProductFilters({
                 <span className="text-base">{cat.icon}</span>
                 {cat.label}
               </span>
-              <span
-                className={`text-xs px-2 py-0.5 rounded-full ${
-                  activeCategory === cat.id
-                    ? "bg-white/20 text-white"
-                    : "bg-stone-200 text-stone-500 group-hover:bg-stone-300"
-                }`}
-              >
-                {cat.count}
-              </span>
+              {cat.count !== undefined && (
+                <span
+                  className={`text-xs px-2 py-0.5 rounded-full ${
+                    activeCategory === cat.id
+                      ? "bg-white/20 text-white"
+                      : "bg-stone-200 text-stone-500 group-hover:bg-stone-300"
+                  }`}
+                >
+                  {cat.count}
+                </span>
+              )}
             </button>
           ))}
         </nav>
@@ -75,7 +79,7 @@ export default function ProductFilters({
           <input
             type="range"
             min={0}
-            max={600}
+            max={5000}
             step={10}
             value={priceRange[1]}
             onChange={(e) =>
@@ -85,7 +89,7 @@ export default function ProductFilters({
           />
           {/* Quick presets */}
           <div className="grid grid-cols-2 gap-2">
-            {[100, 200, 300, 500].map((p) => (
+            {[200, 500, 1000, 5000].map((p) => (
               <button
                 key={p}
                 onClick={() => setPriceRange([0, p])}
