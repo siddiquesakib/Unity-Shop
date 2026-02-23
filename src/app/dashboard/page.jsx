@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { User, Store } from "lucide-react";
+import { User, Store, ShieldCheck, Briefcase } from "lucide-react";
 
 export default function DashboardPage() {
     return (
@@ -43,6 +43,36 @@ export default function DashboardPage() {
                         <div>
                             <h2 className="text-2xl font-bold text-white mb-2">Seller Dashboard</h2>
                             <p className="text-slate-400 text-sm">Manage products, view sales stats, and process orders.</p>
+                        </div>
+                    </motion.div>
+                </Link>
+
+                <Link href="/dashboard/admin" className="group">
+                    <motion.div
+                        whileHover={{ y: -5 }}
+                        className="p-8 rounded-2xl bg-slate-900 border border-slate-800 hover:border-emerald-500/50 hover:shadow-2xl hover:shadow-emerald-500/20 transition-all duration-300 h-full flex flex-col items-center gap-4 text-center"
+                    >
+                        <div className="w-16 h-16 rounded-2xl bg-emerald-500/10 flex items-center justify-center group-hover:bg-emerald-500 group-hover:text-white transition-colors duration-300">
+                            <ShieldCheck size={32} className="text-emerald-400 group-hover:text-white" />
+                        </div>
+                        <div>
+                            <h2 className="text-2xl font-bold text-white mb-2">Admin Dashboard</h2>
+                            <p className="text-slate-400 text-sm">Manage users, platform security, and system health.</p>
+                        </div>
+                    </motion.div>
+                </Link>
+
+                <Link href="/dashboard/manager" className="group">
+                    <motion.div
+                        whileHover={{ y: -5 }}
+                        className="p-8 rounded-2xl bg-slate-900 border border-slate-800 hover:border-orange-500/50 hover:shadow-2xl hover:shadow-orange-500/20 transition-all duration-300 h-full flex flex-col items-center gap-4 text-center"
+                    >
+                        <div className="w-16 h-16 rounded-2xl bg-orange-500/10 flex items-center justify-center group-hover:bg-orange-500 group-hover:text-white transition-colors duration-300">
+                            <Briefcase size={32} className="text-orange-400 group-hover:text-white" />
+                        </div>
+                        <div>
+                            <h2 className="text-2xl font-bold text-white mb-2">Manager Dashboard</h2>
+                            <p className="text-slate-400 text-sm">Oversee fulfillment, marketing, and platform analytics.</p>
                         </div>
                     </motion.div>
                 </Link>
