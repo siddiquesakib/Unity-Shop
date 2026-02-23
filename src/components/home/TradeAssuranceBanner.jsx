@@ -50,97 +50,89 @@ const features = [
 
 const TradeAssuranceBanner = () => {
   return (
-    <section className="py-16 bg-gradient-to-br from-blue-50 via-white to-orange-50">
+    <section className="py-10 sm:py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
-        <div className="text-center mb-12">
-          <div className="inline-flex items-center px-4 py-2 bg-white/80 backdrop-blur-sm rounded-full shadow-sm mb-6">
-            <FiShield className="w-5 h-5 text-orange-500 mr-2" />
-            <span className="text-sm font-semibold text-gray-700">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-900">
+              Why Choose UnityShop
+            </h2>
+            <p className="text-sm text-gray-500 mt-0.5">
+              Trade with confidence
+            </p>
+          </div>
+          <div className="hidden sm:flex items-center gap-1.5 px-3 py-1 bg-orange-50 rounded-full">
+            <FiShield className="w-3.5 h-3.5 text-orange-500" />
+            <span className="text-xs font-medium text-orange-600">
               Trade Assurance
             </span>
           </div>
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-            Trade with Confidence
-          </h2>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Our comprehensive protection program ensures safe and reliable
-            transactions
-          </p>
         </div>
 
-        {/* Features Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 mb-12">
+        {/* Features - Horizontal scroll on mobile, grid on desktop */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-8">
           {features.map((feature) => {
             const Icon = feature.icon;
             return (
               <div
                 key={feature.id}
-                className="bg-white/70 backdrop-blur-sm rounded-2xl p-6 border border-gray-100 hover:border-orange-200 hover:shadow-xl hover:shadow-orange-500/10 transition-all group"
+                className="bg-gray-50 hover:bg-white rounded-xl p-4 border border-transparent hover:border-gray-200 hover:shadow-md transition-all duration-200 group"
               >
                 <div
-                  className={`w-14 h-14 rounded-xl bg-gradient-to-br ${feature.color} flex items-center justify-center mb-4 shadow-lg group-hover:scale-110 transition-transform`}
+                  className={`w-9 h-9 rounded-lg bg-linear-to-br ${feature.color} flex items-center justify-center mb-3 group-hover:scale-105 transition-transform`}
                 >
-                  <Icon className="w-7 h-7 text-white" />
+                  <Icon className="w-4.5 h-4.5 text-white" />
                 </div>
-                <h3 className="text-lg font-semibold text-gray-800 mb-2">
+                <h3 className="text-sm font-semibold text-gray-800 mb-1">
                   {feature.title}
                 </h3>
-                <p className="text-sm text-gray-600">{feature.description}</p>
+                <p className="text-xs text-gray-500 leading-relaxed">
+                  {feature.description}
+                </p>
               </div>
             );
           })}
         </div>
 
-        {/* CTA Section */}
-        <div className="bg-gradient-to-r from-orange-500 to-orange-600 rounded-3xl p-8 text-center text-white relative overflow-hidden">
-          {/* Decorative elements */}
-          <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-32 -mt-32"></div>
-          <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/10 rounded-full -ml-24 -mb-24"></div>
-
-          <div className="relative z-10">
-            <h3 className="text-2xl md:text-3xl font-bold mb-4">
-              Ready to start trading safely?
-            </h3>
-            <p className="text-lg mb-8 text-orange-100 max-w-2xl mx-auto">
-              Join thousands of businesses who trust Unity Shop for their
-              sourcing needs
+        {/* CTA Banner - Compact */}
+        <div className="bg-gray-900 rounded-2xl px-6 sm:px-8 py-6 flex flex-col sm:flex-row items-center justify-between gap-4 relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-40 h-40 bg-orange-500/10 rounded-full -mr-16 -mt-16" />
+          <div className="relative z-10 text-center sm:text-left">
+            <h3 className="text-lg font-bold text-white">Ready to start?</h3>
+            <p className="text-sm text-gray-400 mt-0.5">
+              Join thousands of businesses on UnityShop
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link
-                href="/register"
-                className="px-8 py-3 bg-white text-orange-600 font-semibold rounded-full hover:bg-gray-100 hover:scale-105 transition-all shadow-lg"
-              >
-                Create Free Account
-              </Link>
-              <Link
-                href="/trade-assurance"
-                className="px-8 py-3 bg-orange-700 text-white font-semibold rounded-full hover:bg-orange-800 hover:scale-105 transition-all shadow-lg border border-orange-400"
-              >
-                Learn More
-              </Link>
-            </div>
+          </div>
+          <div className="relative z-10 flex gap-2.5">
+            <Link
+              href="/register"
+              className="px-5 py-2 text-sm font-semibold text-gray-900 bg-white rounded-lg hover:bg-gray-100 transition-colors"
+            >
+              Get Started
+            </Link>
+            <Link
+              href="/products"
+              className="px-5 py-2 text-sm font-medium text-gray-300 bg-white/10 rounded-lg hover:bg-white/15 transition-colors"
+            >
+              Browse
+            </Link>
           </div>
         </div>
 
-        {/* Trust badges */}
-        <div className="flex flex-wrap justify-center items-center gap-8 mt-12 opacity-70">
-          <div className="flex items-center space-x-2">
-            <FiCheckCircle className="w-5 h-5 text-green-600" />
-            <span className="text-sm text-gray-600">100% Secure</span>
-          </div>
-          <div className="flex items-center space-x-2">
-            <FiCheckCircle className="w-5 h-5 text-green-600" />
-            <span className="text-sm text-gray-600">Verified Suppliers</span>
-          </div>
-          <div className="flex items-center space-x-2">
-            <FiCheckCircle className="w-5 h-5 text-green-600" />
-            <span className="text-sm text-gray-600">Money-back Guarantee</span>
-          </div>
-          <div className="flex items-center space-x-2">
-            <FiCheckCircle className="w-5 h-5 text-green-600" />
-            <span className="text-sm text-gray-600">24/7 Support</span>
-          </div>
+        {/* Trust badges - Compact */}
+        <div className="flex flex-wrap justify-center items-center gap-4 sm:gap-6 mt-6 text-gray-400">
+          {[
+            "100% Secure",
+            "Verified Suppliers",
+            "Money-back Guarantee",
+            "24/7 Support",
+          ].map((badge) => (
+            <div key={badge} className="flex items-center gap-1.5">
+              <FiCheckCircle className="w-3.5 h-3.5 text-green-500" />
+              <span className="text-xs">{badge}</span>
+            </div>
+          ))}
         </div>
       </div>
     </section>

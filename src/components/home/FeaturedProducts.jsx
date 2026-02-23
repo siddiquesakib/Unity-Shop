@@ -493,21 +493,21 @@ const FeaturedProducts = ({
   };
 
   return (
-    <section className="py-16 bg-gradient-to-b from-gray-50 to-white">
+    <section className="py-10 sm:py-12 bg-gray-50/50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
           <div>
-            <h2 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-orange-500 to-orange-600 bg-clip-text text-transparent">
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-900">
               {title}
             </h2>
-            <p className="text-gray-600 mt-2">
-              Discover top-quality products from verified suppliers
+            <p className="text-sm text-gray-500 mt-0.5">
+              Top-quality products from verified suppliers
             </p>
           </div>
           <Link
             href={viewAllLink}
-            className="mt-4 md:mt-0 inline-flex items-center text-orange-600 hover:text-orange-700 font-semibold group"
+            className="mt-3 sm:mt-0 inline-flex items-center text-sm text-orange-600 hover:text-orange-700 font-medium group"
           >
             View All Products
             <svg
@@ -527,15 +527,15 @@ const FeaturedProducts = ({
         </div>
 
         {/* Filter Tabs */}
-        <div className="flex flex-wrap gap-2 mb-8">
+        <div className="flex flex-wrap gap-2 mb-6">
           {filters.map((f) => (
             <button
               key={f.id}
               onClick={() => handleFilterChange(f.id)}
-              className={`px-6 py-2 rounded-full text-sm font-medium transition-all ${
+              className={`px-4 py-1.5 rounded-full text-xs sm:text-sm font-medium transition-all ${
                 filter === f.id
-                  ? "bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-lg shadow-orange-500/30"
-                  : "bg-white text-gray-700 border border-gray-200 hover:border-orange-300 hover:text-orange-600"
+                  ? "bg-gray-900 text-white shadow-sm"
+                  : "bg-white text-gray-600 border border-gray-200 hover:border-gray-300 hover:text-gray-900"
               }`}
             >
               {f.label}
@@ -557,7 +557,7 @@ const FeaturedProducts = ({
             ))}
           </div>
         ) : (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 glass p-6 rounded-2xl border border-gray-100 shadow-lg transition-shadow duration-300 hover:shadow-xl">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4">
             {visibleProducts.map((product) => (
               <ProductCard key={product.id} product={product} />
             ))}

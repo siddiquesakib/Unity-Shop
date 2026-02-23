@@ -9,10 +9,10 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
-  const { data: session, status } = useSession();
+  const { data: session, status, update } = useSession();
 
+  // Sync user state with NextAuth session (works for BOTH Google & credentials login)
   useEffect(() => {
-    // If NextAuth session exists (Google login), use that
     if (status === "authenticated" && session?.user) {
       const sessionUser = {
         _id: session.user.id,
@@ -20,23 +20,17 @@ export const AuthProvider = ({ children }) => {
         email: session.user.email,
         image: session.user.image,
         role: session.user.role || "user",
-        provider: "google",
+        sellerRequest: session.user.sellerRequest || null,
       };
       setUser(sessionUser);
       localStorage.setItem("user", JSON.stringify(sessionUser));
       if (session.backendToken) {
         localStorage.setItem("token", session.backendToken);
       }
-      setLoading(false);
-      return;
-    }
-
-    // If no NextAuth session, check localStorage (email/password login)
-    if (status === "unauthenticated" || status === "loading") {
-      const storedUser = localStorage.getItem("user");
-      if (storedUser) {
-        setUser(JSON.parse(storedUser));
-      }
+    } else if (status === "unauthenticated") {
+      setUser(null);
+      localStorage.removeItem("user");
+      localStorage.removeItem("token");
     }
 
     if (status !== "loading") {
@@ -44,25 +38,21 @@ export const AuthProvider = ({ children }) => {
     }
   }, [session, status]);
 
+  // Login with email/password — uses NextAuth CredentialsProvider so session is created
   const login = async (email, password) => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+      const res = await signIn("credentials", {
+        email,
+        password,
+        redirect: false,
       });
 
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.message || "Login failed");
+      if (res?.error) {
+        return { success: false, error: "Invalid email or password" };
       }
 
-      localStorage.setItem("user", JSON.stringify(data.user));
-      localStorage.setItem("token", data.token);
-
-      setUser(data.user);
-      router.push("/dashboard");
+      // Force session update so useEffect picks up the new user
+      await update();
       return { success: true };
     } catch (error) {
       console.error("Login Error:", error);
@@ -70,6 +60,7 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // Login with Google — uses NextAuth GoogleProvider
   const googleLogin = async () => {
     try {
       await signIn("google", { callbackUrl: "/dashboard" });
@@ -79,6 +70,7 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // Register — calls backend directly, then user logs in separately
   const register = async (name, email, password) => {
     try {
       const res = await fetch(
@@ -96,7 +88,6 @@ export const AuthProvider = ({ children }) => {
         throw new Error(data.message || "Registration failed");
       }
 
-      router.push("/login");
       return { success: true };
     } catch (error) {
       console.error("Registration Error:", error);
@@ -104,18 +95,94 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // Request Seller — submits a request that needs admin/manager approval
+  const requestSeller = async () => {
+    if (!user?.email) return { success: false, error: "Not logged in" };
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/users/request-seller/${user.email}`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+        },
+      );
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.message || "Failed to submit seller request");
+      }
+
+      // Update local state with sellerRequest status (role stays "user" until approved)
+      const updatedUser = { ...user, sellerRequest: "pending" };
+      setUser(updatedUser);
+      localStorage.setItem("user", JSON.stringify(updatedUser));
+
+      // Update NextAuth session/JWT so it persists across refresh
+      await update({ sellerRequest: "pending" });
+
+      return { success: true, message: data.message };
+    } catch (error) {
+      console.error("Request Seller Error:", error);
+      return { success: false, error: error.message };
+    }
+  };
+
+  // Check seller request status from backend
+  const checkSellerRequestStatus = async () => {
+    if (!user?.email) return null;
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/users/profile/${user.email}`,
+      );
+      const data = await res.json();
+      if (res.ok && data.sellerRequest) {
+        const updatedUser = { ...user, sellerRequest: data.sellerRequest };
+        setUser(updatedUser);
+        localStorage.setItem("user", JSON.stringify(updatedUser));
+        // Sync NextAuth session/JWT
+        await update({ sellerRequest: data.sellerRequest });
+        return data.sellerRequest;
+      }
+      return null;
+    } catch {
+      return null;
+    }
+  };
+
+  // Helper: get dashboard path based on role
+  const getDashboardByRole = (role) => {
+    const roleRoutes = {
+      user: "/dashboard/user",
+      seller: "/dashboard/seller",
+      admin: "/dashboard/admin",
+      manager: "/dashboard/manager",
+    };
+    return roleRoutes[role] || "/dashboard/user";
+  };
+
+  // Logout — clears everything (NextAuth session + localStorage)
   const logout = async () => {
     localStorage.removeItem("user");
     localStorage.removeItem("token");
     setUser(null);
-    // Sign out from NextAuth too (for Google sessions)
     await signOut({ redirect: false });
     router.push("/login");
   };
 
   return (
     <AuthContext.Provider
-      value={{ user, loading, login, googleLogin, register, logout }}
+      value={{
+        user,
+        loading,
+        login,
+        googleLogin,
+        register,
+        logout,
+        getDashboardByRole,
+        requestSeller,
+        checkSellerRequestStatus,
+      }}
     >
       {children}
     </AuthContext.Provider>

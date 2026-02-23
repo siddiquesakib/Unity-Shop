@@ -1,25 +1,18 @@
-// components/product/ProductCardB2B.jsx
+// components/product/ProductCard.jsx
 "use client";
 
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
-import {
-  FiShoppingCart,
-  FiMessageSquare,
-  FiCheckCircle,
-  FiStar,
-} from "react-icons/fi";
+import { FiShoppingCart, FiEye, FiStar } from "react-icons/fi";
 
 const ProductCard = ({ product }) => {
   const [isHovered, setIsHovered] = useState(false);
   const [imageError, setImageError] = useState(false);
 
-  // Default placeholder image
   const placeholderImage =
     "https://via.placeholder.com/400x400?text=Product+Image";
 
-  // Helper to get a safe image URL
   const getSafeImageUrl = () => {
     if (imageError) return placeholderImage;
     let url = placeholderImage;
@@ -45,9 +38,21 @@ const ProductCard = ({ product }) => {
     }
   };
 
+  // Support both _id (MongoDB) and id
+  const productId = product._id || product.id;
+
+  // Calculate discount percentage
+  const discount =
+    product.originalPrice && product.originalPrice > product.price
+      ? Math.round(
+          ((product.originalPrice - product.price) / product.originalPrice) *
+            100,
+        )
+      : null;
+
   return (
     <div
-      className="group relative bg-white/90 backdrop-blur-sm rounded-2xl border border-gray-100 hover:border-orange-200 hover:shadow-xl hover:shadow-orange-500/10 transition-all duration-300 overflow-hidden glass p-4  hover:-translate-y-1  shadow-lg "
+      className="group relative bg-white rounded-xl border border-gray-100 hover:border-gray-200 hover:shadow-lg transition-all duration-200 overflow-hidden"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
@@ -57,110 +62,91 @@ const ProductCard = ({ product }) => {
           src={getSafeImageUrl()}
           alt={product.name}
           fill
-          sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
-          className="object-cover group-hover:scale-105 transition-transform duration-500"
+          sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 20vw"
+          className="object-cover group-hover:scale-105 transition-transform duration-300"
           onError={() => setImageError(true)}
         />
 
-        {/* Hover Overlay with Quick Actions */}
+        {/* Hover Overlay */}
         <div
-          className={`absolute inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center gap-2 transition-opacity duration-300 ${
+          className={`absolute inset-0 bg-black/30 flex items-center justify-center gap-2 transition-opacity duration-200 ${
             isHovered ? "opacity-100" : "opacity-0 pointer-events-none"
           }`}
         >
-          <button className="p-3 bg-white rounded-full hover:bg-orange-500 hover:text-white transition-colors shadow-lg">
-            <FiShoppingCart className="w-5 h-5" />
+          <button className="p-2.5 bg-white rounded-full hover:bg-orange-500 hover:text-white transition-colors shadow-md">
+            <FiShoppingCart className="w-4 h-4" />
           </button>
           <Link
-            href={`/products/${product.id}`}
-            className="p-3 bg-white rounded-full hover:bg-orange-500 hover:text-white transition-colors shadow-lg"
+            href={`/products/${productId}`}
+            className="p-2.5 bg-white rounded-full hover:bg-orange-500 hover:text-white transition-colors shadow-md"
           >
-            <FiMessageSquare className="w-5 h-5" />
+            <FiEye className="w-4 h-4" />
           </Link>
         </div>
 
         {/* Badges */}
-        {product.isNew && (
-          <span className="absolute top-3 left-3 px-3 py-1 bg-gradient-to-r from-blue-500 to-cyan-500 text-white text-xs font-semibold rounded-full shadow-lg">
-            NEW
+        {product.badge && (
+          <span className="absolute top-2 left-2 px-2 py-0.5 bg-linear-to-r from-blue-500 to-cyan-500 text-white text-[10px] font-semibold rounded-full shadow">
+            {product.badge}
           </span>
         )}
-        {product.discount && (
-          <span className="absolute top-3 right-3 px-3 py-1 bg-gradient-to-r from-orange-500 to-red-500 text-white text-xs font-semibold rounded-full shadow-lg">
-            -{product.discount}%
+        {discount && (
+          <span className="absolute top-2 right-2 px-2 py-0.5 bg-linear-to-r from-orange-500 to-red-500 text-white text-[10px] font-semibold rounded-full shadow">
+            -{discount}%
           </span>
         )}
       </div>
 
       {/* Content */}
-      <div className="p-4 space-y-3">
+      <div className="p-3 space-y-1.5">
         {/* Product Title */}
-        <Link href={`/products/${product.id}`} className="block">
-          <h3 className="text-gray-800 font-semibold line-clamp-2 hover:text-orange-600 transition-colors">
+        <Link href={`/products/${productId}`} className="block">
+          <h3 className="text-sm text-gray-800 font-medium line-clamp-2 hover:text-orange-600 transition-colors leading-snug">
             {product.name}
           </h3>
         </Link>
 
-        {/* Price & MOQ */}
-        <div className="flex items-baseline justify-between">
-          <div>
-            <span className="text-2xl font-bold bg-gradient-to-r from-orange-500 to-orange-600 bg-clip-text text-transparent">
-              ${product.priceMin?.toFixed(2)}
-            </span>
-            {product.priceMax && product.priceMax > product.priceMin && (
-              <span className="text-sm text-gray-500 ml-1">
-                - ${product.priceMax.toFixed(2)}
-              </span>
-            )}
-            <span className="text-sm text-gray-500 ml-1">
-              / {product.unit || "piece"}
-            </span>
-          </div>
-          <span className="text-xs px-2 py-1 bg-gray-100 text-gray-600 rounded-full">
-            MOQ: {product.moq} {product.unit || "pcs"}
+        {/* Price */}
+        <div className="flex items-baseline gap-1.5">
+          <span className="text-base sm:text-lg font-bold text-gray-900">
+            ${Number(product.price).toFixed(2)}
           </span>
+          {product.originalPrice && product.originalPrice > product.price && (
+            <span className="text-xs text-gray-400 line-through">
+              ${Number(product.originalPrice).toFixed(2)}
+            </span>
+          )}
         </div>
 
-        {/* Supplier Info */}
-        <div className="flex items-center justify-between pt-2 border-t border-gray-100">
-          <div className="flex items-center space-x-2">
-            {product.supplier?.avatar ? (
-              <Image
-                src={product.supplier.avatar}
-                alt={product.supplier.name}
-                width={24}
-                height={24}
-                className="rounded-full object-cover"
-              />
-            ) : (
-              <div className="w-6 h-6 rounded-full bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center text-white text-xs font-bold">
-                {product.supplier?.name?.charAt(0) || "S"}
-              </div>
-            )}
-            <span className="text-sm font-medium text-gray-700 truncate max-w-[100px]">
-              {product.supplier?.name || "Supplier"}
+        {/* Rating & Reviews */}
+        <div className="flex items-center justify-between pt-1.5 border-t border-gray-50">
+          <div className="flex items-center gap-1">
+            <FiStar className="w-3.5 h-3.5 text-yellow-400 fill-yellow-400" />
+            <span className="text-xs font-medium text-gray-600">
+              {product.rating || 0}
+            </span>
+            <span className="text-[11px] text-gray-400">
+              ({product.reviews || 0})
             </span>
           </div>
 
-          <div className="flex items-center space-x-1">
-            <FiCheckCircle className="w-4 h-4 text-green-500" />
-            <span className="text-xs text-gray-500">
-              {product.supplier?.responseRate || "98"}%
+          {/* Seller Info */}
+          <div className="flex items-center gap-1">
+            <div className="w-4 h-4 rounded-full bg-linear-to-br from-orange-400 to-orange-600 flex items-center justify-center text-white text-[8px] font-bold">
+              {product.sellerName?.charAt(0)?.toUpperCase() || "S"}
+            </div>
+            <span className="text-[11px] text-gray-400 truncate max-w-17.5">
+              {product.sellerName || "UnityShop"}
             </span>
           </div>
         </div>
 
-        {/* Location & Years */}
-        <div className="flex items-center justify-between text-xs text-gray-500">
-          <span className="flex items-center">
-            <span className="mr-1">📍</span>
-            {product.supplier?.location || "China"}
+        {/* Category */}
+        {product.category && (
+          <span className="inline-block text-[10px] px-2 py-0.5 bg-gray-50 text-gray-500 rounded-full capitalize">
+            {product.category}
           </span>
-          <span className="flex items-center">
-            <FiStar className="w-3 h-3 text-yellow-400 mr-1" />
-            {product.supplier?.rating || "4.8"} ({product.reviewCount || 0})
-          </span>
-        </div>
+        )}
       </div>
     </div>
   );
