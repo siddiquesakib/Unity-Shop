@@ -13,6 +13,7 @@ const RegisterPage = () => {
   const { register, googleLogin } = useAuth();
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [emailSent, setEmailSent] = useState(false);
   const router = useRouter();
 
   const handleSubmit = async (e) => {
@@ -27,7 +28,7 @@ const RegisterPage = () => {
     setIsLoading(true);
     const res = await register(name, email, password);
     if (res.success) {
-      router.push("/login");
+      setEmailSent(true);
     } else {
       setError(res.error);
     }
@@ -52,102 +53,136 @@ const RegisterPage = () => {
       {/* Dark Overlay */}
       <div className="absolute inset-0 bg-black/60"></div>
 
-      {/* Register Card */}
-      <div className="relative z-10 bg-white/10 backdrop-blur-lg p-8 rounded-2xl shadow-2xl w-[90%] max-w-md border border-white/20">
-        <h2 className="text-3xl font-bold text-white text-center mb-6">
-          Create Account 🛍️
-        </h2>
-
-        {error && <p className="text-red-400 text-center mb-4">{error}</p>}
-
-        {/* Google Sign Up Button */}
-        <button
-          onClick={handleGoogleSignUp}
-          disabled={isLoading}
-          className="w-full flex items-center justify-center gap-3 bg-white hover:bg-gray-100 text-gray-800 font-semibold py-2.5 px-4 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed mb-5"
-        >
-          <FcGoogle className="text-xl" />
-          Sign up with Google
-        </button>
-
-        {/* Divider */}
-        <div className="flex items-center gap-3 mb-5">
-          <div className="flex-1 h-px bg-white/30"></div>
-          <span className="text-white/60 text-sm">or register with email</span>
-          <div className="flex-1 h-px bg-white/30"></div>
-        </div>
-
-        <form className="space-y-4" onSubmit={handleSubmit}>
-          {/* Name */}
-          <div>
-            <label className="text-white text-sm">Full Name</label>
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Enter your name"
-              className="w-full mt-1 px-4 py-2 rounded-lg bg-white/20 text-white placeholder-gray-200 outline-none focus:ring-2 focus:ring-orange-400"
-              required
-            />
+      {/* Email Sent Success State */}
+      {emailSent ? (
+        <div className="relative z-10 bg-white/10 backdrop-blur-lg p-8 rounded-2xl shadow-2xl w-[90%] max-w-md border border-white/20 text-center">
+          <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-indigo-500/20 border-2 border-indigo-400 flex items-center justify-center">
+            <span className="text-4xl">📧</span>
           </div>
-
-          {/* Email */}
-          <div>
-            <label className="text-white text-sm">Email</label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="Enter your email"
-              className="w-full mt-1 px-4 py-2 rounded-lg bg-white/20 text-white placeholder-gray-200 outline-none focus:ring-2 focus:ring-orange-400"
-              required
-            />
+          <h2 className="text-2xl font-bold text-white mb-3">
+            Check Your Email!
+          </h2>
+          <p className="text-gray-300 text-sm mb-2">
+            We&apos;ve sent a login link to:
+          </p>
+          <p className="text-indigo-300 font-semibold text-lg mb-6">{email}</p>
+          <p className="text-gray-400 text-sm mb-6">
+            Click the link in your email to verify your account and log in
+            automatically. The link expires in{" "}
+            <strong className="text-white">24 hours</strong>.
+          </p>
+          <div className="bg-white/5 border border-white/10 rounded-xl p-4 mb-6">
+            <p className="text-gray-400 text-xs">
+              💡 Can&apos;t find the email? Check your spam/junk folder.
+            </p>
           </div>
-
-          {/* Password */}
-          <div>
-            <label className="text-white text-sm">Password</label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Create password"
-              className="w-full mt-1 px-4 py-2 rounded-lg bg-white/20 text-white placeholder-gray-200 outline-none focus:ring-2 focus:ring-orange-400"
-              required
-            />
-          </div>
-
-          {/* Confirm Password */}
-          <div>
-            <label className="text-white text-sm">Confirm Password</label>
-            <input
-              type="password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              placeholder="Confirm password"
-              className="w-full mt-1 px-4 py-2 rounded-lg bg-white/20 text-white placeholder-gray-200 outline-none focus:ring-2 focus:ring-orange-400"
-              required
-            />
-          </div>
-
-          {/* Register Button */}
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="w-full bg-gradient-to-r from-orange-400 to-orange-600 hover:scale-105 transition transform text-white py-2 rounded-lg font-semibold shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+          <Link
+            href="/login"
+            className="text-orange-300 hover:underline text-sm"
           >
-            {isLoading ? "Creating account..." : "Register"}
+            Already verified? Go to Login →
+          </Link>
+        </div>
+      ) : (
+        /* Register Card */
+        <div className="relative z-10 bg-white/10 backdrop-blur-lg p-8 rounded-2xl shadow-2xl w-[90%] max-w-md border border-white/20">
+          <h2 className="text-3xl font-bold text-white text-center mb-6">
+            Create Account 🛍️
+          </h2>
+
+          {error && <p className="text-red-400 text-center mb-4">{error}</p>}
+
+          {/* Google Sign Up Button */}
+          <button
+            onClick={handleGoogleSignUp}
+            disabled={isLoading}
+            className="w-full flex items-center justify-center gap-3 bg-white hover:bg-gray-100 text-gray-800 font-semibold py-2.5 px-4 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed mb-5"
+          >
+            <FcGoogle className="text-xl" />
+            Sign up with Google
           </button>
 
-          {/* Login Link */}
-          <p className="text-center text-white text-sm mt-4">
-            Already have an account?{" "}
-            <Link href="/login" className="text-orange-300 hover:underline">
-              Login
-            </Link>
-          </p>
-        </form>
-      </div>
+          {/* Divider */}
+          <div className="flex items-center gap-3 mb-5">
+            <div className="flex-1 h-px bg-white/30"></div>
+            <span className="text-white/60 text-sm">
+              or register with email
+            </span>
+            <div className="flex-1 h-px bg-white/30"></div>
+          </div>
+
+          <form className="space-y-4" onSubmit={handleSubmit}>
+            {/* Name */}
+            <div>
+              <label className="text-white text-sm">Full Name</label>
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Enter your name"
+                className="w-full mt-1 px-4 py-2 rounded-lg bg-white/20 text-white placeholder-gray-200 outline-none focus:ring-2 focus:ring-orange-400"
+                required
+              />
+            </div>
+
+            {/* Email */}
+            <div>
+              <label className="text-white text-sm">Email</label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Enter your email"
+                className="w-full mt-1 px-4 py-2 rounded-lg bg-white/20 text-white placeholder-gray-200 outline-none focus:ring-2 focus:ring-orange-400"
+                required
+              />
+            </div>
+
+            {/* Password */}
+            <div>
+              <label className="text-white text-sm">Password</label>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Create password"
+                className="w-full mt-1 px-4 py-2 rounded-lg bg-white/20 text-white placeholder-gray-200 outline-none focus:ring-2 focus:ring-orange-400"
+                required
+              />
+            </div>
+
+            {/* Confirm Password */}
+            <div>
+              <label className="text-white text-sm">Confirm Password</label>
+              <input
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="Confirm password"
+                className="w-full mt-1 px-4 py-2 rounded-lg bg-white/20 text-white placeholder-gray-200 outline-none focus:ring-2 focus:ring-orange-400"
+                required
+              />
+            </div>
+
+            {/* Register Button */}
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="w-full bg-gradient-to-r from-orange-400 to-orange-600 hover:scale-105 transition transform text-white py-2 rounded-lg font-semibold shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isLoading ? "Creating account..." : "Register"}
+            </button>
+
+            {/* Login Link */}
+            <p className="text-center text-white text-sm mt-4">
+              Already have an account?{" "}
+              <Link href="/login" className="text-orange-300 hover:underline">
+                Login
+              </Link>
+            </p>
+          </form>
+        </div>
+      )}
     </div>
   );
 };
