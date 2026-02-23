@@ -19,6 +19,7 @@ export default function LoginPage() {
     setIsLoading(true);
     const res = await login(email, password);
     if (res.success) {
+      // Redirect will happen from dashboard page based on role
       router.push("/dashboard");
     } else {
       setError(res.error);
