@@ -1,14 +1,5 @@
 "use client";
 
-/**
- * PaymentSuccess Page
- * File location: app/payment-success/page.jsx
- *
- * After Stripe confirms payment:
- *  1. Calls backend to record the order
- *  2. Clears the cart via CartContext
- *  3. Shows the order summary
- */
 
 import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
@@ -34,7 +25,6 @@ function SuccessContent() {
   const { clearCart } = useCart();
 
   const [status, setStatus] = useState('loading');
-  const [status, setStatus] = useState("loading");
   const [order, setOrder] = useState(null);
   const [errorMsg, setErrorMsg] = useState("");
 
