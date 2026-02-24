@@ -77,20 +77,17 @@ export default function AllUsers() {
 
   const handleRoleChange = async () => {
     if (!confirmModal) return;
-    const { email, newRole } = confirmModal;
+    const { userId, email, newRole } = confirmModal;
     setActionLoading(email);
     setConfirmModal(null);
     try {
-      const res = await fetch(
-        `${API_BASE}/users/change-role/${encodeURIComponent(email)}`,
-        {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ role: newRole }),
-        },
-      );
+      const res = await fetch(`${API_BASE}/users/${userId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ role: newRole }),
+      });
       const data = await res.json();
-      if (res.ok) {
+      if (data.acknowledged || res.ok) {
         setUsers((prev) =>
           prev.map((u) => (u.email === email ? { ...u, role: newRole } : u)),
         );
@@ -99,7 +96,7 @@ export default function AllUsers() {
       }
     } catch (error) {
       console.error("Error changing role:", error);
-      alert("Error changing user role. Server may not be updated yet.");
+      alert("Error changing user role");
     } finally {
       setActionLoading(null);
     }
@@ -322,6 +319,7 @@ export default function AllUsers() {
                                 const newRole = e.target.value;
                                 if (newRole !== u.role) {
                                   setConfirmModal({
+                                    userId: u._id,
                                     email: u.email,
                                     name: u.name || u.email,
                                     currentRole: u.role,
