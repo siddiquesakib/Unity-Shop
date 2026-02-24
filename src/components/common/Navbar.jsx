@@ -7,6 +7,7 @@ import { useRouter, usePathname } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { useCart } from "@/hooks/useCart";
 import { useClickOutside } from "@/hooks/useClickOutside";
+import { useLanguage } from "@/contexts/LanguageContext";
 import {
   FiMenu,
   FiX,
@@ -21,6 +22,9 @@ import {
   FiShoppingBag,
   FiInfo,
   FiPhone,
+  FiGlobe,
+  FiUser,
+  FiMapPin,
 } from "react-icons/fi";
 
 const navLinks = [
@@ -30,19 +34,52 @@ const navLinks = [
   { name: "Contact", href: "/contact", icon: FiPhone },
 ];
 
+const categoryLinks = [
+  "Electronics",
+  "Fashion",
+  "Home & Living",
+  "Kitchen",
+  "Bedroom",
+  "Office",
+  "Mobiles",
+  "Watches",
+  "Audio",
+  "Cameras",
+  "Gaming",
+  "Lighting",
+  "Beauty",
+  "Health",
+  "Sports",
+  "Outdoor",
+  "Books",
+  "Stationery",
+  "Toys & Baby",
+  "Grocery",
+  "Tools",
+  "Automotive",
+];
+
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [searchCategory, setSearchCategory] = useState("all");
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [showLangMenu, setShowLangMenu] = useState(false);
 
   const { user, logout } = useAuth();
   const { totalItems } = useCart();
+  const { language, setLanguage, t, languages } = useLanguage();
   const router = useRouter();
   const pathname = usePathname();
 
   const userMenuRef = useRef(null);
+  const langMenuRef = useRef(null);
 
   useClickOutside(userMenuRef, () => setShowUserMenu(false));
+  useClickOutside(langMenuRef, () => setShowLangMenu(false));
+
+  const currentLang =
+    languages.find((l) => l.code === language) || languages[0];
 
   useEffect(() => {
     document.body.style.overflow = isOpen ? "hidden" : "";
@@ -54,7 +91,13 @@ const Navbar = () => {
   const handleSearch = (e) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      router.push(`/search?q=${encodeURIComponent(searchQuery)}`);
+      const catParam =
+        searchCategory !== "all"
+          ? `&category=${encodeURIComponent(searchCategory)}`
+          : "";
+      router.push(
+        `/products?q=${encodeURIComponent(searchQuery.trim())}${catParam}`,
+      );
       setIsOpen(false);
     }
   };
@@ -66,253 +109,354 @@ const Navbar = () => {
 
   return (
     <>
-      <nav className="sticky top-0 z-50 bg-white border-b border-gray-200 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center h-14">
-            {/* Logo */}
-            <Link href="/" className="shrink-0 mr-6">
-              <Image
-                src="/unityshop.png"
-                alt="UnityShop"
-                width={120}
-                height={35}
-                className="object-contain"
-                priority
-              />
-            </Link>
-
-            {/* Nav Links - Desktop */}
-            <div className="hidden lg:flex items-center gap-1 mr-4">
-              {navLinks.map((link) => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
-                    isActive(link.href)
-                      ? "text-orange-600 bg-orange-50"
-                      : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
-                  }`}
-                >
-                  {link.name}
-                </Link>
-              ))}
-            </div>
-
-            {/* Search - Desktop */}
-            <div className="hidden lg:block flex-1 max-w-md">
-              <form onSubmit={handleSearch} className="relative">
-                <FiSearch
-                  size={15}
-                  className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+      {/* ── DESKTOP NAVBAR ── */}
+      <nav className="sticky top-0 z-50 hidden lg:block">
+        {/* ── Row 1: Logo + Search + Actions ── */}
+        <div className="bg-black">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex items-center h-14 gap-4">
+              {/* Logo */}
+              <Link href="/" className="shrink-0">
+                <Image
+                  src="/unityshop.png"
+                  alt="UnityShop"
+                  width={130}
+                  height={36}
+                  className="object-contain brightness-0 invert"
+                  priority
                 />
+              </Link>
+
+              {/* Search Bar */}
+              <form onSubmit={handleSearch} className="flex-1 max-w-2xl flex">
+                <select
+                  value={searchCategory}
+                  onChange={(e) => setSearchCategory(e.target.value)}
+                  className="h-9 px-3 text-xs font-medium bg-gray-200 text-gray-800 border-0 rounded-l-lg outline-none cursor-pointer"
+                >
+                  <option value="all">
+                    {t("all")} {t("categories")}
+                  </option>
+                  {categoryLinks.map((cat) => (
+                    <option key={cat} value={cat}>
+                      {cat}
+                    </option>
+                  ))}
+                </select>
                 <input
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search products..."
-                  className="w-full pl-9 pr-3 py-1.5 text-sm bg-gray-100 border border-gray-200 rounded-lg focus:bg-white focus:border-orange-300 focus:ring-1 focus:ring-orange-200 outline-none transition-colors"
+                  placeholder={t("searchProducts")}
+                  className="flex-1 h-9 px-4 text-sm bg-white text-gray-900 border-0 outline-none placeholder:text-gray-400"
                 />
+                <button
+                  type="submit"
+                  className="h-9 px-4 bg-white text-black rounded-r-lg border-l border-gray-200 hover:bg-gray-100 transition-colors"
+                >
+                  <FiSearch size={16} />
+                </button>
               </form>
-            </div>
 
-            {/* Right Actions - Desktop */}
-            <div className="hidden lg:flex items-center gap-1 ml-4">
-              <Link
-                href="/dashboard/wishlist"
-                className="p-2 text-gray-500 hover:text-rose-500 rounded-md hover:bg-gray-50 transition-colors"
-                title="Wishlist"
-              >
-                <FiHeart size={18} />
-              </Link>
-
-              <Link
-                href="/cart"
-                className="relative p-2 text-gray-500 hover:text-orange-500 rounded-md hover:bg-gray-50 transition-colors"
-                title="Cart"
-              >
-                <FiShoppingCart size={18} />
-                {totalItems > 0 && (
-                  <span className="absolute -top-0.5 -right-0.5 min-w-4 h-4 px-1 bg-orange-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center">
-                    {totalItems > 99 ? "99+" : totalItems}
+              {/* Right Actions */}
+              <div className="flex items-center gap-1">
+                {/* Favorites */}
+                <Link
+                  href="/dashboard/wishlist"
+                  className="flex items-center gap-1.5 px-2.5 py-1.5 text-gray-300 hover:text-white rounded-md transition-colors relative"
+                >
+                  <FiHeart size={18} />
+                  <span className="text-sm font-medium hidden xl:inline">
+                    {t("wishlist")}
                   </span>
+                </Link>
+
+                {/* Cart */}
+                <Link
+                  href="/cart"
+                  className="flex items-center gap-1.5 px-2.5 py-1.5 text-gray-300 hover:text-white rounded-md transition-colors relative"
+                >
+                  <div className="relative">
+                    <FiShoppingCart size={18} />
+                    {totalItems > 0 && (
+                      <span className="absolute -top-2 -right-2.5 min-w-4 h-4 px-1 bg-white text-black text-[9px] font-bold rounded-full flex items-center justify-center">
+                        {totalItems > 99 ? "99+" : totalItems}
+                      </span>
+                    )}
+                  </div>
+                  <span className="text-sm font-medium hidden xl:inline ml-1">
+                    {t("cart")}
+                  </span>
+                  <FiChevronDown
+                    size={12}
+                    className="hidden xl:block text-gray-400"
+                  />
+                </Link>
+
+                <div className="w-px h-6 bg-gray-700 mx-1" />
+
+                {/* My Account */}
+                {user ? (
+                  <div className="relative" ref={userMenuRef}>
+                    <button
+                      onClick={() => setShowUserMenu(!showUserMenu)}
+                      className="flex items-center gap-2 px-2.5 py-1.5 text-gray-300 hover:text-white rounded-md transition-colors"
+                    >
+                      <div className="w-7 h-7 rounded-full bg-gray-700 flex items-center justify-center text-white text-xs font-bold ring-2 ring-gray-500">
+                        {user.name?.charAt(0)?.toUpperCase() || "U"}
+                      </div>
+                      <span className="hidden xl:block text-sm font-medium max-w-20 truncate">
+                        {user.name?.split(" ")[0]}
+                      </span>
+                      <FiChevronDown
+                        size={12}
+                        className={`text-gray-400 transition-transform ${showUserMenu ? "rotate-180" : ""}`}
+                      />
+                    </button>
+
+                    {showUserMenu && (
+                      <div className="absolute top-full right-0 mt-2 w-52 bg-white rounded-lg shadow-xl border border-gray-200 py-1 z-50">
+                        <div className="px-4 py-2.5 border-b border-gray-100">
+                          <p className="text-sm font-semibold text-gray-900 truncate">
+                            {user.name}
+                          </p>
+                          <p className="text-xs text-gray-500 truncate">
+                            {user.email}
+                          </p>
+                        </div>
+                        {[
+                          {
+                            href: "/dashboard",
+                            icon: FiGrid,
+                            label: t("dashboard"),
+                          },
+                          {
+                            href: "/dashboard/orders",
+                            icon: FiPackage,
+                            label: t("myOrders"),
+                          },
+                          {
+                            href: "/dashboard/wishlist",
+                            icon: FiHeart,
+                            label: t("wishlist"),
+                          },
+                        ].map((item) => (
+                          <Link
+                            key={item.href}
+                            href={item.href}
+                            onClick={() => setShowUserMenu(false)}
+                            className="flex items-center gap-2.5 px-4 py-2 text-sm text-gray-600 hover:bg-gray-50 hover:text-black transition-colors"
+                          >
+                            <item.icon size={15} className="text-gray-400" />
+                            {item.label}
+                          </Link>
+                        ))}
+                        <div className="border-t border-gray-100 mt-1 pt-1">
+                          <button
+                            onClick={() => {
+                              logout();
+                              setShowUserMenu(false);
+                            }}
+                            className="flex items-center gap-2.5 w-full px-4 py-2 text-sm text-red-500 hover:bg-red-50 transition-colors"
+                          >
+                            <FiLogOut size={15} />
+                            {t("signOut")}
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-1">
+                    <Link
+                      href="/login"
+                      className="flex items-center gap-1.5 px-2.5 py-1.5 text-gray-300 hover:text-white rounded-md transition-colors text-sm font-medium"
+                    >
+                      <FiUser size={18} />
+                      <span className="hidden xl:inline">{t("signIn")}</span>
+                    </Link>
+                  </div>
                 )}
-              </Link>
+              </div>
+            </div>
+          </div>
+        </div>
 
-              <div className="w-px h-5 bg-gray-200 mx-1.5" />
-
-              {/* User */}
-              {user ? (
-                <div className="relative" ref={userMenuRef}>
-                  <button
-                    onClick={() => setShowUserMenu(!showUserMenu)}
-                    className={`flex items-center gap-2 px-2 py-1 rounded-lg transition-colors ${
-                      showUserMenu ? "bg-gray-100" : "hover:bg-gray-50"
+        {/* ── Row 2: Nav Links + Location + Language ── */}
+        <div className="bg-gray-900 border-t border-gray-800">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex items-center h-10 justify-between">
+              {/* Nav Links */}
+              <div className="flex items-center gap-0.5">
+                {navLinks.map((link) => (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    className={`px-3 py-1.5 text-sm font-medium rounded transition-colors ${
+                      isActive(link.href)
+                        ? "text-white bg-gray-700"
+                        : "text-gray-300 hover:text-white hover:bg-gray-800"
                     }`}
                   >
-                    <div className="w-7 h-7 rounded-full bg-orange-500 flex items-center justify-center text-white text-xs font-bold">
-                      {user.name?.charAt(0)?.toUpperCase() || "U"}
-                    </div>
-                    <span className="hidden xl:block text-sm font-medium text-gray-700 max-w-20 truncate">
-                      {user.name?.split(" ")[0]}
-                    </span>
+                    {t(link.name.toLowerCase())}
+                  </Link>
+                ))}
+
+                {/* Category quick links */}
+                <div className="w-px h-4 bg-gray-700 mx-1.5" />
+                {categoryLinks.slice(0, 6).map((cat) => (
+                  <Link
+                    key={cat}
+                    href={`/search?q=&category=${encodeURIComponent(cat)}`}
+                    className="px-2.5 py-1.5 text-sm text-gray-400 hover:text-white transition-colors"
+                  >
+                    {cat}
+                  </Link>
+                ))}
+              </div>
+
+              {/* Right: Language */}
+              <div className="flex items-center gap-3">
+                {/* Language Switcher */}
+                <div className="relative" ref={langMenuRef}>
+                  <button
+                    onClick={() => setShowLangMenu(!showLangMenu)}
+                    className="flex items-center gap-1.5 px-2 py-1 text-gray-300 hover:text-white rounded transition-colors text-sm"
+                  >
+                    <span className="text-base">{currentLang.flag}</span>
+                    <span className="font-medium">{currentLang.name}</span>
                     <FiChevronDown
-                      size={13}
-                      className={`text-gray-400 transition-transform ${showUserMenu ? "rotate-180" : ""}`}
+                      size={12}
+                      className={`text-gray-500 transition-transform ${showLangMenu ? "rotate-180" : ""}`}
                     />
                   </button>
 
-                  {showUserMenu && (
-                    <div className="absolute top-full right-0 mt-1.5 w-52 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50">
-                      <div className="px-3 py-2 border-b border-gray-100">
-                        <p className="text-sm font-semibold text-gray-900 truncate">
-                          {user.name}
-                        </p>
-                        <p className="text-xs text-gray-500 truncate">
-                          {user.email}
-                        </p>
-                      </div>
-                      {[
-                        {
-                          href: "/dashboard",
-                          icon: FiGrid,
-                          label: "Dashboard",
-                        },
-                        {
-                          href: "/dashboard/orders",
-                          icon: FiPackage,
-                          label: "My Orders",
-                        },
-                        {
-                          href: "/dashboard/wishlist",
-                          icon: FiHeart,
-                          label: "Wishlist",
-                        },
-                      ].map((item) => (
-                        <Link
-                          key={item.href}
-                          href={item.href}
-                          onClick={() => setShowUserMenu(false)}
-                          className="flex items-center gap-2.5 px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 hover:text-orange-600 transition-colors"
-                        >
-                          <item.icon size={15} className="text-gray-400" />
-                          {item.label}
-                        </Link>
-                      ))}
-                      <div className="border-t border-gray-100 mt-1 pt-1">
+                  {showLangMenu && (
+                    <div className="absolute top-full right-0 mt-2 w-44 bg-white rounded-lg shadow-xl border border-gray-200 py-1 z-50">
+                      {languages.map((lang) => (
                         <button
+                          key={lang.code}
                           onClick={() => {
-                            logout();
-                            setShowUserMenu(false);
+                            setLanguage(lang.code);
+                            setShowLangMenu(false);
                           }}
-                          className="flex items-center gap-2.5 w-full px-3 py-2 text-sm text-red-500 hover:bg-red-50 transition-colors"
+                          className={`flex items-center gap-2.5 w-full px-3 py-2 text-sm transition-colors ${
+                            language === lang.code
+                              ? "bg-gray-100 text-black font-semibold"
+                              : "text-gray-600 hover:bg-gray-50 hover:text-black"
+                          }`}
                         >
-                          <FiLogOut size={15} />
-                          Sign Out
+                          <span className="text-base">{lang.flag}</span>
+                          <span>{lang.name}</span>
+                          {language === lang.code && (
+                            <span className="ml-auto text-black">✓</span>
+                          )}
                         </button>
-                      </div>
+                      ))}
                     </div>
                   )}
                 </div>
-              ) : (
-                <div className="flex items-center gap-2">
-                  <Link
-                    href="/login"
-                    className="px-3 py-1.5 text-sm font-medium text-gray-600 hover:text-gray-900 rounded-md hover:bg-gray-50 transition-colors"
-                  >
-                    Sign In
-                  </Link>
-                  <Link
-                    href="/register"
-                    className="px-4 py-1.5 text-sm font-semibold text-white bg-orange-500 rounded-md hover:bg-orange-600 transition-colors"
-                  >
-                    Register
-                  </Link>
-                </div>
-              )}
-            </div>
-
-            {/* Mobile Actions */}
-            <div className="flex lg:hidden items-center gap-0.5 ml-auto">
-              <Link
-                href="/cart"
-                className="relative p-2 text-gray-600 rounded-md"
-              >
-                <FiShoppingCart size={19} />
-                {totalItems > 0 && (
-                  <span className="absolute -top-0.5 -right-0.5 min-w-4 h-4 px-1 bg-orange-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center">
-                    {totalItems > 99 ? "99+" : totalItems}
-                  </span>
-                )}
-              </Link>
-              <button
-                onClick={() => setIsOpen(!isOpen)}
-                className="p-2 text-gray-700 rounded-md hover:bg-gray-50 transition-colors"
-              >
-                <FiMenu size={20} />
-              </button>
+              </div>
             </div>
           </div>
         </div>
       </nav>
 
-      {/* Mobile Menu */}
+      {/* ── MOBILE NAVBAR ── */}
+      <nav className="sticky top-0 z-50 lg:hidden bg-black">
+        <div className="px-4">
+          <div className="flex items-center h-14 gap-3">
+            {/* Logo */}
+            <Link href="/" className="shrink-0">
+              <Image
+                src="/unityshop.png"
+                alt="UnityShop"
+                width={100}
+                height={28}
+                className="object-contain brightness-0 invert"
+                priority
+              />
+            </Link>
+
+            {/* Search */}
+            <form onSubmit={handleSearch} className="flex-1 flex">
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder={t("search")}
+                className="flex-1 h-8 px-3 text-sm bg-gray-800 text-white border border-gray-700 rounded-l-lg outline-none placeholder:text-gray-500 focus:border-gray-500"
+              />
+              <button
+                type="submit"
+                className="h-8 px-3 bg-gray-200 text-black rounded-r-lg hover:bg-white transition-colors"
+              >
+                <FiSearch size={14} />
+              </button>
+            </form>
+
+            {/* Cart */}
+            <Link href="/cart" className="relative text-gray-300">
+              <FiShoppingCart size={20} />
+              {totalItems > 0 && (
+                <span className="absolute -top-1.5 -right-2 min-w-4 h-4 px-1 bg-white text-black text-[9px] font-bold rounded-full flex items-center justify-center">
+                  {totalItems > 99 ? "99+" : totalItems}
+                </span>
+              )}
+            </Link>
+
+            {/* Menu Toggle */}
+            <button
+              onClick={() => setIsOpen(!isOpen)}
+              className="text-gray-300 hover:text-white transition-colors"
+            >
+              <FiMenu size={22} />
+            </button>
+          </div>
+        </div>
+      </nav>
+
+      {/* ── MOBILE SLIDE MENU ── */}
       <div
         className={`lg:hidden fixed inset-0 z-60 transition-all duration-300 ${
           isOpen ? "visible" : "invisible pointer-events-none"
         }`}
       >
         <div
-          className={`absolute inset-0 bg-black/40 transition-opacity duration-300 ${
+          className={`absolute inset-0 bg-black/50 transition-opacity duration-300 ${
             isOpen ? "opacity-100" : "opacity-0"
           }`}
           onClick={() => setIsOpen(false)}
         />
 
         <div
-          className={`absolute top-0 right-0 bottom-0 w-72 bg-white shadow-xl transform transition-transform duration-300 ease-out ${
+          className={`absolute top-0 right-0 bottom-0 w-72 bg-gray-950 shadow-xl transform transition-transform duration-300 ease-out ${
             isOpen ? "translate-x-0" : "translate-x-full"
           }`}
         >
           <div className="flex flex-col h-full">
             {/* Header */}
-            <div className="flex items-center justify-between px-4 h-14 border-b border-gray-100">
+            <div className="flex items-center justify-between px-4 h-14 border-b border-gray-800">
               <Link href="/" onClick={() => setIsOpen(false)}>
                 <Image
                   src="/unityshop.png"
                   alt="UnityShop"
                   width={100}
-                  height={30}
-                  className="object-contain"
+                  height={28}
+                  className="object-contain brightness-0 invert"
                 />
               </Link>
               <button
                 onClick={() => setIsOpen(false)}
-                className="p-1.5 text-gray-500 hover:text-gray-700 rounded-md hover:bg-gray-100 transition-colors"
+                className="p-1.5 text-gray-400 hover:text-white rounded-md transition-colors"
               >
                 <FiX size={18} />
               </button>
             </div>
 
-            {/* Search */}
-            <div className="px-4 py-3">
-              <form onSubmit={handleSearch} className="relative">
-                <FiSearch
-                  size={15}
-                  className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-                />
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search..."
-                  className="w-full pl-9 pr-3 py-2 text-sm bg-gray-100 border border-gray-200 rounded-lg focus:bg-white focus:border-orange-300 outline-none transition-colors"
-                />
-              </form>
-            </div>
-
             {/* Nav Links */}
-            <div className="flex-1 overflow-y-auto px-3">
-              <div className="space-y-0.5">
+            <div className="flex-1 overflow-y-auto">
+              <div className="px-3 py-3 space-y-0.5">
                 {navLinks.map((link) => {
                   const Icon = link.icon;
                   const active = isActive(link.href);
@@ -323,66 +467,111 @@ const Navbar = () => {
                       onClick={() => setIsOpen(false)}
                       className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
                         active
-                          ? "bg-orange-50 text-orange-600"
-                          : "text-gray-600 hover:bg-gray-50"
+                          ? "bg-gray-800 text-white"
+                          : "text-gray-400 hover:bg-gray-800/60 hover:text-white"
                       }`}
                     >
-                      <Icon
-                        size={16}
-                        className={active ? "text-orange-500" : "text-gray-400"}
-                      />
-                      {link.name}
+                      <Icon size={16} />
+                      {t(link.name.toLowerCase())}
                     </Link>
                   );
                 })}
               </div>
 
+              {/* Categories */}
+              <div className="px-3 py-2 border-t border-gray-800">
+                <p className="px-3 mb-2 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">
+                  {t("categories")}
+                </p>
+                <div className="space-y-0.5">
+                  {categoryLinks.map((cat) => (
+                    <Link
+                      key={cat}
+                      href={`/search?q=&category=${encodeURIComponent(cat)}`}
+                      onClick={() => setIsOpen(false)}
+                      className="block px-3 py-2 text-sm text-gray-400 hover:text-white hover:bg-gray-800/60 rounded-lg transition-colors"
+                    >
+                      {cat}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+
               {user && (
-                <>
-                  <div className="h-px bg-gray-100 my-3" />
+                <div className="px-3 py-2 border-t border-gray-800">
+                  <p className="px-3 mb-2 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">
+                    Account
+                  </p>
                   <div className="space-y-0.5">
                     {[
-                      { href: "/dashboard", icon: FiGrid, label: "Dashboard" },
+                      {
+                        href: "/dashboard",
+                        icon: FiGrid,
+                        label: t("dashboard"),
+                      },
                       {
                         href: "/dashboard/orders",
                         icon: FiPackage,
-                        label: "My Orders",
+                        label: t("myOrders"),
                       },
                       {
                         href: "/dashboard/wishlist",
                         icon: FiHeart,
-                        label: "Wishlist",
+                        label: t("wishlist"),
                       },
                     ].map((item) => (
                       <Link
                         key={item.href}
                         href={item.href}
                         onClick={() => setIsOpen(false)}
-                        className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors"
+                        className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-400 hover:bg-gray-800/60 hover:text-white transition-colors"
                       >
-                        <item.icon size={16} className="text-gray-400" />
+                        <item.icon size={16} />
                         {item.label}
                       </Link>
                     ))}
                   </div>
-                </>
+                </div>
               )}
+
+              {/* Language Switcher - Mobile */}
+              <div className="px-3 py-3 border-t border-gray-800">
+                <p className="px-3 mb-2 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">
+                  {t("language")}
+                </p>
+                <div className="grid grid-cols-2 gap-1.5">
+                  {languages.map((lang) => (
+                    <button
+                      key={lang.code}
+                      onClick={() => setLanguage(lang.code)}
+                      className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors ${
+                        language === lang.code
+                          ? "bg-white text-black font-semibold"
+                          : "text-gray-400 hover:bg-gray-800/60 hover:text-white"
+                      }`}
+                    >
+                      <span>{lang.flag}</span>
+                      <span className="truncate">{lang.name}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
 
-            {/* Bottom */}
-            <div className="p-4 border-t border-gray-100">
+            {/* Bottom: User / Auth */}
+            <div className="p-4 border-t border-gray-800">
               {user ? (
                 <div className="space-y-3">
                   <div className="flex items-center gap-2.5">
-                    <div className="w-8 h-8 rounded-full bg-orange-500 flex items-center justify-center text-white text-sm font-bold">
+                    <div className="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center text-white text-sm font-bold ring-2 ring-gray-600">
                       {user.name?.charAt(0)?.toUpperCase() || "U"}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-gray-900 truncate">
+                      <p className="text-sm font-semibold text-white truncate">
                         {user.name}
                       </p>
-                      <p className="text-xs text-gray-400 capitalize">
-                        {user.role || "Customer"}
+                      <p className="text-xs text-gray-500 capitalize">
+                        {user.role || t("customer")}
                       </p>
                     </div>
                   </div>
@@ -391,10 +580,10 @@ const Navbar = () => {
                       logout();
                       setIsOpen(false);
                     }}
-                    className="flex items-center justify-center gap-2 w-full py-2 text-sm font-medium text-red-500 bg-red-50 hover:bg-red-100 rounded-lg transition-colors"
+                    className="flex items-center justify-center gap-2 w-full py-2 text-sm font-medium text-red-400 bg-red-500/10 hover:bg-red-500/20 rounded-lg transition-colors"
                   >
                     <FiLogOut size={15} />
-                    Sign Out
+                    {t("signOut")}
                   </button>
                 </div>
               ) : (
@@ -402,16 +591,16 @@ const Navbar = () => {
                   <Link
                     href="/login"
                     onClick={() => setIsOpen(false)}
-                    className="block w-full text-center py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+                    className="block w-full text-center py-2 text-sm font-medium text-white bg-gray-800 rounded-lg hover:bg-gray-700 transition-colors"
                   >
-                    Sign In
+                    {t("signIn")}
                   </Link>
                   <Link
                     href="/register"
                     onClick={() => setIsOpen(false)}
-                    className="block w-full text-center py-2 text-sm font-semibold text-white bg-orange-500 rounded-lg hover:bg-orange-600 transition-colors"
+                    className="block w-full text-center py-2 text-sm font-semibold text-black bg-white rounded-lg hover:bg-gray-200 transition-colors"
                   >
-                    Register
+                    {t("register")}
                   </Link>
                 </div>
               )}

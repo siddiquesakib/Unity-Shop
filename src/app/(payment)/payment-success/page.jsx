@@ -53,7 +53,6 @@ function SuccessContent() {
           throw new Error(data?.error || "Could not verify payment.");
         }
 
-        // ✅ Payment confirmed — clear the cart
         clearCart();
 
         setOrder(data);
@@ -74,7 +73,6 @@ function SuccessContent() {
   if (status === "error") return <ErrorView message={errorMsg} />;
 }
 
-// ─── Views ────────────────────────────────────────────────────────────────────
 
 function SuccessView({ order }) {
   return (
