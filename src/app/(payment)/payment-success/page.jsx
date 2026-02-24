@@ -1,25 +1,21 @@
-"use client";
+'use client';
 
+/**
+ * PaymentSuccess Page
+ * File location: app/payment-success/page.jsx
+ *
+ * After Stripe confirms payment:
+ *  1. Calls backend to record the order
+ *  2. Clears the cart via CartContext
+ *  3. Shows the order summary
+ */
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> a236e88943083988849761bbda430f66521b6ab8
 import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useCart } from '@/contexts/CartContext';
-<<<<<<< HEAD
-=======
-import { useEffect, useState, Suspense } from "react";
-import { useSearchParams } from "next/navigation";
-import Link from "next/link";
->>>>>>> 377d6060b0e6e38129455aa644689316548513b7
-=======
->>>>>>> a236e88943083988849761bbda430f66521b6ab8
 
-const API_BASE =
-  process.env.NEXT_PUBLIC_API_URL || "https://unity-shop-server.vercel.app";
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
 // Required: wrap in Suspense because of useSearchParams
 export default function PaymentSuccess() {
@@ -32,28 +28,18 @@ export default function PaymentSuccess() {
 
 function SuccessContent() {
   const searchParams = useSearchParams();
-  const sessionId = searchParams.get("session_id");
+  const sessionId = searchParams.get('session_id');
 
-<<<<<<< HEAD
-<<<<<<< HEAD
   const { clearCart } = useCart();
 
   const [status, setStatus] = useState('loading');
-=======
-  const [status, setStatus] = useState("loading");
->>>>>>> 377d6060b0e6e38129455aa644689316548513b7
-=======
-  const { clearCart } = useCart();
-
-  const [status, setStatus] = useState('loading');
->>>>>>> a236e88943083988849761bbda430f66521b6ab8
   const [order, setOrder] = useState(null);
-  const [errorMsg, setErrorMsg] = useState("");
+  const [errorMsg, setErrorMsg] = useState('');
 
   useEffect(() => {
     if (!sessionId) {
-      setErrorMsg("No session ID found in the URL.");
-      setStatus("error");
+      setErrorMsg('No session ID found in the URL.');
+      setStatus('error');
       return;
     }
 
@@ -61,28 +47,28 @@ function SuccessContent() {
       try {
         const res = await fetch(
           `${API_BASE}/payment/retrivedsessionAfterPayment?session_id=${sessionId}`,
-          { method: "PATCH" },
+          { method: 'PATCH' },
         );
 
         const data = await res.json();
 
-        if (data?.message === "Order already processed.") {
-          setStatus("already");
+        if (data?.message === 'Order already processed.') {
+          setStatus('already');
           return;
         }
 
         if (!res.ok) {
-          throw new Error(data?.error || "Could not verify payment.");
+          throw new Error(data?.error || 'Could not verify payment.');
         }
 
         // ✅ Payment confirmed — clear the cart
         clearCart();
 
         setOrder(data);
-        setStatus("success");
+        setStatus('success');
       } catch (err) {
-        setErrorMsg(err.message || "Something went wrong.");
-        setStatus("error");
+        setErrorMsg(err.message || 'Something went wrong.');
+        setStatus('error');
       }
     };
 
@@ -90,10 +76,10 @@ function SuccessContent() {
     // clearCart is stable (useCallback), safe to include
   }, [sessionId, clearCart]);
 
-  if (status === "loading") return <FullPageSpinner />;
-  if (status === "success") return <SuccessView order={order} />;
-  if (status === "already") return <AlreadyView />;
-  if (status === "error") return <ErrorView message={errorMsg} />;
+  if (status === 'loading') return <FullPageSpinner />;
+  if (status === 'success') return <SuccessView order={order} />;
+  if (status === 'already') return <AlreadyView />;
+  if (status === 'error') return <ErrorView message={errorMsg} />;
 }
 
 // ─── Views ────────────────────────────────────────────────────────────────────
@@ -248,24 +234,13 @@ function Row({ label, value, bold }) {
     <div className="flex justify-between items-center py-2.5 border-b border-slate-50 last:border-0">
       <span className="text-sm text-slate-400">{label}</span>
       <span
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> a236e88943083988849761bbda430f66521b6ab8
         className={`text-sm ${
           bold
             ? 'text-emerald-600 font-bold text-base'
             : 'text-slate-700 font-medium'
         }`}
-<<<<<<< HEAD
-=======
-        className={`text-sm ${bold ? "text-emerald-600 font-bold text-base" : "text-slate-700 font-medium"}`}
->>>>>>> 377d6060b0e6e38129455aa644689316548513b7
-=======
-        className={`text-sm ${bold ? "text-emerald-600 font-bold text-base" : "text-slate-700 font-medium"}`}
->>>>>>> a236e88943083988849761bbda430f66521b6ab8
       >
-        {value ?? "—"}
+        {value ?? '—'}
       </span>
     </div>
   );
