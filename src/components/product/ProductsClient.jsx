@@ -1,13 +1,17 @@
 // src/components/product/ProductsClient.jsx
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import ProductCard from "@/components/product/ProductCard";
 import ProductFilters, {
   categories,
 } from "@/components/product/ProductFilters";
+import { FiChevronLeft, FiChevronRight } from "react-icons/fi";
+
+const PRODUCTS_PER_PAGE = 30;
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
 const sortOptions = [
   { value: "featured", label: "Featured" },
@@ -23,99 +27,135 @@ export default function ProductsClient() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const urlCategory = searchParams.get("category") || "all";
+  const urlQuery = searchParams.get("q") || "";
 
-  const [allProducts, setAllProducts] = useState([]);
+  const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState(urlCategory);
   const [sortBy, setSortBy] = useState("featured");
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState(urlQuery);
   const [priceRange, setPriceRange] = useState([0, 5000]);
   const [view, setView] = useState("grid");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [onSaleOnly, setOnSaleOnly] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalResults, setTotalResults] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
 
-  // Sync activeCategory when URL param changes
+  // Sync from URL params
   useEffect(() => {
     setActiveCategory(urlCategory);
   }, [urlCategory]);
 
-  // Update URL when category changes (without full page reload)
-  const handleCategoryChange = (cat) => {
-    setActiveCategory(cat);
-    if (cat === "all") {
-      router.push("/products", { scroll: false });
-    } else {
-      router.push(`/products?category=${encodeURIComponent(cat)}`, {
-        scroll: false,
-      });
-    }
+  useEffect(() => {
+    if (urlQuery) setSearchQuery(urlQuery);
+  }, [urlQuery]);
+
+  // Build URL params for browser history
+  const buildUrl = (cat, q) => {
+    const params = new URLSearchParams();
+    if (cat && cat !== "all") params.set("category", cat);
+    if (q && q.trim()) params.set("q", q.trim());
+    const qs = params.toString();
+    return `/products${qs ? `?${qs}` : ""}`;
   };
 
-  // Fetch products from backend
+  const handleCategoryChange = (cat) => {
+    setActiveCategory(cat);
+    setCurrentPage(1);
+    router.push(buildUrl(cat, searchQuery), { scroll: false });
+  };
+
+  // Debounce search input — fetch after user stops typing (400ms)
+  const [debouncedSearch, setDebouncedSearch] = useState(searchQuery);
   useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/products`);
-        if (res.ok) {
-          const data = await res.json();
-          setAllProducts(data);
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  // Fetch products from backend search endpoint
+  const fetchProducts = useCallback(async () => {
+    setLoading(true);
+    try {
+      const params = new URLSearchParams();
+      if (debouncedSearch && debouncedSearch.trim())
+        params.set("q", debouncedSearch.trim());
+      if (activeCategory !== "all") params.set("category", activeCategory);
+      if (priceRange[0] > 0) params.set("priceMin", priceRange[0]);
+      if (priceRange[1] < 5000) params.set("priceMax", priceRange[1]);
+
+      // Map sortBy to backend sort
+      const sortMap = {
+        featured: "recommended",
+        newest: "newest",
+        "price-asc": "price-asc",
+        "price-desc": "price-desc",
+        rating: "rating",
+      };
+      params.set("sort", sortMap[sortBy] || "recommended");
+      params.set("page", currentPage);
+      params.set("limit", PRODUCTS_PER_PAGE);
+
+      const res = await fetch(
+        `${API_URL}/products/search?${params.toString()}`,
+      );
+      if (res.ok) {
+        const data = await res.json();
+        let list = data.products || [];
+
+        // Client-side sale filter (backend doesn't have this)
+        if (onSaleOnly) {
+          list = list.filter(
+            (p) => p.originalPrice && p.originalPrice > p.price,
+          );
         }
-      } catch (err) {
-        console.error("Failed to fetch products:", err);
-      } finally {
-        setLoading(false);
+
+        setProducts(list);
+        setTotalResults(onSaleOnly ? list.length : data.total || 0);
+        setTotalPages(
+          onSaleOnly
+            ? Math.ceil(list.length / PRODUCTS_PER_PAGE)
+            : data.totalPages || 0,
+        );
       }
-    };
+    } catch (err) {
+      console.error("Failed to fetch products:", err);
+    } finally {
+      setLoading(false);
+    }
+  }, [
+    debouncedSearch,
+    activeCategory,
+    sortBy,
+    currentPage,
+    priceRange,
+    onSaleOnly,
+  ]);
+
+  useEffect(() => {
     fetchProducts();
-  }, []);
+  }, [fetchProducts]);
+
+  // Reset page to 1 when filters change (but not currentPage itself)
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [activeCategory, debouncedSearch, sortBy, priceRange, onSaleOnly]);
 
   const handleReset = () => {
-    handleCategoryChange("all");
     setSearchQuery("");
     setPriceRange([0, 5000]);
     setSortBy("featured");
     setOnSaleOnly(false);
+    setCurrentPage(1);
+    handleCategoryChange("all");
   };
 
-  // ── Filter + Sort ─────────────────────────────────────────────────────────
-  const filteredProducts = useMemo(() => {
-    let list = [...allProducts];
-
-    if (activeCategory !== "all")
-      list = list.filter((p) => p.category === activeCategory);
-
-    if (searchQuery)
-      list = list.filter(
-        (p) =>
-          p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          p.description.toLowerCase().includes(searchQuery.toLowerCase()),
-      );
-
-    if (onSaleOnly) list = list.filter((p) => p.originalPrice !== null);
-
-    list = list.filter(
-      (p) => p.price >= priceRange[0] && p.price <= priceRange[1],
-    );
-
-    switch (sortBy) {
-      case "price-asc":
-        list.sort((a, b) => a.price - b.price);
-        break;
-      case "price-desc":
-        list.sort((a, b) => b.price - a.price);
-        break;
-      case "rating":
-        list.sort((a, b) => b.rating - a.rating);
-        break;
-      case "newest":
-        list.sort(
-          (a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0),
-        );
-        break;
-    }
-
-    return list;
-  }, [activeCategory, searchQuery, sortBy, priceRange, onSaleOnly]);
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
   const activeLabel = categories.find((c) => c.id === activeCategory)?.label;
   const hasActiveFilters =
@@ -123,6 +163,8 @@ export default function ProductsClient() {
     searchQuery ||
     onSaleOnly ||
     priceRange[1] < 5000;
+
+  const displayCount = totalResults || products.length;
 
   return (
     <div className="min-h-screen bg-stone-50">
@@ -135,11 +177,19 @@ export default function ProductsClient() {
                 Our Store
               </p>
               <h1 className="font-display text-5xl md:text-6xl font-light text-stone-900 tracking-tight leading-none">
-                {activeLabel}
+                {searchQuery ? `"${searchQuery}"` : activeLabel}
               </h1>
               <p className="font-body text-stone-500 text-lg mt-3">
-                {filteredProducts.length}{" "}
-                {filteredProducts.length === 1 ? "product" : "products"} found
+                {displayCount} {displayCount === 1 ? "product" : "products"}{" "}
+                found
+                {searchQuery && activeCategory !== "all" && (
+                  <span className="text-stone-400"> in {activeLabel}</span>
+                )}
+                {totalPages > 1 && (
+                  <span className="text-stone-400 ml-2">
+                    · Page {currentPage} of {totalPages}
+                  </span>
+                )}
               </p>
             </div>
 
@@ -325,8 +375,8 @@ export default function ProductsClient() {
 
             {/* ── Product Grid / List ──────────────────────────────────── */}
             {loading ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
-                {[...Array(8)].map((_, i) => (
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-5">
+                {[...Array(10)].map((_, i) => (
                   <div
                     key={i}
                     className="bg-white rounded-2xl border border-gray-100 p-4 animate-pulse"
@@ -338,28 +388,96 @@ export default function ProductsClient() {
                   </div>
                 ))}
               </div>
-            ) : filteredProducts.length > 0 ? (
-              <div
-                className={
-                  view === "grid"
-                    ? "grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6"
-                    : "flex flex-col gap-4"
-                }
-              >
-                {filteredProducts.map((product, i) => (
-                  <div
-                    key={product._id || product.id || i}
-                    className="animate-fadeInUp"
-                    style={{ animationDelay: `${i * 40}ms` }}
-                  >
-                    <ProductCard product={product} view={view} />
+            ) : products.length > 0 ? (
+              <>
+                <div
+                  className={
+                    view === "grid"
+                      ? "grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-5"
+                      : "flex flex-col gap-4"
+                  }
+                >
+                  {products.map((product, i) => (
+                    <div
+                      key={product._id || product.id || i}
+                      className="animate-fadeInUp"
+                      style={{ animationDelay: `${i * 40}ms` }}
+                    >
+                      <ProductCard product={product} view={view} />
+                    </div>
+                  ))}
+                </div>
+
+                {/* ── Pagination ──────────────────────────────────────── */}
+                {totalPages > 1 && (
+                  <div className="flex justify-center items-center gap-2 mt-10 mb-4">
+                    {/* Prev */}
+                    <button
+                      onClick={() => handlePageChange(currentPage - 1)}
+                      disabled={currentPage === 1}
+                      className="w-10 h-10 flex items-center justify-center rounded-full border border-stone-200 bg-white text-stone-600 disabled:opacity-40 disabled:cursor-not-allowed hover:border-stone-900 hover:text-stone-900 transition-all"
+                    >
+                      <FiChevronLeft size={18} />
+                    </button>
+
+                    {/* Page numbers */}
+                    {(() => {
+                      const pages = [];
+                      const maxVisible = 7;
+
+                      if (totalPages <= maxVisible) {
+                        for (let i = 1; i <= totalPages; i++) pages.push(i);
+                      } else {
+                        pages.push(1);
+                        if (currentPage > 3) pages.push("...");
+
+                        const start = Math.max(2, currentPage - 1);
+                        const end = Math.min(totalPages - 1, currentPage + 1);
+                        for (let i = start; i <= end; i++) pages.push(i);
+
+                        if (currentPage < totalPages - 2) pages.push("...");
+                        pages.push(totalPages);
+                      }
+
+                      return pages.map((p, idx) =>
+                        p === "..." ? (
+                          <span
+                            key={`dots-${idx}`}
+                            className="w-10 h-10 flex items-center justify-center text-stone-400 text-sm"
+                          >
+                            ···
+                          </span>
+                        ) : (
+                          <button
+                            key={p}
+                            onClick={() => handlePageChange(p)}
+                            className={`w-10 h-10 flex items-center justify-center rounded-full text-sm font-medium transition-all ${
+                              currentPage === p
+                                ? "bg-stone-900 text-white"
+                                : "border border-stone-200 bg-white text-stone-600 hover:border-stone-900 hover:text-stone-900"
+                            }`}
+                          >
+                            {p}
+                          </button>
+                        ),
+                      );
+                    })()}
+
+                    {/* Next */}
+                    <button
+                      onClick={() => handlePageChange(currentPage + 1)}
+                      disabled={currentPage === totalPages}
+                      className="w-10 h-10 flex items-center justify-center rounded-full border border-stone-200 bg-white text-stone-600 disabled:opacity-40 disabled:cursor-not-allowed hover:border-stone-900 hover:text-stone-900 transition-all"
+                    >
+                      <FiChevronRight size={18} />
+                    </button>
                   </div>
-                ))}
-              </div>
+                )}
+              </>
             ) : (
               // ── Empty State ──────────────────────────────────────────
               <div className="flex flex-col items-center justify-center py-32 text-center">
-                <div className="w-32 h-32 mx-auto mb-8 bg-gradient-to-br from-stone-100 to-amber-50 rounded-full flex items-center justify-center">
+                <div className="w-32 h-32 mx-auto mb-8 bg-linear-to-br from-stone-100 to-amber-50 rounded-full flex items-center justify-center">
                   <svg
                     className="w-16 h-16 text-stone-300"
                     fill="none"
