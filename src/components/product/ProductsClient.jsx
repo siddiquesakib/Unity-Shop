@@ -17,7 +17,7 @@ const sortOptions = [
   { value: "rating", label: "Top Rated" },
 ];
 
-// ─── MAIN COMPONENT ───────────────────────────────────────────────────────────
+// ─── MAIN COMPONENTT ───────────────────────────────────────────────────────────
 
 export default function ProductsClient() {
   const searchParams = useSearchParams();

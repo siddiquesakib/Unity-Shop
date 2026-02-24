@@ -5,7 +5,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { motion } from "framer-motion";
 import { ShoppingBag, Clock, CreditCard, Heart } from "lucide-react";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+const API_BASE =
+  process.env.NEXT_PUBLIC_API_URL || "https://unity-shop-server.vercel.app";
 
 export default function UserStats() {
   const { user } = useAuth();
