@@ -12,9 +12,12 @@ import {
   CheckCircle,
   XCircle,
   Filter,
+  Download,
 } from "lucide-react";
+import { downloadOrderInvoice } from "@/utils/generateInvoice";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+const API_BASE =
+  process.env.NEXT_PUBLIC_API_URL || "https://unity-shop-server.vercel.app";
 
 const getStatusColor = (status) => {
   switch (status) {
@@ -268,13 +271,22 @@ export default function UserOrdersPage() {
                       </span>
                     </td>
                     <td className="py-4 pr-4 text-right">
-                      <button
-                        onClick={() => setSelectedOrder(order)}
-                        title="View Details"
-                        className="p-2 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white transition-colors"
-                      >
-                        <Eye size={16} />
-                      </button>
+                      <div className="flex items-center justify-end gap-1">
+                        <button
+                          onClick={() => setSelectedOrder(order)}
+                          title="View Details"
+                          className="p-2 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white transition-colors"
+                        >
+                          <Eye size={16} />
+                        </button>
+                        <button
+                          onClick={() => downloadOrderInvoice(order)}
+                          title="Download Invoice"
+                          className="p-2 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-indigo-400 transition-colors"
+                        >
+                          <Download size={16} />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -303,6 +315,13 @@ export default function UserOrdersPage() {
               <XCircle size={20} />
             </button>
             <h3 className="text-lg font-bold text-white mb-6">Order Details</h3>
+            <button
+              onClick={() => downloadOrderInvoice(selectedOrder)}
+              className="mb-4 w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium transition-colors"
+            >
+              <Download size={16} />
+              Download Invoice PDF
+            </button>
             <div className="space-y-4">
               <div className="flex justify-between">
                 <span className="text-slate-400">Order ID</span>

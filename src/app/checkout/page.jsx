@@ -17,7 +17,7 @@ import { useCart } from '@/contexts/CartContext';
 import { useSession } from 'next-auth/react'; // ← swap with your own auth hook if different
 import PaymentButton from '@/components/common/payment-button/PaymentButton';
 
-// ── Shop's receiving account — set these in your .env ───────────────────────
+// ── Shop's receiving account — 
 const SHOP_EMAIL = process.env.NEXT_PUBLIC_SHOP_EMAIL || 'shop@unityshop.com';
 const SHOP_NAME = process.env.NEXT_PUBLIC_SHOP_NAME || 'UnityShop';
 
