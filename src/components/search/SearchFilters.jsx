@@ -5,14 +5,28 @@ import { useState } from "react";
 import { FiChevronDown, FiChevronUp } from "react-icons/fi";
 
 const categories = [
-  { id: "electronics", name: "Electronics", count: 1234 },
-  { id: "fashion", name: "Fashion", count: 2345 },
-  { id: "home-garden", name: "Home & Garden", count: 1832 },
-  { id: "health-beauty", name: "Health & Beauty", count: 921 },
-  { id: "sports", name: "Sports & Outdoors", count: 756 },
-  { id: "toys", name: "Toys & Kids", count: 643 },
-  { id: "automotive", name: "Automotive", count: 512 },
-  { id: "office", name: "Office Supplies", count: 389 },
+  { id: "electronics", name: "Electronics" },
+  { id: "fashion", name: "Fashion" },
+  { id: "living", name: "Home & Living" },
+  { id: "kitchen", name: "Kitchen" },
+  { id: "bedroom", name: "Bedroom" },
+  { id: "office", name: "Office" },
+  { id: "mobile", name: "Mobiles" },
+  { id: "watches", name: "Watches" },
+  { id: "audio", name: "Audio" },
+  { id: "cameras", name: "Cameras" },
+  { id: "gaming", name: "Gaming" },
+  { id: "lighting", name: "Lighting" },
+  { id: "beauty", name: "Beauty" },
+  { id: "health", name: "Health" },
+  { id: "sports", name: "Sports" },
+  { id: "outdoor", name: "Outdoor" },
+  { id: "books", name: "Books" },
+  { id: "stationery", name: "Stationery" },
+  { id: "toys", name: "Toys & Baby" },
+  { id: "grocery", name: "Grocery" },
+  { id: "tools", name: "Tools" },
+  { id: "automotive", name: "Automotive" },
 ];
 
 const locations = [
@@ -113,9 +127,6 @@ const SearchFilters = ({ filters, onFilterChange, onApply }) => {
                   className="text-orange-500 focus:ring-orange-500"
                 />
                 <span className="text-gray-700">{cat.name}</span>
-                <span className="text-gray-400 text-xs ml-auto">
-                  {cat.count}
-                </span>
               </label>
             ))}
           </div>
@@ -282,7 +293,7 @@ const SearchFilters = ({ filters, onFilterChange, onApply }) => {
       {/* Apply button */}
       <button
         onClick={onApply}
-        className="w-full py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white font-semibold rounded-xl hover:shadow-lg hover:shadow-orange-500/30 transition-all"
+        className="w-full py-3 bg-linear-to-r from-orange-500 to-orange-600 text-white font-semibold rounded-xl hover:shadow-lg hover:shadow-orange-500/30 transition-all"
       >
         Apply Filters
       </button>
