@@ -1,94 +1,160 @@
 "use client";
 
-import { Check, X, Eye, FileText } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Check, X, Eye, Loader2, UserX } from "lucide-react";
 import { motion } from "framer-motion";
 
-export default function VerificationQueue() {
-    const applications = [
-        {
-            id: "APP-001",
-            name: "Luxe Furnishings",
-            owner: "Sarah Miller",
-            category: "Home & Decor",
-            date: "2024-02-20",
-            status: "Pending",
-        },
-        {
-            id: "APP-002",
-            name: "TechNova Systems",
-            owner: "James Wilson",
-            category: "Electronics",
-            date: "2024-02-21",
-            status: "Pending",
-        },
-        {
-            id: "APP-003",
-            name: "Urban Style Co.",
-            owner: "Emma Davis",
-            category: "Fashion",
-            date: "2024-02-19",
-            status: "Pending",
-        },
-    ];
+const API_BASE =
+  process.env.NEXT_PUBLIC_API_URL || "https://unity-shop-server.vercel.app";
 
+export default function VerificationQueue() {
+  const [applications, setApplications] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [actionLoading, setActionLoading] = useState(null); // email of user being processed
+
+  const fetchRequests = () => {
+    fetch(`${API_BASE}/users/seller-requests?status=pending`)
+      .then((res) => res.json())
+      .then((data) => {
+        setApplications(data);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error("Failed to fetch seller requests:", err);
+        setLoading(false);
+      });
+  };
+
+  useEffect(() => {
+    fetchRequests();
+  }, []);
+
+  const handleApprove = async (email) => {
+    setActionLoading(email);
+    try {
+      const res = await fetch(`${API_BASE}/users/approve-seller/${email}`, {
+        method: "PATCH",
+      });
+      if (res.ok) {
+        setApplications((prev) => prev.filter((a) => a.email !== email));
+      }
+    } catch (err) {
+      console.error("Failed to approve:", err);
+    }
+    setActionLoading(null);
+  };
+
+  const handleReject = async (email) => {
+    setActionLoading(email);
+    try {
+      const res = await fetch(`${API_BASE}/users/reject-seller/${email}`, {
+        method: "PATCH",
+      });
+      if (res.ok) {
+        setApplications((prev) => prev.filter((a) => a.email !== email));
+      }
+    } catch (err) {
+      console.error("Failed to reject:", err);
+    }
+    setActionLoading(null);
+  };
+
+  if (loading) {
     return (
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
-            <div className="p-6 border-b border-slate-800 flex items-center justify-between">
-                <h3 className="text-lg font-bold text-white">Verification Queue</h3>
-                <span className="px-2.5 py-1 rounded-full bg-indigo-500/10 text-indigo-400 text-xs font-medium">
-                    {applications.length} Pending
-                </span>
-            </div>
-            <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse">
-                    <thead>
-                        <tr className="bg-slate-950/50">
-                            <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Business Name</th>
-                            <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Owner</th>
-                            <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Submitted</th>
-                            <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider text-right">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-800/50">
-                        {applications.map((app, index) => (
-                            <motion.tr
-                                key={app.id}
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                                transition={{ delay: index * 0.05 }}
-                                className="hover:bg-slate-800/30 transition-colors"
-                            >
-                                <td className="px-6 py-4">
-                                    <div>
-                                        <p className="text-sm font-medium text-white">{app.name}</p>
-                                        <p className="text-xs text-slate-500">{app.category}</p>
-                                    </div>
-                                </td>
-                                <td className="px-6 py-4 text-sm text-slate-400">{app.owner}</td>
-                                <td className="px-6 py-4 text-sm text-slate-400">{app.date}</td>
-                                <td className="px-6 py-4 text-right">
-                                    <div className="flex items-center justify-end gap-2">
-                                        <button className="p-2 rounded-lg bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700 transition-all">
-                                            <Eye size={16} />
-                                        </button>
-                                        <button className="p-2 rounded-lg bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500 hover:text-white transition-all">
-                                            <Check size={16} />
-                                        </button>
-                                        <button className="p-2 rounded-lg bg-rose-500/10 text-rose-400 hover:bg-rose-500 hover:text-white transition-all">
-                                            <X size={16} />
-                                        </button>
-                                    </div>
-                                </td>
-                            </motion.tr>
-                        ))}
-                    </tbody>
-                </table>
-            </div>
-            <div className="p-4 bg-slate-950/30 border-t border-slate-800 text-center">
-                <button className="text-sm font-medium text-indigo-400 hover:text-indigo-300 transition-colors">
-                    View All Applications
-                </button>
-            </div>
-        </div>
+      <div className="bg-slate-900 border border-slate-800 rounded-2xl flex items-center justify-center h-[400px]">
+        <Loader2 className="animate-spin text-indigo-400" size={32} />
+      </div>
     );
+  }
+
+  return (
+    <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden flex flex-col h-[400px]">
+      <div className="p-6 border-b border-slate-800 flex items-center justify-between shrink-0">
+        <h3 className="text-lg font-bold text-white">Verification Queue</h3>
+        <span className="px-2.5 py-1 rounded-full bg-indigo-500/10 text-indigo-400 text-xs font-medium">
+          {applications.length} Pending
+        </span>
+      </div>
+
+      {applications.length === 0 ? (
+        <div className="flex-1 flex flex-col items-center justify-center text-slate-500 gap-3">
+          <UserX size={40} className="text-slate-600" />
+          <p className="text-sm">No pending seller requests</p>
+        </div>
+      ) : (
+        <div className="flex-1 overflow-y-auto">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="bg-slate-950/50 sticky top-0">
+                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                  Name
+                </th>
+                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                  Email
+                </th>
+                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                  Requested
+                </th>
+                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider text-right">
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-800/50">
+              {applications.map((app, index) => (
+                <motion.tr
+                  key={app._id || app.email}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: index * 0.05 }}
+                  className="hover:bg-slate-800/30 transition-colors"
+                >
+                  <td className="px-6 py-4">
+                    <p className="text-sm font-medium text-white">
+                      {app.name || "Unknown"}
+                    </p>
+                  </td>
+                  <td className="px-6 py-4 text-sm text-slate-400">
+                    {app.email}
+                  </td>
+                  <td className="px-6 py-4 text-sm text-slate-400">
+                    {app.sellerRequestDate
+                      ? new Date(app.sellerRequestDate).toLocaleDateString()
+                      : "N/A"}
+                  </td>
+                  <td className="px-6 py-4 text-right">
+                    <div className="flex items-center justify-end gap-2">
+                      {actionLoading === app.email ? (
+                        <Loader2
+                          className="animate-spin text-slate-400"
+                          size={16}
+                        />
+                      ) : (
+                        <>
+                          <button
+                            onClick={() => handleApprove(app.email)}
+                            className="p-2 rounded-lg bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500 hover:text-white transition-all"
+                            title="Approve"
+                          >
+                            <Check size={16} />
+                          </button>
+                          <button
+                            onClick={() => handleReject(app.email)}
+                            className="p-2 rounded-lg bg-rose-500/10 text-rose-400 hover:bg-rose-500 hover:text-white transition-all"
+                            title="Reject"
+                          >
+                            <X size={16} />
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  </td>
+                </motion.tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  );
 }
