@@ -1,25 +1,22 @@
 "use client";
 
-/**
- * PaymentSuccess Page
- * File location: app/payment-success/page.jsx
- *
- * After Stripe confirms payment:
- *  1. Calls backend to record the order
- *  2. Clears the cart via CartContext
- *  3. Shows the order summary
- */
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> a236e88943083988849761bbda430f66521b6ab8
 import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useCart } from '@/contexts/CartContext';
+<<<<<<< HEAD
 =======
 import { useEffect, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 >>>>>>> 377d6060b0e6e38129455aa644689316548513b7
+=======
+>>>>>>> a236e88943083988849761bbda430f66521b6ab8
 
 const API_BASE =
   process.env.NEXT_PUBLIC_API_URL || "https://unity-shop-server.vercel.app";
@@ -38,12 +35,18 @@ function SuccessContent() {
   const sessionId = searchParams.get("session_id");
 
 <<<<<<< HEAD
+<<<<<<< HEAD
   const { clearCart } = useCart();
 
   const [status, setStatus] = useState('loading');
 =======
   const [status, setStatus] = useState("loading");
 >>>>>>> 377d6060b0e6e38129455aa644689316548513b7
+=======
+  const { clearCart } = useCart();
+
+  const [status, setStatus] = useState('loading');
+>>>>>>> a236e88943083988849761bbda430f66521b6ab8
   const [order, setOrder] = useState(null);
   const [errorMsg, setErrorMsg] = useState("");
 
@@ -246,14 +249,21 @@ function Row({ label, value, bold }) {
       <span className="text-sm text-slate-400">{label}</span>
       <span
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> a236e88943083988849761bbda430f66521b6ab8
         className={`text-sm ${
           bold
             ? 'text-emerald-600 font-bold text-base'
             : 'text-slate-700 font-medium'
         }`}
+<<<<<<< HEAD
 =======
         className={`text-sm ${bold ? "text-emerald-600 font-bold text-base" : "text-slate-700 font-medium"}`}
 >>>>>>> 377d6060b0e6e38129455aa644689316548513b7
+=======
+        className={`text-sm ${bold ? "text-emerald-600 font-bold text-base" : "text-slate-700 font-medium"}`}
+>>>>>>> a236e88943083988849761bbda430f66521b6ab8
       >
         {value ?? "—"}
       </span>

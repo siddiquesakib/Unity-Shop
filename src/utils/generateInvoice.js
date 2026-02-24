@@ -211,9 +211,14 @@ export function downloadOrderInvoice(order) {
   doc.setFontSize(8);
   doc.setFont("helvetica", "normal");
   doc.setTextColor(...gray);
-  doc.text("Thank you for shopping with UnityShop!", pageWidth / 2, footerY + 8, {
-    align: "center",
-  });
+  doc.text(
+    "Thank you for shopping with UnityShop!",
+    pageWidth / 2,
+    footerY + 8,
+    {
+      align: "center",
+    },
+  );
   doc.text(
     "For support, contact us at support@unityshop.com",
     pageWidth / 2,
