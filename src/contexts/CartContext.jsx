@@ -1,0 +1,164 @@
+'use client';
+
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useCallback,
+} from 'react';
+
+const CartContext = createContext(null);
+
+export function CartProvider({ children }) {
+  const [cartGroups, setCartGroups] = useState([]);
+  const [checkoutGroups, setCheckoutGroups] = useState([]); // selected items heading to payment
+  const [hydrated, setHydrated] = useState(false);
+
+  // Load cart from localStorage on mount
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('unityshop_cart');
+      if (saved) setCartGroups(JSON.parse(saved));
+    } catch {
+      // ignore parse errors
+    }
+    setHydrated(true);
+  }, []);
+
+  // Persist cart to localStorage on every change
+  useEffect(() => {
+    if (hydrated) {
+      localStorage.setItem('unityshop_cart', JSON.stringify(cartGroups));
+    }
+  }, [cartGroups, hydrated]);
+
+  // ─── Add to Cart ─────────────────────────────────────────────────────────────
+  const addToCart = useCallback((product, quantity = 1) => {
+    const sellerId = product.sellerId || product.sellerName || 'general';
+    const sellerName = product.sellerName || 'UnityShop Seller';
+    const moq = product.moq || 1;
+
+    setCartGroups(prev => {
+      const groups = prev.map(g => ({ ...g, items: [...g.items] }));
+      const groupIdx = groups.findIndex(g => g.seller.id === sellerId);
+
+      const newItem = {
+        id: `${product._id || product.id}-${sellerId}`,
+        productId: product._id || product.id,
+        name: product.name,
+        image: product.image || '',
+        price: product.price,
+        quantity,
+        moq,
+        maxQuantity: product.stock || 9999,
+        variant: product.variant || product.category || '—',
+        stock: product.stock || 9999,
+        sellerName,
+        sellerEmail: product.sellerEmail || '',
+      };
+
+      if (groupIdx !== -1) {
+        const itemIdx = groups[groupIdx].items.findIndex(
+          i => i.productId === newItem.productId,
+        );
+        if (itemIdx !== -1) {
+          const existing = groups[groupIdx].items[itemIdx];
+          groups[groupIdx].items[itemIdx] = {
+            ...existing,
+            quantity: Math.min(
+              existing.quantity + quantity,
+              existing.maxQuantity,
+            ),
+          };
+        } else {
+          groups[groupIdx].items.push(newItem);
+        }
+      } else {
+        groups.push({
+          id: `group-${sellerId}`,
+          seller: {
+            id: sellerId,
+            name: sellerName,
+            email: product.sellerEmail || '',
+            verified: product.sellerVerified || false,
+          },
+          items: [newItem],
+        });
+      }
+
+      return groups;
+    });
+  }, []);
+
+  // ─── Remove Item ─────────────────────────────────────────────────────────────
+  const removeItem = useCallback(itemId => {
+    setCartGroups(prev =>
+      prev
+        .map(group => ({
+          ...group,
+          items: group.items.filter(item => item.id !== itemId),
+        }))
+        .filter(group => group.items.length > 0),
+    );
+  }, []);
+
+  // ─── Update Quantity ──────────────────────────────────────────────────────────
+  const updateQuantity = useCallback((itemId, newQty) => {
+    setCartGroups(prev =>
+      prev.map(group => ({
+        ...group,
+        items: group.items.map(item => {
+          if (item.id !== itemId) return item;
+          const clamped = Math.min(
+            Math.max(newQty, item.moq),
+            item.maxQuantity,
+          );
+          return { ...item, quantity: clamped };
+        }),
+      })),
+    );
+  }, []);
+
+  // ─── Prepare Checkout ─────────────────────────────────────────────────────────
+  // Called by the cart page with only the SELECTED groups/items before navigating to /checkout
+  const prepareCheckout = useCallback(selectedGroups => {
+    setCheckoutGroups(selectedGroups);
+  }, []);
+
+  // ─── Clear Cart ───────────────────────────────────────────────────────────────
+  const clearCart = useCallback(() => {
+    setCartGroups([]);
+    setCheckoutGroups([]);
+  }, []);
+
+  // ─── Derived values ───────────────────────────────────────────────────────────
+  const totalUniqueItems = cartGroups.reduce(
+    (sum, g) => sum + g.items.length,
+    0,
+  );
+
+  return (
+    <CartContext.Provider
+      value={{
+        cartGroups,
+        checkoutGroups,
+        addToCart,
+        removeItem,
+        updateQuantity,
+        prepareCheckout,
+        clearCart,
+        totalUniqueItems,
+        hydrated,
+      }}
+    >
+      {children}
+    </CartContext.Provider>
+  );
+}
+
+export function useCart() {
+  const ctx = useContext(CartContext);
+  if (!ctx) throw new Error('useCart must be used inside <CartProvider>');
+  return ctx;
+}

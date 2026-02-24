@@ -1,36 +1,40 @@
 // components/product/ProductCard.jsx
-"use client";
+'use client';
 
-import Image from "next/image";
-import Link from "next/link";
-import { useState } from "react";
-import { FiShoppingCart, FiEye, FiStar } from "react-icons/fi";
+import Image from 'next/image';
+import Link from 'next/link';
+import { useState } from 'react';
+import { FiShoppingCart, FiEye, FiStar, FiCheck } from 'react-icons/fi';
+import { useCart } from '@/contexts/CartContext';
 
 const ProductCard = ({ product }) => {
   const [isHovered, setIsHovered] = useState(false);
   const [imageError, setImageError] = useState(false);
+  const [addedFeedback, setAddedFeedback] = useState(false);
+
+  const { addToCart } = useCart();
 
   const placeholderImage =
-    "https://via.placeholder.com/400x400?text=Product+Image";
+    'https://via.placeholder.com/400x400?text=Product+Image';
 
   const getSafeImageUrl = () => {
     if (imageError) return placeholderImage;
     let url = placeholderImage;
     if (Array.isArray(product.image)) {
       if (
-        typeof product.image[0] === "string" &&
-        product.image[0].trim() !== ""
+        typeof product.image[0] === 'string' &&
+        product.image[0].trim() !== ''
       ) {
         url = product.image[0];
       }
     } else if (
-      typeof product.image === "string" &&
-      product.image.trim() !== ""
+      typeof product.image === 'string' &&
+      product.image.trim() !== ''
     ) {
       url = product.image;
     }
     try {
-      if (url.startsWith("/")) return url;
+      if (url.startsWith('/')) return url;
       new URL(url);
       return url;
     } catch {
@@ -38,10 +42,8 @@ const ProductCard = ({ product }) => {
     }
   };
 
-  // Support both _id (MongoDB) and id
   const productId = product._id || product.id;
 
-  // Calculate discount percentage
   const discount =
     product.originalPrice && product.originalPrice > product.price
       ? Math.round(
@@ -49,6 +51,17 @@ const ProductCard = ({ product }) => {
             100,
         )
       : null;
+
+  const handleAddToCart = e => {
+    e.preventDefault(); // don't navigate
+    if (addedFeedback) return;
+
+    addToCart(product, product.moq || 1);
+
+    // Show ✓ check for 1.5s then reset
+    setAddedFeedback(true);
+    setTimeout(() => setAddedFeedback(false), 1500);
+  };
 
   return (
     <div
@@ -70,15 +83,31 @@ const ProductCard = ({ product }) => {
         {/* Hover Overlay */}
         <div
           className={`absolute inset-0 bg-black/30 flex items-center justify-center gap-2 transition-opacity duration-200 ${
-            isHovered ? "opacity-100" : "opacity-0 pointer-events-none"
+            isHovered ? 'opacity-100' : 'opacity-0 pointer-events-none'
           }`}
         >
-          <button className="p-2.5 bg-white rounded-full hover:bg-orange-500 hover:text-white transition-colors shadow-md">
-            <FiShoppingCart className="w-4 h-4" />
+          {/* ── Add to Cart button ── */}
+          <button
+            onClick={handleAddToCart}
+            title="Add to cart"
+            className={`p-2.5 rounded-full shadow-md transition-all duration-200 ${
+              addedFeedback
+                ? 'bg-emerald-500 text-white scale-110'
+                : 'bg-white hover:bg-orange-500 hover:text-white text-gray-700'
+            }`}
+          >
+            {addedFeedback ? (
+              <FiCheck className="w-4 h-4" />
+            ) : (
+              <FiShoppingCart className="w-4 h-4" />
+            )}
           </button>
+
+          {/* ── View details button ── */}
           <Link
             href={`/products/${productId}`}
-            className="p-2.5 bg-white rounded-full hover:bg-orange-500 hover:text-white transition-colors shadow-md"
+            title="View details"
+            className="p-2.5 bg-white rounded-full hover:bg-orange-500 hover:text-white transition-colors shadow-md text-gray-700"
           >
             <FiEye className="w-4 h-4" />
           </Link>
@@ -133,10 +162,10 @@ const ProductCard = ({ product }) => {
           {/* Seller Info */}
           <div className="flex items-center gap-1">
             <div className="w-4 h-4 rounded-full bg-linear-to-br from-orange-400 to-orange-600 flex items-center justify-center text-white text-[8px] font-bold">
-              {product.sellerName?.charAt(0)?.toUpperCase() || "S"}
+              {product.sellerName?.charAt(0)?.toUpperCase() || 'S'}
             </div>
             <span className="text-[11px] text-gray-400 truncate max-w-17.5">
-              {product.sellerName || "UnityShop"}
+              {product.sellerName || 'UnityShop'}
             </span>
           </div>
         </div>

@@ -1,9 +1,10 @@
 // components/product/ProductDetailClient.jsx
-"use client";
+'use client';
 
-import { useState } from "react";
-import Image from "next/image";
-import Link from "next/link";
+import { useState } from 'react';
+import Image from 'next/image';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import {
   FiShoppingCart,
   FiHeart,
@@ -11,22 +12,26 @@ import {
   FiPlus,
   FiStar,
   FiPackage,
-  FiUser,
-} from "react-icons/fi";
+} from 'react-icons/fi';
+import { useCart } from '@/contexts/CartContext';
 
 const ProductDetailClient = ({ product }) => {
   const [quantity, setQuantity] = useState(1);
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [imageError, setImageError] = useState(false);
+  const [addedFeedback, setAddedFeedback] = useState(false);
+
+  const { addToCart } = useCart();
+  const router = useRouter();
 
   const placeholderImage =
-    "https://via.placeholder.com/800x800?text=Product+Image";
+    'https://via.placeholder.com/800x800?text=Product+Image';
 
   const getSafeImageUrl = () => {
     if (imageError) return placeholderImage;
-    if (typeof product.image === "string" && product.image.trim() !== "") {
+    if (typeof product.image === 'string' && product.image.trim() !== '') {
       try {
-        if (product.image.startsWith("/")) return product.image;
+        if (product.image.startsWith('/')) return product.image;
         new URL(product.image);
         return product.image;
       } catch {
@@ -36,12 +41,22 @@ const ProductDetailClient = ({ product }) => {
     return placeholderImage;
   };
 
-  const handleQuantityChange = (delta) => {
+  const handleQuantityChange = delta => {
     const newQty = quantity + delta;
     const maxStock = product.stock || 999;
     if (newQty >= 1 && newQty <= maxStock) {
       setQuantity(newQty);
     }
+  };
+
+  const handleAddToCart = () => {
+    addToCart(product, quantity);
+
+    // Brief "Added!" feedback, then navigate to cart
+    setAddedFeedback(true);
+    setTimeout(() => {
+      router.push('/cart');
+    }, 600);
   };
 
   const discount =
@@ -75,7 +90,7 @@ const ProductDetailClient = ({ product }) => {
 
       {/* Main content */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
-        {/* Left column - Image */}
+        {/* Left column – Image */}
         <div>
           <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
             <div className="relative aspect-square bg-gray-50 rounded-xl overflow-hidden">
@@ -101,7 +116,7 @@ const ProductDetailClient = ({ product }) => {
           </div>
         </div>
 
-        {/* Right column - Info */}
+        {/* Right column – Info */}
         <div>
           <div className="bg-white rounded-2xl p-8 shadow-sm border border-gray-100 sticky top-24 space-y-6">
             {/* Title */}
@@ -111,7 +126,7 @@ const ProductDetailClient = ({ product }) => {
               </h1>
               {product.brand && (
                 <p className="text-sm text-gray-500">
-                  Brand:{" "}
+                  Brand:{' '}
                   <span className="font-medium text-gray-700">
                     {product.brand}
                   </span>
@@ -127,13 +142,13 @@ const ProductDetailClient = ({ product }) => {
             {/* Rating */}
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-1">
-                {[1, 2, 3, 4, 5].map((star) => (
+                {[1, 2, 3, 4, 5].map(star => (
                   <FiStar
                     key={star}
                     className={`w-5 h-5 ${
                       star <= Math.round(product.rating || 0)
-                        ? "text-yellow-400 fill-yellow-400"
-                        : "text-gray-300"
+                        ? 'text-yellow-400 fill-yellow-400'
+                        : 'text-gray-300'
                     }`}
                   />
                 ))}
@@ -170,13 +185,13 @@ const ProductDetailClient = ({ product }) => {
                 <span
                   className={
                     product.stock > 0
-                      ? "text-emerald-600 font-medium"
-                      : "text-red-500 font-medium"
+                      ? 'text-emerald-600 font-medium'
+                      : 'text-red-500 font-medium'
                   }
                 >
                   {product.stock > 0
                     ? `${product.stock} in stock`
-                    : "Out of stock"}
+                    : 'Out of stock'}
                 </span>
               </div>
             )}
@@ -197,7 +212,7 @@ const ProductDetailClient = ({ product }) => {
                 <input
                   type="number"
                   value={quantity}
-                  onChange={(e) =>
+                  onChange={e =>
                     setQuantity(
                       Math.max(
                         1,
@@ -229,9 +244,15 @@ const ProductDetailClient = ({ product }) => {
 
             {/* Action buttons */}
             <div className="space-y-3">
-              <button className="w-full py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white font-semibold rounded-xl hover:shadow-lg hover:shadow-orange-500/30 transition-all flex items-center justify-center space-x-2">
+              <button
+                onClick={handleAddToCart}
+                disabled={product.stock === 0 || addedFeedback}
+                className="w-full py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white font-semibold rounded-xl hover:shadow-lg hover:shadow-orange-500/30 transition-all flex items-center justify-center space-x-2 disabled:opacity-60 disabled:cursor-not-allowed"
+              >
                 <FiShoppingCart />
-                <span>Add to Cart</span>
+                <span>
+                  {addedFeedback ? 'Added! Redirecting...' : 'Add to Cart'}
+                </span>
               </button>
               <button
                 onClick={() => setIsWishlisted(!isWishlisted)}
@@ -239,11 +260,11 @@ const ProductDetailClient = ({ product }) => {
               >
                 <FiHeart
                   className={
-                    isWishlisted ? "fill-orange-500 text-orange-500" : ""
+                    isWishlisted ? 'fill-orange-500 text-orange-500' : ''
                   }
                 />
                 <span>
-                  {isWishlisted ? "Saved to Wishlist" : "Save to Wishlist"}
+                  {isWishlisted ? 'Saved to Wishlist' : 'Save to Wishlist'}
                 </span>
               </button>
             </div>

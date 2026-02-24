@@ -1,181 +1,112 @@
 // app/cart/page.jsx
-"use client";
+'use client';
 
-import { useState } from "react";
-import Link from "next/link";
-import Image from "next/image";
+import { useState } from 'react';
+import Link from 'next/link';
+import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import {
   FiTrash2,
   FiShoppingCart,
-  FiHeart,
   FiChevronRight,
-} from "react-icons/fi";
-
-// Mock cart data
-const mockCartItems = [
-  {
-    id: "cart-1",
-    seller: {
-      id: "seller-1",
-      name: "Shenzhen Electronics Co.",
-      verified: true,
-    },
-    items: [
-      {
-        id: "item-1",
-        productId: "prod-1",
-        name: "Wireless Bluetooth Headphones with Noise Cancellation",
-        image:
-          "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&auto=format",
-        price: 18.5,
-        quantity: 100,
-        moq: 100,
-        maxQuantity: 5000,
-        variant: "Black",
-        stock: 2500,
-      },
-      {
-        id: "item-2",
-        productId: "prod-2",
-        name: "Bluetooth Speaker Portable Waterproof",
-        image:
-          "https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?w=400&auto=format",
-        price: 12.8,
-        quantity: 200,
-        moq: 50,
-        maxQuantity: 3000,
-        variant: "Blue",
-        stock: 1800,
-      },
-    ],
-  },
-  {
-    id: "cart-2",
-    seller: {
-      id: "seller-2",
-      name: "Guangzhou Fashion Ltd.",
-      verified: true,
-    },
-    items: [
-      {
-        id: "item-3",
-        productId: "prod-3",
-        name: "Men's Cotton T-Shirts (Wholesale Pack)",
-        image:
-          "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&auto=format",
-        price: 3.5,
-        quantity: 500,
-        moq: 200,
-        maxQuantity: 10000,
-        variant: "Black, Size M",
-        stock: 8500,
-      },
-    ],
-  },
-];
+  FiAlertCircle,
+} from 'react-icons/fi';
+import { useCart } from '@/contexts/CartContext';
 
 export default function CartPage() {
-  const [cartItems, setCartItems] = useState(mockCartItems);
+  const { cartGroups, removeItem, updateQuantity, prepareCheckout, hydrated } =
+    useCart();
+  const router = useRouter();
+
   const [selectedItems, setSelectedItems] = useState({});
   const [selectAll, setSelectAll] = useState(false);
+  const [promoCode, setPromoCode] = useState('');
+  const [promoApplied, setPromoApplied] = useState(false);
 
-  // Calculate totals
-  const calculateTotals = () => {
-    let subtotal = 0;
-    let itemCount = 0;
+  // ─── Selection helpers ────────────────────────────────────────────────────────
+  const allItemIds = cartGroups.flatMap(g => g.items.map(i => i.id));
 
-    cartItems.forEach((sellerGroup) => {
-      sellerGroup.items.forEach((item) => {
-        if (selectedItems[item.id]) {
-          subtotal += item.price * item.quantity;
-          itemCount += item.quantity;
-        }
-      });
-    });
-
-    return { subtotal, itemCount };
-  };
-
-  const { subtotal, itemCount } = calculateTotals();
-
-  // Handle quantity change
-  const updateQuantity = (sellerIndex, itemIndex, newQuantity) => {
-    const updatedCart = [...cartItems];
-    const item = updatedCart[sellerIndex].items[itemIndex];
-    const validQuantity = Math.min(
-      Math.max(newQuantity, item.moq),
-      item.maxQuantity,
-    );
-    updatedCart[sellerIndex].items[itemIndex].quantity = validQuantity;
-    setCartItems(updatedCart);
-  };
-
-  // Remove item
-  const removeItem = (sellerIndex, itemIndex) => {
-    const updatedCart = [...cartItems];
-    updatedCart[sellerIndex].items.splice(itemIndex, 1);
-    if (updatedCart[sellerIndex].items.length === 0) {
-      updatedCart.splice(sellerIndex, 1);
-    }
-    setCartItems(updatedCart);
-  };
-
-  // Toggle select all
   const toggleSelectAll = () => {
-    const newSelectAll = !selectAll;
-    setSelectAll(newSelectAll);
-
-    const newSelected = {};
-    cartItems.forEach((sellerGroup) => {
-      sellerGroup.items.forEach((item) => {
-        newSelected[item.id] = newSelectAll;
-      });
-    });
-    setSelectedItems(newSelected);
+    const next = !selectAll;
+    setSelectAll(next);
+    const map = {};
+    allItemIds.forEach(id => (map[id] = next));
+    setSelectedItems(map);
   };
 
-  // Toggle single item
-  const toggleItem = (itemId) => {
-    setSelectedItems((prev) => {
-      const newSelected = { ...prev, [itemId]: !prev[itemId] };
-
-      // Check if all items are selected
-      let allSelected = true;
-      cartItems.forEach((sellerGroup) => {
-        sellerGroup.items.forEach((item) => {
-          if (!newSelected[item.id]) allSelected = false;
-        });
-      });
-      setSelectAll(allSelected);
-
-      return newSelected;
-    });
+  const toggleSellerGroup = sellerId => {
+    const group = cartGroups.find(g => g.seller.id === sellerId);
+    if (!group) return;
+    const allSelected = group.items.every(i => selectedItems[i.id]);
+    const map = { ...selectedItems };
+    group.items.forEach(i => (map[i.id] = !allSelected));
+    setSelectedItems(map);
+    setSelectAll(allItemIds.every(id => map[id]));
   };
 
-  // Toggle seller group
-  const toggleSellerGroup = (sellerId) => {
-    const sellerItems =
-      cartItems.find((g) => g.seller.id === sellerId)?.items || [];
-    const allSelected = sellerItems.every((item) => selectedItems[item.id]);
-
-    const newSelected = { ...selectedItems };
-    sellerItems.forEach((item) => {
-      newSelected[item.id] = !allSelected;
-    });
-
-    // Update select all
-    let allItemsSelected = true;
-    cartItems.forEach((sellerGroup) => {
-      sellerGroup.items.forEach((item) => {
-        if (!newSelected[item.id]) allItemsSelected = false;
-      });
-    });
-    setSelectAll(allItemsSelected);
-
-    setSelectedItems(newSelected);
+  const toggleItem = itemId => {
+    const map = { ...selectedItems, [itemId]: !selectedItems[itemId] };
+    setSelectedItems(map);
+    setSelectAll(allItemIds.every(id => map[id]));
   };
 
-  if (cartItems.length === 0) {
+  // ─── Totals ───────────────────────────────────────────────────────────────────
+  const selectedCount = allItemIds.filter(id => selectedItems[id]).length;
+
+  const subtotal = cartGroups.reduce(
+    (total, group) =>
+      total +
+      group.items.reduce(
+        (sum, item) =>
+          selectedItems[item.id] ? sum + item.price * item.quantity : sum,
+        0,
+      ),
+    0,
+  );
+
+  const selectedQtyTotal = cartGroups.reduce(
+    (total, group) =>
+      total +
+      group.items.reduce(
+        (sum, item) => (selectedItems[item.id] ? sum + item.quantity : sum),
+        0,
+      ),
+    0,
+  );
+
+  // ─── Quantity helpers ─────────────────────────────────────────────────────────
+  const handleQtyChange = (item, delta) => {
+    updateQuantity(item.id, item.quantity + delta * item.moq);
+  };
+  const handleQtyInput = (item, raw) => {
+    const val = parseInt(raw, 10);
+    if (!isNaN(val)) updateQuantity(item.id, val);
+  };
+
+  // ─── Proceed to Checkout ──────────────────────────────────────────────────────
+  const handleProceedToCheckout = () => {
+    // Build a filtered version of cartGroups containing only selected items
+    const selectedGroups = cartGroups
+      .map(group => ({
+        ...group,
+        items: group.items.filter(item => selectedItems[item.id]),
+      }))
+      .filter(group => group.items.length > 0);
+
+    prepareCheckout(selectedGroups); // store in context
+    router.push('/checkout'); // navigate
+  };
+
+  // ─── Empty / loading states ───────────────────────────────────────────────────
+  if (!hydrated) {
+    return (
+      <div className="min-h-screen bg-gray-50 pt-20 flex items-center justify-center">
+        <div className="animate-pulse text-gray-400 text-lg">Loading cart…</div>
+      </div>
+    );
+  }
+
+  if (cartGroups.length === 0) {
     return (
       <div className="min-h-screen bg-gray-50 pt-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
@@ -202,18 +133,21 @@ export default function CartPage() {
   return (
     <div className="min-h-screen bg-gray-50 pt-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
             Shopping Cart
           </h1>
-          <span className="text-gray-600">{itemCount} items selected</span>
+          <span className="text-gray-600">
+            {selectedQtyTotal} items selected
+          </span>
         </div>
 
         <div className="flex flex-col lg:flex-row gap-8">
-          {/* Main cart items */}
+          {/* ── Main cart list ───────────────────────────────────────────────── */}
           <div className="flex-1">
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-              {/* Select all header */}
+              {/* Select-all header */}
               <div className="p-4 border-b border-gray-100 flex items-center">
                 <label className="flex items-center space-x-3 cursor-pointer">
                   <input
@@ -222,24 +156,27 @@ export default function CartPage() {
                     onChange={toggleSelectAll}
                     className="w-5 h-5 text-orange-500 rounded focus:ring-orange-500"
                   />
-                  <span className="text-gray-700 font-medium">Select All</span>
+                  <span className="text-gray-700 font-medium">
+                    Select All ({allItemIds.length}{' '}
+                    {allItemIds.length === 1 ? 'product' : 'products'})
+                  </span>
                 </label>
               </div>
 
               {/* Seller groups */}
-              {cartItems.map((sellerGroup, sellerIndex) => (
+              {cartGroups.map(sellerGroup => (
                 <div
-                  key={sellerGroup.seller.id}
+                  key={sellerGroup.id}
                   className="border-b border-gray-100 last:border-b-0"
                 >
                   {/* Seller header */}
                   <div className="p-4 bg-gray-50 flex items-center justify-between">
                     <div className="flex items-center space-x-4">
-                      <label className="flex items-center">
+                      <label className="flex items-center cursor-pointer">
                         <input
                           type="checkbox"
                           checked={sellerGroup.items.every(
-                            (item) => selectedItems[item.id],
+                            item => !!selectedItems[item.id],
                           )}
                           onChange={() =>
                             toggleSellerGroup(sellerGroup.seller.id)
@@ -258,13 +195,13 @@ export default function CartPage() {
                         )}
                       </div>
                     </div>
-                    <button className="text-sm text-gray-500 hover:text-orange-600">
+                    <button className="text-sm text-gray-500 hover:text-orange-600 transition">
                       Message Seller
                     </button>
                   </div>
 
                   {/* Items */}
-                  {sellerGroup.items.map((item, itemIndex) => (
+                  {sellerGroup.items.map(item => (
                     <div
                       key={item.id}
                       className="p-4 flex flex-col sm:flex-row gap-4 border-t border-gray-100"
@@ -281,85 +218,94 @@ export default function CartPage() {
 
                       {/* Product image */}
                       <div className="relative w-20 h-20 sm:w-24 sm:h-24 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
-                        <Image
-                          src={item.image}
-                          alt={item.name}
-                          fill
-                          className="object-cover"
-                        />
+                        {item.image ? (
+                          <Image
+                            src={item.image}
+                            alt={item.name}
+                            fill
+                            className="object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-gray-300">
+                            <FiAlertCircle size={24} />
+                          </div>
+                        )}
                       </div>
 
                       {/* Product details */}
-                      <div className="flex-1">
+                      <div className="flex-1 min-w-0">
                         <Link
                           href={`/products/${item.productId}`}
-                          className="font-medium text-gray-900 hover:text-orange-600 line-clamp-2"
+                          className="font-medium text-gray-900 hover:text-orange-600 line-clamp-2 block"
                         >
                           {item.name}
                         </Link>
-                        <p className="text-sm text-gray-500 mt-1">
-                          Variant: {item.variant}
-                        </p>
-                        <p className="text-sm text-gray-500">
-                          MOQ: {item.moq} pieces
-                        </p>
+                        {item.variant && item.variant !== '—' && (
+                          <p className="text-sm text-gray-500 mt-1">
+                            Variant: {item.variant}
+                          </p>
+                        )}
+                        {item.moq > 1 && (
+                          <p className="text-sm text-gray-500">
+                            MOQ: {item.moq} pieces
+                          </p>
+                        )}
+                        {item.stock <= 10 && item.stock > 0 && (
+                          <p className="text-xs text-red-500 mt-1">
+                            Only {item.stock} left in stock!
+                          </p>
+                        )}
                       </div>
 
-                      {/* Price and quantity */}
+                      {/* Price, quantity & subtotal */}
                       <div className="flex flex-row sm:flex-col items-center sm:items-end justify-between sm:justify-start gap-4">
                         <div className="text-lg font-bold text-orange-600">
                           ${item.price.toFixed(2)}
+                          <span className="text-xs font-normal text-gray-400 ml-1">
+                            / unit
+                          </span>
                         </div>
+
+                        {/* Quantity controls */}
                         <div className="flex items-center">
                           <button
-                            onClick={() =>
-                              updateQuantity(
-                                sellerIndex,
-                                itemIndex,
-                                item.quantity - item.moq,
-                              )
-                            }
-                            className="w-8 h-8 border border-gray-200 rounded-l flex items-center justify-center hover:bg-gray-50"
+                            onClick={() => handleQtyChange(item, -1)}
+                            disabled={item.quantity <= item.moq}
+                            className="w-8 h-8 border border-gray-200 rounded-l flex items-center justify-center hover:bg-gray-50 disabled:opacity-40 transition"
                           >
-                            -
+                            −
                           </button>
                           <input
                             type="number"
                             value={item.quantity}
-                            onChange={(e) =>
-                              updateQuantity(
-                                sellerIndex,
-                                itemIndex,
-                                parseInt(e.target.value) || item.moq,
-                              )
-                            }
+                            onChange={e => handleQtyInput(item, e.target.value)}
                             className="w-16 h-8 border-t border-b border-gray-200 text-center text-sm focus:outline-none"
                             min={item.moq}
                             max={item.maxQuantity}
                             step={item.moq}
                           />
                           <button
-                            onClick={() =>
-                              updateQuantity(
-                                sellerIndex,
-                                itemIndex,
-                                item.quantity + item.moq,
-                              )
-                            }
-                            className="w-8 h-8 border border-gray-200 rounded-r flex items-center justify-center hover:bg-gray-50"
+                            onClick={() => handleQtyChange(item, 1)}
+                            disabled={item.quantity >= item.maxQuantity}
+                            className="w-8 h-8 border border-gray-200 rounded-r flex items-center justify-center hover:bg-gray-50 disabled:opacity-40 transition"
                           >
                             +
                           </button>
                         </div>
+
                         <div className="text-sm text-gray-500">
-                          Subtotal: ${(item.price * item.quantity).toFixed(2)}
+                          Subtotal:{' '}
+                          <span className="font-medium text-gray-700">
+                            ${(item.price * item.quantity).toFixed(2)}
+                          </span>
                         </div>
                       </div>
 
                       {/* Remove button */}
                       <button
-                        onClick={() => removeItem(sellerIndex, itemIndex)}
-                        className="text-gray-400 hover:text-red-500 transition"
+                        onClick={() => removeItem(item.id)}
+                        className="text-gray-400 hover:text-red-500 transition self-start sm:self-center"
+                        title="Remove item"
                       >
                         <FiTrash2 size={18} />
                       </button>
@@ -369,34 +315,46 @@ export default function CartPage() {
               ))}
             </div>
 
-            {/* Continue shopping link */}
+            {/* Continue shopping */}
             <Link
               href="/products"
-              className="inline-flex items-center text-orange-600 hover:text-orange-700 mt-4"
+              className="inline-flex items-center text-orange-600 hover:text-orange-700 mt-4 transition"
             >
               <FiChevronRight className="rotate-180 mr-1" />
               Continue Shopping
             </Link>
           </div>
 
-          {/* Order summary sidebar */}
+          {/* ── Order summary sidebar ─────────────────────────────────────────── */}
           <div className="lg:w-80">
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 sticky top-24">
               <h2 className="text-lg font-semibold mb-4">Order Summary</h2>
 
               <div className="space-y-3 mb-4">
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Subtotal</span>
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600">
+                    Products ({selectedCount} selected)
+                  </span>
                   <span className="font-medium">${subtotal.toFixed(2)}</span>
                 </div>
-                <div className="flex justify-between">
+                <div className="flex justify-between text-sm">
                   <span className="text-gray-600">Shipping</span>
-                  <span className="text-gray-600">Calculated at next step</span>
+                  <span className="text-gray-400 italic">
+                    Calculated at next step
+                  </span>
                 </div>
-                <div className="flex justify-between">
+                <div className="flex justify-between text-sm">
                   <span className="text-gray-600">Tax</span>
-                  <span className="text-gray-600">Calculated at next step</span>
+                  <span className="text-gray-400 italic">
+                    Calculated at next step
+                  </span>
                 </div>
+                {promoApplied && (
+                  <div className="flex justify-between text-sm text-emerald-600">
+                    <span>Promo discount</span>
+                    <span>−$0.00</span>
+                  </div>
+                )}
                 <div className="border-t border-gray-100 pt-3 flex justify-between text-lg font-bold">
                   <span>Total</span>
                   <span className="text-orange-600">
@@ -405,12 +363,25 @@ export default function CartPage() {
                 </div>
               </div>
 
-              <Link
-                href="/checkout"
-                className="block w-full py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white text-center font-semibold rounded-xl hover:shadow-lg transition mb-3"
+              {selectedCount === 0 && (
+                <p className="text-xs text-amber-600 bg-amber-50 rounded-lg px-3 py-2 mb-3 flex items-center gap-2">
+                  <FiAlertCircle size={14} />
+                  Select at least one item to proceed.
+                </p>
+              )}
+
+              {/* ── Proceed to Checkout button ── */}
+              <button
+                onClick={handleProceedToCheckout}
+                disabled={selectedCount === 0}
+                className={`w-full py-3 text-white text-center font-semibold rounded-xl transition mb-3 ${
+                  selectedCount > 0
+                    ? 'bg-gradient-to-r from-orange-500 to-orange-600 hover:shadow-lg hover:shadow-orange-500/20 cursor-pointer'
+                    : 'bg-gray-300 cursor-not-allowed'
+                }`}
               >
                 Proceed to Checkout
-              </Link>
+              </button>
 
               {/* Promo code */}
               <div className="mt-4">
@@ -420,13 +391,25 @@ export default function CartPage() {
                 <div className="flex">
                   <input
                     type="text"
+                    value={promoCode}
+                    onChange={e => setPromoCode(e.target.value)}
                     placeholder="Enter code"
                     className="flex-1 px-3 py-2 border border-gray-200 rounded-l-lg focus:outline-none focus:border-orange-500"
                   />
-                  <button className="px-4 py-2 bg-gray-100 text-gray-700 rounded-r-lg hover:bg-gray-200 transition">
+                  <button
+                    onClick={() => {
+                      if (promoCode.trim()) setPromoApplied(true);
+                    }}
+                    className="px-4 py-2 bg-gray-100 text-gray-700 rounded-r-lg hover:bg-gray-200 transition"
+                  >
                     Apply
                   </button>
                 </div>
+                {promoApplied && (
+                  <p className="text-xs text-emerald-600 mt-1">
+                    ✓ Promo code applied!
+                  </p>
+                )}
               </div>
 
               {/* Trust badges */}

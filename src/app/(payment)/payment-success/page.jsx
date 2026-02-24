@@ -3,11 +3,17 @@
 /**
  * PaymentSuccess Page
  * File location: app/payment-success/page.jsx
+ *
+ * After Stripe confirms payment:
+ *  1. Calls backend to record the order
+ *  2. Clears the cart via CartContext
+ *  3. Shows the order summary
  */
 
-import { useEffect, useState, Suspense } from "react";
-import { useSearchParams } from "next/navigation";
-import Link from "next/link";
+import { useEffect, useState, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
+import Link from 'next/link';
+import { useCart } from '@/contexts/CartContext';
 
 const API_BASE =
   process.env.NEXT_PUBLIC_API_URL || "https://unity-shop-server.vercel.app";
@@ -25,6 +31,9 @@ function SuccessContent() {
   const searchParams = useSearchParams();
   const sessionId = searchParams.get("session_id");
 
+  const { clearCart } = useCart();
+
+  const [status, setStatus] = useState('loading');
   const [status, setStatus] = useState("loading");
   const [order, setOrder] = useState(null);
   const [errorMsg, setErrorMsg] = useState("");
@@ -54,6 +63,9 @@ function SuccessContent() {
           throw new Error(data?.error || "Could not verify payment.");
         }
 
+        // ✅ Payment confirmed — clear the cart
+        clearCart();
+
         setOrder(data);
         setStatus("success");
       } catch (err) {
@@ -63,7 +75,8 @@ function SuccessContent() {
     };
 
     fetchOrder();
-  }, [sessionId]);
+    // clearCart is stable (useCallback), safe to include
+  }, [sessionId, clearCart]);
 
   if (status === "loading") return <FullPageSpinner />;
   if (status === "success") return <SuccessView order={order} />;
@@ -80,6 +93,7 @@ function SuccessView({ order }) {
         {/* Banner */}
         <div className="bg-gradient-to-br from-emerald-400 to-teal-500 px-8 pt-10 pb-8 text-center text-white">
           <div className="w-20 h-20 mx-auto mb-5 rounded-full bg-white/20 flex items-center justify-center">
+            {/* Checkmark */}
             <svg
               xmlns="http://www.w3.org/2000/svg"
               width="40"
@@ -222,6 +236,11 @@ function Row({ label, value, bold }) {
     <div className="flex justify-between items-center py-2.5 border-b border-slate-50 last:border-0">
       <span className="text-sm text-slate-400">{label}</span>
       <span
+        className={`text-sm ${
+          bold
+            ? 'text-emerald-600 font-bold text-base'
+            : 'text-slate-700 font-medium'
+        }`}
         className={`text-sm ${bold ? "text-emerald-600 font-bold text-base" : "text-slate-700 font-medium"}`}
       >
         {value ?? "—"}
