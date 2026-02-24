@@ -5,21 +5,31 @@ import { useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { FiChevronLeft, FiAlertCircle, FiPackage } from 'react-icons/fi';
+import {
+  FiChevronLeft,
+  FiAlertCircle,
+  FiPackage,
+  FiInfo,
+  FiShield,
+  FiLock,
+} from 'react-icons/fi';
 import { useCart } from '@/contexts/CartContext';
-import { useSession } from 'next-auth/react'; // ← swap for your auth hook if different
+import { useSession } from 'next-auth/react'; // ← swap with your own auth hook if different
 import PaymentButton from '@/components/common/payment-button/PaymentButton';
+
+// ── Shop's receiving account — set these in your .env ───────────────────────
+const SHOP_EMAIL = process.env.NEXT_PUBLIC_SHOP_EMAIL || 'shop@unityshop.com';
+const SHOP_NAME = process.env.NEXT_PUBLIC_SHOP_NAME || 'UnityShop';
 
 export default function CheckoutPage() {
   const { checkoutGroups } = useCart();
   const router = useRouter();
 
-  // ── Get the logged-in user's email ──────────────────────────────────────────
-  // If you use a different auth system (e.g. a custom useAuth hook), swap this line.
+  // Swap with your own auth if you don't use NextAuth
   const { data: session } = useSession();
   const userEmail = session?.user?.email || '';
 
-  // If someone navigates directly to /checkout with nothing to pay, send them back
+  // If someone hits /checkout directly with nothing prepared, bounce them back
   useEffect(() => {
     if (checkoutGroups.length === 0) {
       router.replace('/cart');
@@ -28,24 +38,37 @@ export default function CheckoutPage() {
 
   if (checkoutGroups.length === 0) return null; // avoid flash before redirect
 
-  // ── Totals ───────────────────────────────────────────────────────────────────
+  // ── Compute grand total ───────────────────────────────────────────────────
   const grandTotal = checkoutGroups.reduce(
     (total, group) =>
-      total +
-      group.items.reduce((sum, item) => sum + item.price * item.quantity, 0),
+      total + group.items.reduce((s, i) => s + i.price * i.quantity, 0),
     0,
   );
 
   const totalQty = checkoutGroups.reduce(
-    (total, group) =>
-      total + group.items.reduce((sum, item) => sum + item.quantity, 0),
+    (total, group) => total + group.items.reduce((s, i) => s + i.quantity, 0),
     0,
   );
+
+  const totalUniqueProducts = checkoutGroups.reduce(
+    (n, g) => n + g.items.length,
+    0,
+  );
+
+  // Product name string sent to Stripe (shows on checkout page + receipt)
+  const productSummary = checkoutGroups
+    .flatMap(g => g.items.map(i => `${i.name} (×${i.quantity})`))
+    .join(', ');
+
+  // All product IDs sent as metadata so backend can log them
+  const allProductIds = checkoutGroups
+    .flatMap(g => g.items.map(i => i.productId))
+    .join(',');
 
   return (
     <div className="min-h-screen bg-gray-50 pt-20">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
+        {/* ── Page header ─────────────────────────────────────────────────── */}
         <div className="mb-8">
           <Link
             href="/cart"
@@ -58,25 +81,30 @@ export default function CheckoutPage() {
             Checkout
           </h1>
           <p className="text-gray-500 mt-1 text-sm">
-            Review your order and complete payment below.
+            Review your order, then complete payment in one click.
           </p>
         </div>
 
+        {/* ── Breadcrumb steps ─────────────────────────────────────────────── */}
+        <div className="flex items-center gap-2 text-xs text-gray-400 mb-8">
+          <span className="text-orange-500 font-semibold">Cart</span>
+          <span>›</span>
+          <span className="text-gray-800 font-semibold">Checkout</span>
+          <span>›</span>
+          <span>Payment</span>
+          <span>›</span>
+          <span>Confirmation</span>
+        </div>
+
         <div className="flex flex-col lg:flex-row gap-8">
-          {/* ── Left: Order details ─────────────────────────────────────────── */}
-          <div className="flex-1 space-y-6">
-            {/* One card per seller */}
+          {/* ── LEFT: Order breakdown ──────────────────────────────────────── */}
+          <div className="flex-1 space-y-4">
+            {/* One visual card per seller group */}
             {checkoutGroups.map(group => {
-              const groupTotal = group.items.reduce(
-                (sum, item) => sum + item.price * item.quantity,
+              const groupSubtotal = group.items.reduce(
+                (s, i) => s + i.price * i.quantity,
                 0,
               );
-
-              // Build a readable product name for Stripe
-              // e.g.  "Headphones (×100), Speaker (×50)"
-              const productSummary = group.items
-                .map(i => `${i.name} (×${i.quantity})`)
-                .join(', ');
 
               return (
                 <div
@@ -84,21 +112,24 @@ export default function CheckoutPage() {
                   className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden"
                 >
                   {/* Seller header */}
-                  <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+                  <div className="px-5 py-3 bg-gray-50 border-b border-gray-100 flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <FiPackage className="text-orange-500" />
-                      <span className="font-semibold text-gray-800">
+                      <FiPackage className="text-orange-400" size={15} />
+                      <span className="font-semibold text-gray-700 text-sm">
                         {group.seller.name}
                       </span>
                       {group.seller.verified && (
-                        <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">
+                        <span className="text-[10px] bg-green-100 text-green-700 px-2 py-0.5 rounded-full">
                           Verified
                         </span>
                       )}
                     </div>
-                    <span className="text-sm text-gray-500">
+                    <span className="text-xs text-gray-400">
                       {group.items.length}{' '}
-                      {group.items.length === 1 ? 'item' : 'items'}
+                      {group.items.length === 1 ? 'item' : 'items'} ·{' '}
+                      <span className="text-gray-600 font-medium">
+                        ${groupSubtotal.toFixed(2)}
+                      </span>
                     </span>
                   </div>
 
@@ -107,10 +138,10 @@ export default function CheckoutPage() {
                     {group.items.map(item => (
                       <div
                         key={item.id}
-                        className="p-4 flex items-center gap-4"
+                        className="px-5 py-3 flex items-center gap-4"
                       >
                         {/* Thumbnail */}
-                        <div className="relative w-16 h-16 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
+                        <div className="relative w-14 h-14 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
                           {item.image ? (
                             <Image
                               src={item.image}
@@ -120,14 +151,14 @@ export default function CheckoutPage() {
                             />
                           ) : (
                             <div className="w-full h-full flex items-center justify-center text-gray-300">
-                              <FiAlertCircle size={20} />
+                              <FiAlertCircle size={18} />
                             </div>
                           )}
                         </div>
 
                         {/* Details */}
                         <div className="flex-1 min-w-0">
-                          <p className="font-medium text-gray-800 line-clamp-1">
+                          <p className="text-sm font-medium text-gray-800 line-clamp-1">
                             {item.name}
                           </p>
                           {item.variant && item.variant !== '—' && (
@@ -136,96 +167,139 @@ export default function CheckoutPage() {
                             </p>
                           )}
                           <p className="text-xs text-gray-400 mt-0.5">
-                            ${item.price.toFixed(2)} × {item.quantity}
+                            ${item.price.toFixed(2)}{' '}
+                            <span className="text-gray-300">×</span>{' '}
+                            {item.quantity}
                           </p>
                         </div>
 
                         {/* Line total */}
-                        <p className="font-semibold text-gray-800 whitespace-nowrap">
+                        <p className="text-sm font-semibold text-gray-800 whitespace-nowrap">
                           ${(item.price * item.quantity).toFixed(2)}
                         </p>
                       </div>
                     ))}
                   </div>
-
-                  {/* Seller subtotal + Pay button */}
-                  <div className="px-6 py-4 bg-gray-50 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                    <div>
-                      <p className="text-xs text-gray-500 mb-0.5">
-                        Seller subtotal
-                      </p>
-                      <p className="text-xl font-bold text-orange-600">
-                        ${groupTotal.toFixed(2)}
-                      </p>
-                    </div>
-
-                    {/* ── PaymentButton ── */}
-                    {!userEmail ? (
-                      <div className="text-xs text-red-500 flex items-center gap-1">
-                        <FiAlertCircle size={13} />
-                        Sign in to pay
-                      </div>
-                    ) : (
-                      <PaymentButton
-                        price={groupTotal}
-                        productId={group.items.map(i => i.productId).join(',')}
-                        quantity={1}
-                        productName={productSummary}
-                        userEmail={userEmail}
-                        sellerName={group.seller.name}
-                        sellerEmail={group.seller.email || ''}
-                        label={`Pay ${group.seller.name}`}
-                      />
-                    )}
-                  </div>
                 </div>
               );
             })}
+
+            {/* Info banner — payment goes to UnityShop */}
+            <div className="flex items-start gap-2 text-xs text-gray-500 bg-blue-50 border border-blue-100 rounded-xl px-4 py-3">
+              <FiInfo
+                className="text-blue-400 mt-0.5 flex-shrink-0"
+                size={13}
+              />
+              <p>
+                Your full payment is collected securely by{' '}
+                <span className="font-semibold text-blue-600">{SHOP_NAME}</span>
+                . Funds are distributed to each seller after order confirmation.
+              </p>
+            </div>
           </div>
 
-          {/* ── Right: Grand total summary ──────────────────────────────────── */}
+          {/* ── RIGHT: Summary + single PaymentButton ─────────────────────── */}
           <div className="lg:w-72">
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 sticky top-24">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">
-                Order Total
-              </h2>
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden sticky top-24">
+              {/* Summary header */}
+              <div className="px-6 pt-6 pb-4 border-b border-gray-100">
+                <h2 className="text-lg font-semibold text-gray-900">
+                  Order Summary
+                </h2>
+              </div>
 
-              <div className="space-y-3 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-gray-500">Items ({totalQty})</span>
-                  <span>${grandTotal.toFixed(2)}</span>
+              <div className="px-6 py-4 space-y-2.5 text-sm">
+                {/* Per-seller lines */}
+                {checkoutGroups.map(group => {
+                  const sub = group.items.reduce(
+                    (s, i) => s + i.price * i.quantity,
+                    0,
+                  );
+                  return (
+                    <div
+                      key={group.id}
+                      className="flex justify-between items-center"
+                    >
+                      <span className="text-gray-500 truncate max-w-[60%] flex items-center gap-1.5">
+                        <FiPackage
+                          size={11}
+                          className="text-orange-400 flex-shrink-0"
+                        />
+                        {group.seller.name}
+                      </span>
+                      <span className="text-gray-700 font-medium">
+                        ${sub.toFixed(2)}
+                      </span>
+                    </div>
+                  );
+                })}
+
+                {/* Divider + totals */}
+                <div className="border-t border-gray-100 pt-2.5 space-y-2">
+                  <div className="flex justify-between text-gray-500">
+                    <span>
+                      Subtotal ({totalUniqueProducts}{' '}
+                      {totalUniqueProducts === 1 ? 'product' : 'products'},{' '}
+                      {totalQty} units)
+                    </span>
+                    <span className="text-gray-700">
+                      ${grandTotal.toFixed(2)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between text-gray-400 text-xs">
+                    <span>Shipping</span>
+                    <span className="italic">TBD at payment</span>
+                  </div>
+                  <div className="flex justify-between text-gray-400 text-xs">
+                    <span>Tax</span>
+                    <span className="italic">TBD at payment</span>
+                  </div>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-500">Shipping</span>
-                  <span className="text-gray-400 italic">TBD</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-500">Tax</span>
-                  <span className="text-gray-400 italic">TBD</span>
-                </div>
-                <div className="border-t border-gray-100 pt-3 flex justify-between text-base font-bold">
-                  <span>Grand Total</span>
-                  <span className="text-orange-600">
+
+                {/* Grand total highlight */}
+                <div className="bg-gradient-to-r from-orange-50 to-transparent rounded-xl px-4 py-3 flex justify-between items-center">
+                  <span className="font-bold text-gray-800 text-base">
+                    Grand Total
+                  </span>
+                  <span className="text-2xl font-bold text-orange-600">
                     ${grandTotal.toFixed(2)}
                   </span>
                 </div>
               </div>
 
-              {/* Multi-seller note */}
-              {checkoutGroups.length > 1 && (
-                <p className="mt-4 text-xs text-gray-400 bg-gray-50 rounded-lg p-3 leading-relaxed">
-                  Your order has{' '}
-                  <span className="font-medium text-gray-600">
-                    {checkoutGroups.length} sellers
-                  </span>
-                  . Each seller is paid separately — click the payment button
-                  inside each seller's card above.
-                </p>
-              )}
+              {/* Pay button */}
+              <div className="px-6 pb-6 space-y-3">
+                {!userEmail ? (
+                  <div className="text-xs text-red-500 bg-red-50 rounded-xl px-4 py-3 flex items-center gap-2">
+                    <FiAlertCircle size={13} className="flex-shrink-0" />
+                    Please sign in to complete your purchase.
+                  </div>
+                ) : (
+                  <PaymentButton
+                    price={grandTotal}
+                    productId={allProductIds}
+                    quantity={1}
+                    productName={productSummary}
+                    userEmail={userEmail}
+                    sellerName={SHOP_NAME}
+                    sellerEmail={SHOP_EMAIL}
+                    label="Complete Payment"
+                    className="w-full justify-center text-base py-4"
+                  />
+                )}
 
-              <div className="mt-6 text-center text-xs text-gray-400 space-y-1">
-                <p>🔒 Secured by Stripe</p>
-                <p>✓ Buyer Protection Enabled</p>
+                {/* Trust badges */}
+                <div className="flex items-center justify-center gap-4 text-xs text-gray-400 pt-1">
+                  <span className="flex items-center gap-1">
+                    <FiLock size={11} />
+                    Stripe Secured
+                  </span>
+                  <span>·</span>
+                  <span className="flex items-center gap-1">
+                    <FiShield size={11} />
+                    Buyer Protected
+                  </span>
+                </div>
               </div>
             </div>
           </div>

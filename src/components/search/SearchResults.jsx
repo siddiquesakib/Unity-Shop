@@ -2,8 +2,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import ProductCardB2B from "@/components/product/ProductCardB2B";
+// import ProductCardB2B from "@/components/product/ProductCardB2B";
 import { FiGrid, FiList, FiChevronLeft, FiChevronRight } from "react-icons/fi";
+import ProductCard from "../product/ProductCard";
 
 // Mock results data
 const mockResults = Array.from({ length: 24 }, (_, i) => ({
@@ -200,7 +201,7 @@ const SearchResults = ({ query, filters }) => {
       {view === "grid" ? (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {results.map((product) => (
-            <ProductCardB2B key={product.id} product={product} />
+            <ProductCard key={product.id} product={product} />
           ))}
         </div>
       ) : (
