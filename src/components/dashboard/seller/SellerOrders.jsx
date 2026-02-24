@@ -6,7 +6,8 @@ import { motion } from "framer-motion";
 import { Eye, Truck, XCircle, CheckCircle, Package, Clock } from "lucide-react";
 import Link from "next/link";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+const API_BASE =
+  process.env.NEXT_PUBLIC_API_URL || "https://unity-shop-server.vercel.app";
 
 export default function SellerOrders() {
   const { user } = useAuth();
