@@ -19,16 +19,21 @@ const OrderReview = ({
 
   return (
     <div className="space-y-6">
-      <h2 className="text-xl font-semibold text-gray-900">Review Your Order</h2>
+      <div>
+        <h2 className="text-xl font-black text-black tracking-tight uppercase">
+          Review Your Order
+        </h2>
+        <div className="w-10 h-0.5 bg-black mt-2 rounded-full" />
+      </div>
 
       {/* Shipping address */}
-      <div className="bg-gray-50 rounded-lg p-4">
+      <div className="bg-gray-50 rounded-2xl p-5 border border-gray-100">
         <div className="flex justify-between items-center mb-2">
-          <h3 className="font-medium">Shipping Address</h3>
+          <h3 className="font-bold text-black text-sm">Shipping Address</h3>
           <button
             type="button"
             onClick={onBack}
-            className="text-sm text-orange-600 hover:text-orange-700"
+            className="text-xs font-medium text-gray-400 hover:text-black transition-colors"
           >
             Edit
           </button>
@@ -53,13 +58,13 @@ const OrderReview = ({
       </div>
 
       {/* Payment method */}
-      <div className="bg-gray-50 rounded-lg p-4">
+      <div className="bg-gray-50 rounded-2xl p-5 border border-gray-100">
         <div className="flex justify-between items-center mb-2">
-          <h3 className="font-medium">Payment Method</h3>
+          <h3 className="font-bold text-black text-sm">Payment Method</h3>
           <button
             type="button"
             onClick={() => onBack()}
-            className="text-sm text-orange-600 hover:text-orange-700"
+            className="text-xs font-medium text-gray-400 hover:text-black transition-colors"
           >
             Edit
           </button>
@@ -75,14 +80,14 @@ const OrderReview = ({
 
       {/* Items */}
       <div>
-        <h3 className="font-medium mb-3">Items</h3>
+        <h3 className="font-bold text-black text-sm mb-3">Items</h3>
         <div className="space-y-3">
           {cartItems.map((sellerGroup) => (
             <div
               key={sellerGroup.seller.id}
-              className="border border-gray-100 rounded-lg p-3"
+              className="border border-gray-100 rounded-2xl p-4"
             >
-              <p className="font-medium text-sm mb-2">
+              <p className="font-semibold text-sm mb-2 text-gray-800">
                 {sellerGroup.seller.name}
               </p>
               {sellerGroup.items.map((item) => (
@@ -90,7 +95,7 @@ const OrderReview = ({
                   key={item.id}
                   className="flex items-center py-2 border-b border-gray-100 last:border-0"
                 >
-                  <div className="relative w-12 h-12 bg-gray-100 rounded overflow-hidden">
+                  <div className="relative w-12 h-12 bg-gray-100 rounded-xl overflow-hidden">
                     <Image
                       src={item.image}
                       alt={item.name}
@@ -116,7 +121,9 @@ const OrderReview = ({
       <div className="border-t border-gray-100 pt-4">
         <div className="flex justify-between text-lg font-bold">
           <span>Total</span>
-          <span className="text-orange-600">${totalPrice.toFixed(2)}</span>
+          <span className="text-black font-black text-xl">
+            ${totalPrice.toFixed(2)}
+          </span>
         </div>
       </div>
 
@@ -127,15 +134,21 @@ const OrderReview = ({
           id="terms"
           checked={termsAccepted}
           onChange={(e) => setTermsAccepted(e.target.checked)}
-          className="w-4 h-4 text-orange-500 rounded focus:ring-orange-500"
+          className="w-4 h-4 accent-black rounded"
         />
         <label htmlFor="terms" className="ml-2 text-sm text-gray-700">
           I agree to the{" "}
-          <Link href="/terms" className="text-orange-600 hover:underline">
+          <Link
+            href="/terms"
+            className="text-black font-semibold hover:underline"
+          >
             Terms of Service
           </Link>{" "}
           and{" "}
-          <Link href="/privacy" className="text-orange-600 hover:underline">
+          <Link
+            href="/privacy"
+            className="text-black font-semibold hover:underline"
+          >
             Privacy Policy
           </Link>
         </label>
@@ -146,14 +159,14 @@ const OrderReview = ({
         <button
           type="button"
           onClick={onBack}
-          className="px-6 py-2 border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50"
+          className="px-6 py-2.5 border-2 border-gray-200 text-gray-700 font-semibold rounded-full hover:border-black hover:text-black transition-all duration-300"
         >
           Back
         </button>
         <button
           onClick={onPlaceOrder}
           disabled={!termsAccepted || isPlacingOrder}
-          className="px-6 py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white font-semibold rounded-xl hover:shadow-lg transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+          className="px-8 py-3.5 bg-black text-white font-bold rounded-full hover:bg-gray-800 shadow-2xl shadow-black/20 hover:shadow-black/30 hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:scale-100 flex items-center"
         >
           {isPlacingOrder ? (
             <>
