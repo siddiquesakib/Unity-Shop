@@ -67,7 +67,7 @@ const Navbar = () => {
   const [showLangMenu, setShowLangMenu] = useState(false);
 
   const { user, logout } = useAuth();
-  const { totalItems } = useCart();
+  const { totalUniqueItems: totalItems } = useCart();
   const { language, setLanguage, t, languages } = useLanguage();
   const router = useRouter();
   const pathname = usePathname();
