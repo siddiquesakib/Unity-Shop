@@ -38,11 +38,11 @@ export default function AdminStats() {
         {[1, 2, 3, 4].map((i) => (
           <div
             key={i}
-            className="p-6 rounded-2xl bg-slate-900 border border-slate-800 animate-pulse"
+            className="p-6 rounded-xl bg-white border border-gray-200 animate-pulse"
           >
-            <div className="h-12 w-12 rounded-xl bg-slate-800 mb-4" />
-            <div className="h-4 w-24 bg-slate-800 rounded mb-2" />
-            <div className="h-7 w-32 bg-slate-800 rounded" />
+            <div className="h-12 w-12 rounded-xl bg-gray-100 mb-4" />
+            <div className="h-4 w-24 bg-gray-100 rounded mb-2" />
+            <div className="h-7 w-32 bg-gray-100 rounded" />
           </div>
         ))}
       </div>
@@ -58,8 +58,8 @@ export default function AdminStats() {
       change: `Today: $${data.todaySales?.toLocaleString() || "0"}`,
       isPositive: (data.todaySales || 0) > 0,
       icon: DollarSign,
-      color: "text-indigo-400",
-      bg: "bg-indigo-500/10",
+      color: "text-gray-900",
+      bg: "bg-gray-100",
     },
     {
       title: "Total Users",
@@ -67,8 +67,8 @@ export default function AdminStats() {
       change: `+${data.newUsersToday || 0} today`,
       isPositive: (data.newUsersToday || 0) > 0,
       icon: Users,
-      color: "text-purple-400",
-      bg: "bg-purple-500/10",
+      color: "text-gray-900",
+      bg: "bg-gray-100",
     },
     {
       title: "Active Sellers",
@@ -76,8 +76,8 @@ export default function AdminStats() {
       change: `${data.totalProducts || 0} products`,
       isPositive: true,
       icon: Store,
-      color: "text-emerald-400",
-      bg: "bg-emerald-500/10",
+      color: "text-gray-900",
+      bg: "bg-gray-100",
     },
     {
       title: "Pending Verifications",
@@ -85,8 +85,8 @@ export default function AdminStats() {
       change: `${data.totalOrders || 0} total orders`,
       isPositive: (data.pendingSellerRequests || 0) === 0,
       icon: UserCheck,
-      color: "text-orange-400",
-      bg: "bg-orange-500/10",
+      color: "text-gray-900",
+      bg: "bg-gray-100",
     },
   ];
 
@@ -98,14 +98,14 @@ export default function AdminStats() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: index * 0.1 }}
-          className="p-6 rounded-2xl bg-slate-900 border border-slate-800 hover:border-slate-700 transition-all duration-300"
+          className="p-6 rounded-xl bg-white border border-gray-200 hover:border-gray-300 transition-all duration-300"
         >
           <div className="flex items-start justify-between mb-4">
             <div className={`p-3 rounded-xl ${stat.bg}`}>
               <stat.icon className={stat.color} size={24} />
             </div>
             <div
-              className={`flex items-center gap-1 text-xs font-medium ${stat.isPositive ? "text-emerald-400" : "text-rose-400"}`}
+              className={`flex items-center gap-1 text-xs font-medium ${stat.isPositive ? "text-emerald-600" : "text-red-500"}`}
             >
               {stat.change}
               {stat.isPositive ? (
@@ -116,8 +116,8 @@ export default function AdminStats() {
             </div>
           </div>
           <div>
-            <p className="text-sm text-slate-400 mb-1">{stat.title}</p>
-            <h3 className="text-2xl font-bold text-white">{stat.value}</h3>
+            <p className="text-sm text-gray-500 mb-1">{stat.title}</p>
+            <h3 className="text-2xl font-bold text-gray-900">{stat.value}</h3>
           </div>
         </motion.div>
       ))}

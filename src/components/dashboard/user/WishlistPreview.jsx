@@ -53,13 +53,15 @@ export default function WishlistPreview() {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.4 }}
-      className="bg-slate-900 border border-slate-800 rounded-2xl p-6 h-full"
+      className="bg-white border border-gray-200 rounded-xl p-6 h-full shadow-sm"
     >
-      <div className="flex items-center justify-between mb-6">
-        <h3 className="text-lg font-bold text-white">Wishlist</h3>
+      <div className="flex items-center justify-between mb-5">
+        <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wider">
+          Wishlist
+        </h3>
         <Link
           href="/dashboard/user/wishlist"
-          className="text-sm text-indigo-400 hover:text-indigo-300 transition-colors"
+          className="text-xs font-medium text-gray-400 hover:text-gray-900 transition-colors uppercase tracking-wider"
         >
           View All
         </Link>
@@ -70,15 +72,15 @@ export default function WishlistPreview() {
           {[...Array(3)].map((_, i) => (
             <div
               key={i}
-              className="h-16 bg-slate-800/50 rounded-xl animate-pulse"
+              className="h-16 bg-gray-100 rounded-xl animate-pulse"
             />
           ))}
         </div>
       ) : products.length === 0 ? (
         <div className="text-center py-8">
-          <Heart size={32} className="mx-auto text-slate-700 mb-3" />
-          <p className="text-slate-400 text-sm">Your wishlist is empty</p>
-          <p className="text-slate-500 text-xs mt-1">
+          <Heart size={32} className="mx-auto text-gray-300 mb-3" />
+          <p className="text-gray-500 text-sm">Your wishlist is empty</p>
+          <p className="text-gray-400 text-xs mt-1">
             Save products you like by clicking the heart icon.
           </p>
         </div>
@@ -87,9 +89,9 @@ export default function WishlistPreview() {
           {products.map((product) => (
             <div
               key={product._id}
-              className="flex items-center gap-4 p-3 rounded-xl bg-slate-950/50 border border-slate-800/50 group hover:border-slate-700 transition-all"
+              className="flex items-center gap-4 p-3 rounded-xl bg-gray-50 border border-gray-200 group hover:border-gray-300 transition-all"
             >
-              <div className="w-12 h-12 rounded-lg bg-slate-800 flex items-center justify-center overflow-hidden flex-shrink-0">
+              <div className="w-12 h-12 rounded-lg bg-gray-100 flex items-center justify-center overflow-hidden flex-shrink-0">
                 {product.image ? (
                   <img
                     src={product.image}
@@ -98,28 +100,28 @@ export default function WishlistPreview() {
                     onError={(e) => (e.target.style.display = "none")}
                   />
                 ) : (
-                  <div className="w-6 h-6 rounded bg-slate-700" />
+                  <div className="w-6 h-6 rounded bg-gray-300" />
                 )}
               </div>
 
               <div className="flex-1 min-w-0">
-                <h4 className="text-sm font-medium text-white truncate">
+                <h4 className="text-sm font-medium text-gray-900 truncate">
                   {product.name}
                 </h4>
-                <p className="text-xs text-slate-500 capitalize">
+                <p className="text-xs text-gray-400 capitalize">
                   {product.category}
                 </p>
               </div>
 
               <div className="text-right">
-                <p className="text-sm font-bold text-indigo-400">
+                <p className="text-sm font-bold text-gray-900">
                   ${Number(product.price).toFixed(2)}
                 </p>
               </div>
 
               <button
                 onClick={() => removeFromWishlist(product._id)}
-                className="p-2 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white transition-colors opacity-0 group-hover:opacity-100"
+                className="p-2 rounded-lg bg-red-50 text-red-500 hover:bg-red-500 hover:text-white transition-colors opacity-0 group-hover:opacity-100"
                 title="Remove from wishlist"
               >
                 <Trash2 size={16} />
