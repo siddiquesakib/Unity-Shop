@@ -6,7 +6,10 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import NextAuthProvider from "@/components/providers/NextAuthProvider";
 import { CartProvider } from "@/contexts/CartContext";
 import { LanguageProvider } from "@/contexts/LanguageContext";
-import { CurrencyProvider } from "@/contexts/CurrencyContext";
+import { SocketProvider } from "@/contexts/SocketContext";
+import { NotificationProvider } from "@/contexts/NotificationContext";
+import { Toaster } from "react-hot-toast";
+import NotificationListener from "@/components/common/NotificationListener";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -19,8 +22,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  title: "Unity Shop - Global Marketplace",
-  description: "Shop from anywhere, pay in any currency",
+  title: "Unity Shop",
+  description: "Your one-stop shop for everything unity!",
 };
 
 export default function RootLayout({ children }) {
@@ -29,19 +32,23 @@ export default function RootLayout({ children }) {
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <LanguageProvider>
-          <CurrencyProvider>
-            <NextAuthProvider>
-              <AuthProvider>
+        <NextAuthProvider>
+          <AuthProvider>
+            <SocketProvider>
+              <NotificationProvider>
                 <CartProvider>
-                  <Navbar />
-                  {children}
-                  <Footer />
+                  <LanguageProvider>
+                    <Navbar />
+                    <NotificationListener />
+                    <Toaster position="top-right" />
+                    {children}
+                    <Footer />
+                  </LanguageProvider>
                 </CartProvider>
-              </AuthProvider>
-            </NextAuthProvider>
-          </CurrencyProvider>
-        </LanguageProvider>
+              </NotificationProvider>
+            </SocketProvider>
+          </AuthProvider>
+        </NextAuthProvider>
       </body>
     </html>
   );
