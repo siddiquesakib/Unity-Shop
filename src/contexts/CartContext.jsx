@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import {
   createContext,
@@ -6,7 +6,9 @@ import {
   useState,
   useEffect,
   useCallback,
-} from 'react';
+} from "react";
+import toast from "react-hot-toast";
+import { useNotifications } from "@/contexts/NotificationContext";
 
 const CartContext = createContext(null);
 
@@ -14,11 +16,13 @@ export function CartProvider({ children }) {
   const [cartGroups, setCartGroups] = useState([]);
   const [checkoutGroups, setCheckoutGroups] = useState([]); // selected items heading to payment
   const [hydrated, setHydrated] = useState(false);
+  const { createNotification } = useNotifications() || {};
 
   // Load cart from localStorage on mount
+
   useEffect(() => {
     try {
-      const saved = localStorage.getItem('unityshop_cart');
+      const saved = localStorage.getItem("unityshop_cart");
       if (saved) setCartGroups(JSON.parse(saved));
     } catch {
       // ignore parse errors
@@ -29,86 +33,99 @@ export function CartProvider({ children }) {
   // Persist cart to localStorage on every change
   useEffect(() => {
     if (hydrated) {
-      localStorage.setItem('unityshop_cart', JSON.stringify(cartGroups));
+      localStorage.setItem("unityshop_cart", JSON.stringify(cartGroups));
     }
   }, [cartGroups, hydrated]);
 
   // ─── Add to Cart ─────────────────────────────────────────────────────────────
-  const addToCart = useCallback((product, quantity = 1) => {
-    const sellerId = product.sellerId || product.sellerName || 'general';
-    const sellerName = product.sellerName || 'UnityShop Seller';
-    const moq = product.moq || 1;
+  const addToCart = useCallback(
+    (product, quantity = 1) => {
+      const sellerId = product.sellerId || product.sellerName || "general";
+      const sellerName = product.sellerName || "UnityShop Seller";
+      const moq = product.moq || 1;
 
-    setCartGroups(prev => {
-      const groups = prev.map(g => ({ ...g, items: [...g.items] }));
-      const groupIdx = groups.findIndex(g => g.seller.id === sellerId);
+      setCartGroups((prev) => {
+        const groups = prev.map((g) => ({ ...g, items: [...g.items] }));
+        const groupIdx = groups.findIndex((g) => g.seller.id === sellerId);
 
-      const newItem = {
-        id: `${product._id || product.id}-${sellerId}`,
-        productId: product._id || product.id,
-        name: product.name,
-        image: product.image || '',
-        price: product.price,
-        quantity,
-        moq,
-        maxQuantity: product.stock || 9999,
-        variant: product.variant || product.category || '—',
-        stock: product.stock || 9999,
-        sellerName,
-        sellerEmail: product.sellerEmail || '',
-      };
+        const newItem = {
+          id: `${product._id || product.id}-${sellerId}`,
+          productId: product._id || product.id,
+          name: product.name,
+          image: product.image || "",
+          price: product.price,
+          quantity,
+          moq,
+          maxQuantity: product.stock || 9999,
+          variant: product.variant || product.category || "—",
+          stock: product.stock || 9999,
+          sellerName,
+          sellerEmail: product.sellerEmail || "",
+        };
 
-      if (groupIdx !== -1) {
-        const itemIdx = groups[groupIdx].items.findIndex(
-          i => i.productId === newItem.productId,
-        );
-        if (itemIdx !== -1) {
-          const existing = groups[groupIdx].items[itemIdx];
-          groups[groupIdx].items[itemIdx] = {
-            ...existing,
-            quantity: Math.min(
-              existing.quantity + quantity,
-              existing.maxQuantity,
-            ),
-          };
+        if (groupIdx !== -1) {
+          const itemIdx = groups[groupIdx].items.findIndex(
+            (i) => i.productId === newItem.productId,
+          );
+          if (itemIdx !== -1) {
+            const existing = groups[groupIdx].items[itemIdx];
+            groups[groupIdx].items[itemIdx] = {
+              ...existing,
+              quantity: Math.min(
+                existing.quantity + quantity,
+                existing.maxQuantity,
+              ),
+            };
+            toast.success("Updated item quantity in cart!");
+          } else {
+            groups[groupIdx].items.push(newItem);
+          }
         } else {
-          groups[groupIdx].items.push(newItem);
+          groups.push({
+            id: `group-${sellerId}`,
+            seller: {
+              id: sellerId,
+              name: sellerName,
+              email: product.sellerEmail || "",
+              verified: product.sellerVerified || false,
+            },
+            items: [newItem],
+          });
         }
-      } else {
-        groups.push({
-          id: `group-${sellerId}`,
-          seller: {
-            id: sellerId,
-            name: sellerName,
-            email: product.sellerEmail || '',
-            verified: product.sellerVerified || false,
-          },
-          items: [newItem],
+
+        return groups;
+      });
+
+      toast.success("Added to cart!");
+      if (createNotification) {
+        createNotification({
+          type: "cart_add",
+          title: "Added to Cart",
+          message: `Added ${product.name} to your cart.`,
         });
       }
-
-      return groups;
-    });
-  }, []);
+    },
+    [createNotification],
+  );
 
   // ─── Remove Item ─────────────────────────────────────────────────────────────
-  const removeItem = useCallback(itemId => {
-    setCartGroups(prev =>
+  const removeItem = useCallback((itemId) => {
+    setCartGroups((prev) =>
       prev
-        .map(group => ({
+        .map((group) => ({
           ...group,
-          items: group.items.filter(item => item.id !== itemId),
+          items: group.items.filter((item) => item.id !== itemId),
         }))
-        .filter(group => group.items.length > 0),
+        .filter((group) => group.items.length > 0),
     );
   }, []);
 
   // ─── Update Quantity ──────────────────────────────────────────────────────────
   const updateQuantity = useCallback((itemId, newQty) => {
-    setCartGroups(prev =>
-      prev.map(group => ({
+    setCartGroups((prev) =>
+      prev.map((group) => ({
         ...group,
-        items: group.items.map(item => {
+        items: group.items.map((item) => {
           if (item.id !== itemId) return item;
           const clamped = Math.min(
             Math.max(newQty, item.moq),
@@ -122,7 +139,7 @@ export function CartProvider({ children }) {
 
   // ─── Prepare Checkout ─────────────────────────────────────────────────────────
   // Called by the cart page with only the SELECTED groups/items before navigating to /checkout
-  const prepareCheckout = useCallback(selectedGroups => {
+  const prepareCheckout = useCallback((selectedGroups) => {
     setCheckoutGroups(selectedGroups);
   }, []);
 
@@ -159,6 +176,6 @@ export function CartProvider({ children }) {
 
 export function useCart() {
   const ctx = useContext(CartContext);
-  if (!ctx) throw new Error('useCart must be used inside <CartProvider>');
+  if (!ctx) throw new Error("useCart must be used inside <CartProvider>");
   return ctx;
 }
