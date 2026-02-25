@@ -28,7 +28,91 @@ import {
   FiMapPin,
   FiBell,
   FiStar,
+  FiCheckCircle,
+  FiCreditCard,
+  FiTruck,
+  FiTag,
+  FiTrash2,
 } from "react-icons/fi";
+
+// ─── Time ago helper ────────────────────────────────────────────────────────
+function timeAgo(date) {
+  const now = new Date();
+  const d = new Date(date);
+  const seconds = Math.floor((now - d) / 1000);
+  if (seconds < 60) return "just now";
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return `${minutes}m ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  if (days < 7) return `${days}d ago`;
+  return d.toLocaleDateString();
+}
+
+// ─── Notification style config ──────────────────────────────────────────────
+const NOTIF_CONFIG = {
+  cart_add: {
+    icon: FiShoppingCart,
+    bg: "bg-blue-50",
+    iconColor: "text-blue-600",
+    label: "Cart",
+  },
+  payment_success: {
+    icon: FiCreditCard,
+    bg: "bg-green-50",
+    iconColor: "text-green-600",
+    label: "Payment",
+  },
+  order_confirmed: {
+    icon: FiCheckCircle,
+    bg: "bg-emerald-50",
+    iconColor: "text-emerald-600",
+    label: "Order",
+  },
+  order_status: {
+    icon: FiTruck,
+    bg: "bg-indigo-50",
+    iconColor: "text-indigo-600",
+    label: "Order",
+  },
+  product_approved: {
+    icon: FiCheckCircle,
+    bg: "bg-green-50",
+    iconColor: "text-green-600",
+    label: "Product",
+  },
+  product_rejected: {
+    icon: FiX,
+    bg: "bg-red-50",
+    iconColor: "text-red-500",
+    label: "Product",
+  },
+  seller_approved: {
+    icon: FiStar,
+    bg: "bg-amber-50",
+    iconColor: "text-amber-600",
+    label: "Seller",
+  },
+  seller_rejected: {
+    icon: FiX,
+    bg: "bg-red-50",
+    iconColor: "text-red-500",
+    label: "Seller",
+  },
+  coupon: {
+    icon: FiTag,
+    bg: "bg-purple-50",
+    iconColor: "text-purple-600",
+    label: "Promo",
+  },
+};
+const DEFAULT_NOTIF = {
+  icon: FiBell,
+  bg: "bg-gray-100",
+  iconColor: "text-gray-500",
+  label: "",
+};
 
 const navLinks = [
   { name: "Home", href: "/", icon: FiHome },
@@ -78,6 +162,7 @@ const Navbar = () => {
     unreadCount = 0,
     markAsRead,
     markAllAsRead,
+    deleteNotification,
   } = useNotifications() || {};
 
   // Debug
@@ -128,7 +213,6 @@ const Navbar = () => {
 
   return (
     <>
-      {/* ── DESKTOP NAVBAR ── */}
       <nav className="sticky top-0 z-50 hidden lg:block">
         {/* ── Row 1: Logo + Search + Actions ── */}
         <div className="bg-black">
@@ -196,80 +280,126 @@ const Navbar = () => {
                   </button>
 
                   {showNotifications && (
-                    <div className="absolute top-full right-0 mt-2 w-80 bg-white rounded-lg shadow-xl border border-gray-200 z-50 overflow-hidden">
-                      <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
-                        <h3 className="text-sm font-bold text-gray-900">
-                          Notifications
-                        </h3>
+                    <div className="absolute top-full right-0 mt-2 w-96 bg-white rounded-2xl shadow-2xl border border-gray-200/80 z-50 overflow-hidden">
+                      {/* Header */}
+                      <div className="flex items-center justify-between px-5 py-3.5 bg-linear-to-r from-gray-50 to-white border-b border-gray-100">
+                        <div className="flex items-center gap-2">
+                          <h3 className="text-sm font-bold text-gray-900">
+                            Notifications
+                          </h3>
+                          {unreadCount > 0 && (
+                            <span className="min-w-5 h-5 px-1.5 bg-black text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+                              {unreadCount}
+                            </span>
+                          )}
+                        </div>
                         {unreadCount > 0 && (
                           <button
                             onClick={markAllAsRead}
-                            className="text-xs text-blue-600 hover:text-blue-800 transition-colors"
+                            className="text-xs font-medium text-gray-500 hover:text-black transition-colors"
                           >
                             Mark all read
                           </button>
                         )}
                       </div>
-                      <div className="max-h-72 overflow-y-auto">
+
+                      {/* Notification List */}
+                      <div className="max-h-105 overflow-y-auto divide-y divide-gray-100">
                         {notifications.length > 0 ? (
                           notifications.map((n) => {
-                            // Determine icon based on type
-                            let Icon = FiBell;
-                            if (n.type === "order_confirmed") Icon = FiPackage;
-                            if (n.type === "payment_success")
-                              Icon = FiShoppingBag;
-                            if (n.type === "product_approved") Icon = FiStar; // import FiStar if needed
-                            if (n.type === "product_rejected") Icon = FiX;
-                            if (n.type === "coupon") Icon = FiStar;
-                            if (n.type === "cart_add") Icon = FiShoppingCart;
+                            const cfg = NOTIF_CONFIG[n.type] || DEFAULT_NOTIF;
+                            const Icon = cfg.icon;
 
                             return (
                               <div
                                 key={n._id}
-                                className={`flex flex-col border-b border-gray-100 last:border-0 hover:bg-gray-50 transition-colors cursor-pointer ${
-                                  !n.read ? "bg-gray-50/80" : ""
+                                className={`group relative flex items-start gap-3 px-5 py-3.5 transition-all cursor-pointer ${
+                                  !n.read
+                                    ? "bg-blue-50/40 hover:bg-blue-50/70"
+                                    : "hover:bg-gray-50"
                                 }`}
                                 onClick={() => markAsRead(n._id)}
                               >
-                                <div className="flex items-start gap-3 px-4 py-3">
-                                  <div
-                                    className={`mt-0.5 w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
-                                      !n.read
-                                        ? "bg-black text-white"
-                                        : "bg-gray-100 text-gray-500"
-                                    }`}
-                                  >
-                                    <Icon size={14} />
-                                  </div>
-                                  <div className="flex-1 min-w-0">
+                                {/* Delete button */}
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    deleteNotification(n._id);
+                                  }}
+                                  className="absolute top-3 right-3 p-1 text-gray-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all"
+                                  title="Delete"
+                                >
+                                  <FiTrash2 size={13} />
+                                </button>
+
+                                {/* Icon */}
+                                <div
+                                  className={`mt-0.5 w-9 h-9 rounded-xl ${cfg.bg} ${cfg.iconColor} flex items-center justify-center shrink-0`}
+                                >
+                                  <Icon size={16} />
+                                </div>
+
+                                {/* Content */}
+                                <div className="flex-1 min-w-0 pr-6">
+                                  <div className="flex items-center gap-2">
                                     <p
-                                      className={`text-sm leading-snug ${!n.read ? "font-bold text-gray-900" : "text-gray-600"}`}
+                                      className={`text-sm leading-snug ${!n.read ? "font-semibold text-gray-900" : "font-medium text-gray-600"}`}
                                     >
                                       {n.title || n.text}
                                     </p>
-                                    <p className="text-xs text-gray-600 mt-0.5 line-clamp-2">
+                                    {!n.read && (
+                                      <span className="w-2 h-2 rounded-full bg-blue-500 shrink-0" />
+                                    )}
+                                  </div>
+                                  {n.message && (
+                                    <p className="text-xs text-gray-500 mt-0.5 line-clamp-2 leading-relaxed">
                                       {n.message}
                                     </p>
-                                    <p className="text-[10px] text-gray-400 mt-1">
-                                      {new Date(n.createdAt).toLocaleString()}
-                                    </p>
-                                  </div>
-                                  {!n.read && (
-                                    <div className="w-2 h-2 rounded-full bg-blue-600 mt-2 shrink-0" />
                                   )}
+                                  <div className="flex items-center gap-2 mt-1.5">
+                                    {cfg.label && (
+                                      <span
+                                        className={`text-[10px] font-semibold uppercase tracking-wide ${cfg.iconColor}`}
+                                      >
+                                        {cfg.label}
+                                      </span>
+                                    )}
+                                    <span className="text-[10px] text-gray-400">
+                                      {timeAgo(n.createdAt)}
+                                    </span>
+                                  </div>
                                 </div>
                               </div>
                             );
                           })
                         ) : (
-                          <div className="px-4 py-8 text-center">
-                            <FiBell
-                              size={24}
-                              className="mx-auto text-gray-300 mb-2"
-                            />
-                            <p className="text-sm text-gray-400">
-                              No notifications
-                            </p>
+                          <div className="px-5 py-12 text-center">
+                            <div className="w-14 h-14 mx-auto mb-3 rounded-2xl bg-gray-100 flex items-center justify-center">
+                              <FiBell size={24} className="text-gray-300" />
+                            </div>
+                            {user ? (
+                              <>
+                                <p className="text-sm font-medium text-gray-400">
+                                  No notifications yet
+                                </p>
+                                <p className="text-xs text-gray-300 mt-1">
+                                  We&apos;ll notify you when something arrives
+                                </p>
+                              </>
+                            ) : (
+                              <>
+                                <p className="text-sm font-medium text-gray-400">
+                                  Sign in to see notifications
+                                </p>
+                                <Link
+                                  href="/login"
+                                  onClick={() => setShowNotifications(false)}
+                                  className="inline-block mt-2 text-xs font-medium text-black bg-gray-100 hover:bg-gray-200 px-4 py-1.5 rounded-full transition-colors"
+                                >
+                                  Sign In
+                                </Link>
+                              </>
+                            )}
                           </div>
                         )}
                       </div>
@@ -513,17 +643,138 @@ const Navbar = () => {
             </form>
 
             {/* Notification */}
-            <button
-              onClick={() => setShowNotifications(!showNotifications)}
-              className="relative text-gray-300"
-            >
-              <FiBell size={20} />
-              {unreadCount > 0 && (
-                <span className="absolute -top-1.5 -right-1.5 min-w-3.5 h-3.5 px-0.5 bg-red-500 text-white text-[8px] font-bold rounded-full flex items-center justify-center">
-                  {unreadCount}
-                </span>
+            <div className="relative" ref={notifRef}>
+              <button
+                onClick={() => setShowNotifications(!showNotifications)}
+                className="relative text-gray-300"
+              >
+                <FiBell size={20} />
+                {unreadCount > 0 && (
+                  <span className="absolute -top-1.5 -right-1.5 min-w-3.5 h-3.5 px-0.5 bg-red-500 text-white text-[8px] font-bold rounded-full flex items-center justify-center animate-pulse">
+                    {unreadCount > 9 ? "9+" : unreadCount}
+                  </span>
+                )}
+              </button>
+
+              {/* Mobile Notification Dropdown */}
+              {showNotifications && (
+                <div className="fixed inset-x-0 top-14 mx-3 bg-white rounded-2xl shadow-2xl border border-gray-200/80 z-50 overflow-hidden max-h-[70vh] flex flex-col">
+                  {/* Header */}
+                  <div className="flex items-center justify-between px-4 py-3 bg-linear-to-r from-gray-50 to-white border-b border-gray-100 shrink-0">
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-sm font-bold text-gray-900">
+                        Notifications
+                      </h3>
+                      {unreadCount > 0 && (
+                        <span className="min-w-5 h-5 px-1.5 bg-black text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+                          {unreadCount}
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-3">
+                      {unreadCount > 0 && (
+                        <button
+                          onClick={markAllAsRead}
+                          className="text-xs font-medium text-gray-500 hover:text-black transition-colors"
+                        >
+                          Mark all read
+                        </button>
+                      )}
+                      <button
+                        onClick={() => setShowNotifications(false)}
+                        className="p-1 text-gray-400 hover:text-black"
+                      >
+                        <FiX size={16} />
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* List */}
+                  <div className="overflow-y-auto divide-y divide-gray-100 flex-1">
+                    {notifications.length > 0 ? (
+                      notifications.map((n) => {
+                        const cfg = NOTIF_CONFIG[n.type] || DEFAULT_NOTIF;
+                        const Icon = cfg.icon;
+
+                        return (
+                          <div
+                            key={n._id}
+                            className={`group relative flex items-start gap-3 px-4 py-3 transition-all cursor-pointer ${
+                              !n.read ? "bg-blue-50/40" : ""
+                            }`}
+                            onClick={() => markAsRead(n._id)}
+                          >
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                deleteNotification(n._id);
+                              }}
+                              className="absolute top-2.5 right-3 p-1 text-gray-300 hover:text-red-500"
+                            >
+                              <FiTrash2 size={13} />
+                            </button>
+
+                            <div
+                              className={`mt-0.5 w-8 h-8 rounded-lg ${cfg.bg} ${cfg.iconColor} flex items-center justify-center shrink-0`}
+                            >
+                              <Icon size={14} />
+                            </div>
+
+                            <div className="flex-1 min-w-0 pr-6">
+                              <div className="flex items-center gap-1.5">
+                                <p
+                                  className={`text-[13px] leading-snug ${!n.read ? "font-semibold text-gray-900" : "text-gray-600"}`}
+                                >
+                                  {n.title || n.text}
+                                </p>
+                                {!n.read && (
+                                  <span className="w-1.5 h-1.5 rounded-full bg-blue-500 shrink-0" />
+                                )}
+                              </div>
+                              {n.message && (
+                                <p className="text-xs text-gray-500 mt-0.5 line-clamp-2">
+                                  {n.message}
+                                </p>
+                              )}
+                              <span className="text-[10px] text-gray-400 mt-1 block">
+                                {timeAgo(n.createdAt)}
+                              </span>
+                            </div>
+                          </div>
+                        );
+                      })
+                    ) : (
+                      <div className="px-4 py-10 text-center">
+                        <div className="w-12 h-12 mx-auto mb-2 rounded-xl bg-gray-100 flex items-center justify-center">
+                          <FiBell size={20} className="text-gray-300" />
+                        </div>
+                        {user ? (
+                          <p className="text-sm text-gray-400">
+                            No notifications yet
+                          </p>
+                        ) : (
+                          <>
+                            <p className="text-sm text-gray-400">
+                              Sign in to see notifications
+                            </p>
+                            <Link
+                              href="/login"
+                              onClick={() => {
+                                setShowNotifications(false);
+                                setIsOpen(false);
+                              }}
+                              className="inline-block mt-2 text-xs font-medium text-black bg-gray-100 hover:bg-gray-200 px-4 py-1.5 rounded-full transition-colors"
+                            >
+                              Sign In
+                            </Link>
+                          </>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
               )}
-            </button>
+            </div>
 
             {/* Cart */}
             <Link href="/cart" className="relative text-gray-300">

@@ -16,7 +16,8 @@ export const SocketProvider = ({ children }) => {
   useEffect(() => {
     // Only connect if user is authenticated
     if (session?.user?.email) {
-      const newSocket = io("http://localhost:5000", {
+      const url = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+      const newSocket = io(url, {
         transports: ["websocket"], // Use websocket transport
         forceNew: true,
       });

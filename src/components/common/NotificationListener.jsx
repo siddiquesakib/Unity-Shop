@@ -2,59 +2,79 @@
 import React, { useEffect } from "react";
 import { useSocket } from "@/contexts/SocketContext";
 import toast from "react-hot-toast";
-import { useCart } from "@/contexts/CartContext";
+
+const toastOptions = {
+  duration: 5000,
+  position: "top-right",
+};
 
 const NotificationListener = () => {
   const socket = useSocket();
-  const { fetchCart } = useCart(); // Assuming fetchCart exists in CartContext
 
   useEffect(() => {
     if (!socket) return;
 
-    // Listen for generic notifications
-    socket.on("notification", (data) => {
-      // Play sound if possible or just toast
+    // Listen for real-time notifications and show toasts
+    const handleNotification = (data) => {
       console.log("Notification received:", data);
 
-      // Determine toast style based on type
       switch (data.type) {
+        case "cart_add":
+          // Cart add toast is already shown by addToCart — skip duplicate
+          break;
         case "payment_success":
-          toast.success(data.message || "Payment Successful!", {
-            duration: 5000,
-          });
+          toast.success(data.message || "Payment successful!", toastOptions);
           break;
         case "order_confirmed":
-          toast.success(data.message || "Order Confirmed!", { icon: "📦" });
+          toast.success(data.message || "New order received!", toastOptions);
+          break;
+        case "order_status":
+          toast.success(data.message || "Order status updated!", {
+            icon: "📦",
+            ...toastOptions,
+          });
+          break;
+        case "seller_approved":
+          toast.success(data.message || "Your seller request was approved!", {
+            icon: "🎉",
+            ...toastOptions,
+          });
+          break;
+        case "seller_rejected":
+          toast.error(data.message || "Your seller request was rejected.", {
+            icon: "❌",
+            ...toastOptions,
+          });
           break;
         case "product_approved":
-          toast.success(data.message || "Product Approved!", { icon: "✅" });
+          toast.success(data.message || "Product Approved!", {
+            icon: "✅",
+            ...toastOptions,
+          });
           break;
         case "product_rejected":
-          toast.error(data.message || "Product Rejected!", { icon: "❌" });
+          toast.error(data.message || "Product Rejected!", {
+            icon: "❌",
+            ...toastOptions,
+          });
           break;
         case "coupon":
-          toast(data.message || "New Coupon Available!", { icon: "🎟️" });
+          toast(data.message || "New Coupon Available!", {
+            icon: "🎟️",
+            ...toastOptions,
+          });
           break;
         default:
-          toast(data.message || "New Notification", { icon: "🔔" });
+          toast(data.message || "New notification", toastOptions);
       }
-    });
+    };
 
-    // Listen for cart updates
-    socket.on("cart-updated", (data) => {
-      console.log("Cart updated:", data);
-      // Refresh cart context if possible
-      if (fetchCart) {
-        fetchCart();
-      }
-      toast.success(data.message || "Cart Updated", { id: "cart-update" }); // Use ID to prevent duplicates
-    });
+    socket.on("notification", handleNotification);
 
     return () => {
-      socket.off("notification");
-      socket.off("cart-updated");
+      socket.off("notification", handleNotification);
     };
-  }, [socket, fetchCart]);
+  }, [socket]);
 
   return null; // Logic only component
 };
