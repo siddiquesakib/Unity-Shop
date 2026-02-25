@@ -145,3 +145,40 @@ body {
   margin-left: auto;
 }
 
+/* Hide Google Translate top banner and tooltips, but keep functionality */
+.goog-te-banner-frame,
+.goog-te-banner,
+.goog-te-balloon-frame,
+.goog-te-spinner-pos,
+.goog-te-balloon,
+.goog-te-menu-frame,
+.goog-te-menu2,
+.goog-te-gadget-simple,
+.goog-te-gadget,
+.goog-te-menu-value,
+.goog-te-flag,
+.goog-te-gadget-icon,
+.VIpgJd-ZVi9od-ORHb-OEVmcd,
+.skiptranslate iframe,
+.skiptranslate,
+iframe[src*="translate.google"],
+#goog-gt-tt,
+#goog-gt-vt,
+.goog-tooltip {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  height: 0 !important;
+  width: 0 !important;
+  overflow: hidden !important;
+  position: absolute !important;
+  top: -9999px !important;
+  left: -9999px !important;
+  pointer-events: none !important;
+  z-index: -9999 !important;
+}
+
+/* Prevent body shift */
+body {
+  top: 0px !important;
+}
