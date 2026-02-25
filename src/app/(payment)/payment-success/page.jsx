@@ -1,13 +1,21 @@
-"use client";
+'use client';
 
+/**
+ * PaymentSuccess Page
+ * File location: app/payment-success/page.jsx
+ *
+ * After Stripe confirms payment:
+ *  1. Calls backend to record the order
+ *  2. Clears the cart via CartContext
+ *  3. Shows the order summary
+ */
 
 import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useCart } from '@/contexts/CartContext';
 
-const API_BASE =
-  process.env.NEXT_PUBLIC_API_URL || "https://unity-shop-server.vercel.app";
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
 // Required: wrap in Suspense because of useSearchParams
 export default function PaymentSuccess() {
@@ -20,18 +28,18 @@ export default function PaymentSuccess() {
 
 function SuccessContent() {
   const searchParams = useSearchParams();
-  const sessionId = searchParams.get("session_id");
+  const sessionId = searchParams.get('session_id');
 
   const { clearCart } = useCart();
 
   const [status, setStatus] = useState('loading');
   const [order, setOrder] = useState(null);
-  const [errorMsg, setErrorMsg] = useState("");
+  const [errorMsg, setErrorMsg] = useState('');
 
   useEffect(() => {
     if (!sessionId) {
-      setErrorMsg("No session ID found in the URL.");
-      setStatus("error");
+      setErrorMsg('No session ID found in the URL.');
+      setStatus('error');
       return;
     }
 
@@ -39,27 +47,27 @@ function SuccessContent() {
       try {
         const res = await fetch(
           `${API_BASE}/payment/retrivedsessionAfterPayment?session_id=${sessionId}`,
-          { method: "PATCH" },
+          { method: 'PATCH' },
         );
 
         const data = await res.json();
 
-        if (data?.message === "Order already processed.") {
-          setStatus("already");
+        if (data?.message === 'Order already processed.') {
+          setStatus('already');
           return;
         }
 
         if (!res.ok) {
-          throw new Error(data?.error || "Could not verify payment.");
+          throw new Error(data?.error || 'Could not verify payment.');
         }
 
         clearCart();
 
         setOrder(data);
-        setStatus("success");
+        setStatus('success');
       } catch (err) {
-        setErrorMsg(err.message || "Something went wrong.");
-        setStatus("error");
+        setErrorMsg(err.message || 'Something went wrong.');
+        setStatus('error');
       }
     };
 
@@ -67,10 +75,10 @@ function SuccessContent() {
     // clearCart is stable (useCallback), safe to include
   }, [sessionId, clearCart]);
 
-  if (status === "loading") return <FullPageSpinner />;
-  if (status === "success") return <SuccessView order={order} />;
-  if (status === "already") return <AlreadyView />;
-  if (status === "error") return <ErrorView message={errorMsg} />;
+  if (status === 'loading') return <FullPageSpinner />;
+  if (status === 'success') return <SuccessView order={order} />;
+  if (status === 'already') return <AlreadyView />;
+  if (status === 'error') return <ErrorView message={errorMsg} />;
 }
 
 
@@ -229,9 +237,8 @@ function Row({ label, value, bold }) {
             ? 'text-emerald-600 font-bold text-base'
             : 'text-slate-700 font-medium'
         }`}
-        className={`text-sm ${bold ? "text-emerald-600 font-bold text-base" : "text-slate-700 font-medium"}`}
       >
-        {value ?? "—"}
+        {value ?? '—'}
       </span>
     </div>
   );

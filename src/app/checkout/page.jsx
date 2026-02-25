@@ -22,7 +22,7 @@ const SHOP_EMAIL = process.env.NEXT_PUBLIC_SHOP_EMAIL || 'shop@unityshop.com';
 const SHOP_NAME = process.env.NEXT_PUBLIC_SHOP_NAME || 'UnityShop';
 
 export default function CheckoutPage() {
-  const { checkoutGroups } = useCart();
+  const { checkoutGroups, checkoutPromo } = useCart();
   const router = useRouter();
 
   // Swap with your own auth if you don't use NextAuth
@@ -38,12 +38,18 @@ export default function CheckoutPage() {
 
   if (checkoutGroups.length === 0) return null; // avoid flash before redirect
 
-  // ── Compute grand total ───────────────────────────────────────────────────
-  const grandTotal = checkoutGroups.reduce(
+  // ── Compute totals ────────────────────────────────────────────────────────
+  const subtotal = checkoutGroups.reduce(
     (total, group) =>
       total + group.items.reduce((s, i) => s + i.price * i.quantity, 0),
     0,
   );
+
+  const discountAmount = checkoutPromo
+    ? Math.min(checkoutPromo.discount, subtotal)
+    : 0;
+
+  const grandTotal = Math.max(0, subtotal - discountAmount);
 
   const totalQty = checkoutGroups.reduce(
     (total, group) => total + group.items.reduce((s, i) => s + i.quantity, 0),
@@ -243,9 +249,28 @@ export default function CheckoutPage() {
                       {totalQty} units)
                     </span>
                     <span className="text-gray-700">
-                      ${grandTotal.toFixed(2)}
+                      ${subtotal.toFixed(2)}
                     </span>
                   </div>
+
+                  {/* Promo discount — only shown if a code was applied in cart */}
+                  {checkoutPromo && discountAmount > 0 && (
+                    <div className="flex justify-between items-start text-emerald-600 text-sm">
+                      <span className="flex items-center gap-1">
+                        🏷️{' '}
+                        <span className="font-semibold">
+                          {checkoutPromo.code}
+                        </span>
+                        <span className="text-gray-400 text-xs font-normal">
+                          ({checkoutPromo.description})
+                        </span>
+                      </span>
+                      <span className="font-semibold whitespace-nowrap">
+                        −${discountAmount.toFixed(2)}
+                      </span>
+                    </div>
+                  )}
+
                   <div className="flex justify-between text-gray-400 text-xs">
                     <span>Shipping</span>
                     <span className="italic">TBD at payment</span>
@@ -261,9 +286,16 @@ export default function CheckoutPage() {
                   <span className="font-bold text-gray-800 text-base">
                     Grand Total
                   </span>
-                  <span className="text-2xl font-bold text-orange-600">
-                    ${grandTotal.toFixed(2)}
-                  </span>
+                  <div className="text-right">
+                    <span className="text-2xl font-bold text-orange-600">
+                      ${grandTotal.toFixed(2)}
+                    </span>
+                    {checkoutPromo && discountAmount > 0 && (
+                      <p className="text-xs text-emerald-600 mt-0.5">
+                        🎉 Saving ${discountAmount.toFixed(2)}
+                      </p>
+                    )}
+                  </div>
                 </div>
               </div>
 

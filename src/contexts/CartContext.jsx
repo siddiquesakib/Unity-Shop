@@ -12,7 +12,8 @@ const CartContext = createContext(null);
 
 export function CartProvider({ children }) {
   const [cartGroups, setCartGroups] = useState([]);
-  const [checkoutGroups, setCheckoutGroups] = useState([]); // selected items heading to payment
+  const [checkoutGroups, setCheckoutGroups] = useState([]);
+  const [checkoutPromo, setCheckoutPromo] = useState(null); // { code, discount, description } | null
   const [hydrated, setHydrated] = useState(false);
 
   // Load cart from localStorage on mount
@@ -121,15 +122,34 @@ export function CartProvider({ children }) {
   }, []);
 
   // ─── Prepare Checkout ─────────────────────────────────────────────────────────
-  // Called by the cart page with only the SELECTED groups/items before navigating to /checkout
-  const prepareCheckout = useCallback(selectedGroups => {
+  // promo: { code, discount, description } | null
+  const prepareCheckout = useCallback((selectedGroups, promo = null) => {
     setCheckoutGroups(selectedGroups);
+    setCheckoutPromo(promo);
   }, []);
 
-  // ─── Clear Cart ───────────────────────────────────────────────────────────────
+  // ─── Clear Checkout Items ─────────────────────────────────────────────────────
+  const clearCheckoutItems = useCallback(() => {
+    setCartGroups(prev => {
+      const paidItemIds = new Set(
+        checkoutGroups.flatMap(g => g.items.map(i => i.id)),
+      );
+      return prev
+        .map(group => ({
+          ...group,
+          items: group.items.filter(item => !paidItemIds.has(item.id)),
+        }))
+        .filter(group => group.items.length > 0);
+    });
+    setCheckoutGroups([]);
+    setCheckoutPromo(null);
+  }, [checkoutGroups]);
+
+  // ─── Clear Entire Cart ────────────────────────────────────────────────────────
   const clearCart = useCallback(() => {
     setCartGroups([]);
     setCheckoutGroups([]);
+    setCheckoutPromo(null);
   }, []);
 
   // ─── Derived values ───────────────────────────────────────────────────────────
@@ -143,10 +163,12 @@ export function CartProvider({ children }) {
       value={{
         cartGroups,
         checkoutGroups,
+        checkoutPromo,
         addToCart,
         removeItem,
         updateQuantity,
         prepareCheckout,
+        clearCheckoutItems,
         clearCart,
         totalUniqueItems,
         hydrated,
