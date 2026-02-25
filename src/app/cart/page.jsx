@@ -16,14 +16,11 @@ import {
   FiShield,
   FiTruck,
   FiLock,
-} from "react-icons/fi";
-import { useCart } from "@/contexts/CartContext";
   FiChevronRight,
   FiAlertCircle,
-} from 'react-icons/fi';
-import { useCart } from '@/contexts/CartContext';
-import PromoCodeInput from '@/components/promoCode/PromoCodeInput';
-// import PromoCodeInput from '@/components/cart/PromoCodeInput';
+} from "react-icons/fi";
+import { useCart } from "@/contexts/CartContext";
+import PromoCodeInput from "@/components/promoCode/PromoCodeInput";
 
 export default function CartPage() {
   const { cartGroups, removeItem, updateQuantity, prepareCheckout, hydrated } =
@@ -32,18 +29,15 @@ export default function CartPage() {
 
   const [selectedItems, setSelectedItems] = useState({});
   const [selectAll, setSelectAll] = useState(false);
-  const [promoCode, setPromoCode] = useState("");
-  const [promoApplied, setPromoApplied] = useState(false);
-  const [removingId, setRemovingId] = useState(null);
 
-  const allItemIds = cartGroups.flatMap((g) => g.items.map((i) => i.id));
+  const [removingId, setRemovingId] = useState(null);
 
   // ── Promo state ────────────────────────────────────────────────────────────
   const [appliedPromo, setAppliedPromo] = useState(null);
   // appliedPromo shape: { code, discount, description } | null
 
   // ─── Selection helpers ────────────────────────────────────────────────────
-  const allItemIds = cartGroups.flatMap(g => g.items.map(i => i.id));
+  const allItemIds = cartGroups.flatMap((g) => g.items.map((i) => i.id));
 
   const toggleSelectAll = () => {
     const next = !selectAll;
@@ -124,7 +118,7 @@ export default function CartPage() {
         items: group.items.filter((item) => selectedItems[item.id]),
       }))
       .filter((group) => group.items.length > 0);
-    prepareCheckout(selectedGroups);
+    prepareCheckout(selectedGroups, appliedPromo);
     router.push("/checkout");
   };
 
@@ -403,10 +397,10 @@ export default function CartPage() {
                       Calculated at checkout
                     </span>
                   </div>
-                  {promoApplied && (
+                  {appliedPromo && discountAmount > 0 && (
                     <div className="flex justify-between text-green-600 font-medium">
-                      <span>Promo discount</span>
-                      <span>−$0.00</span>
+                      <span>Promo ({appliedPromo.code})</span>
+                      <span>−${discountAmount.toFixed(2)}</span>
                     </div>
                   )}
                 </div>
@@ -417,7 +411,7 @@ export default function CartPage() {
                     Total
                   </span>
                   <span className="text-2xl font-black text-gray-900">
-                    ${subtotal.toFixed(2)}
+                    ${grandTotal.toFixed(2)}
                   </span>
                 </div>
 
@@ -432,37 +426,17 @@ export default function CartPage() {
                   }`}
                 >
                   {selectedCount > 0
-                    ? `Checkout · $${subtotal.toFixed(2)}`
+                    ? `Checkout · $${grandTotal.toFixed(2)}`
                     : "Select items to checkout"}
                 </button>
 
                 {/* Promo */}
                 <div className="mt-5 pt-5 border-t border-gray-100">
-                  <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
-                    Promo Code
-                  </p>
-                  <div className="flex">
-                    <input
-                      type="text"
-                      value={promoCode}
-                      onChange={(e) => setPromoCode(e.target.value)}
-                      placeholder="Enter code"
-                      className="flex-1 px-3.5 py-2.5 border border-gray-200 rounded-l-xl text-sm focus:outline-none focus:border-black transition-colors"
-                    />
-                    <button
-                      onClick={() => {
-                        if (promoCode.trim()) setPromoApplied(true);
-                      }}
-                      className="px-5 py-2.5 bg-black text-white text-sm font-bold rounded-r-xl hover:bg-gray-800 transition-colors"
-                    >
-                      Apply
-                    </button>
-                  </div>
-                  {promoApplied && (
-                    <p className="text-sm text-green-600 mt-2 flex items-center gap-1.5 font-medium">
-                      <FiCheck size={14} /> Code applied!
-                    </p>
-                  )}
+                  <PromoCodeInput
+                    subtotal={subtotal}
+                    onApply={(promo) => setAppliedPromo(promo)}
+                    onRemove={() => setAppliedPromo(null)}
+                  />
                 </div>
               </div>
 

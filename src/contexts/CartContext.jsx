@@ -140,7 +140,6 @@ export function CartProvider({ children }) {
 
   // ─── Prepare Checkout ─────────────────────────────────────────────────────────
   // Called by the cart page with only the SELECTED groups/items before navigating to /checkout
-  const prepareCheckout = useCallback((selectedGroups) => {
   // promo: { code, discount, description } | null
   const prepareCheckout = useCallback((selectedGroups, promo = null) => {
     setCheckoutGroups(selectedGroups);
@@ -149,16 +148,16 @@ export function CartProvider({ children }) {
 
   // ─── Clear Checkout Items ─────────────────────────────────────────────────────
   const clearCheckoutItems = useCallback(() => {
-    setCartGroups(prev => {
+    setCartGroups((prev) => {
       const paidItemIds = new Set(
-        checkoutGroups.flatMap(g => g.items.map(i => i.id)),
+        checkoutGroups.flatMap((g) => g.items.map((i) => i.id)),
       );
       return prev
-        .map(group => ({
+        .map((group) => ({
           ...group,
-          items: group.items.filter(item => !paidItemIds.has(item.id)),
+          items: group.items.filter((item) => !paidItemIds.has(item.id)),
         }))
-        .filter(group => group.items.length > 0);
+        .filter((group) => group.items.length > 0);
     });
     setCheckoutGroups([]);
     setCheckoutPromo(null);

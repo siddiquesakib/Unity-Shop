@@ -92,28 +92,34 @@ export default function PaymentButton({
         onClick={handlePayment}
         disabled={loading}
         className={`
-          relative w-full overflow-hidden
-          inline-flex items-center justify-center gap-3
-          px-8 py-4 rounded-xl font-bold text-sm tracking-wide uppercase
+          group relative w-full overflow-hidden
+          inline-flex items-center justify-center gap-2.5
+          px-8 py-4 rounded-xl font-bold text-sm tracking-wide
           bg-black text-white
           shadow-xl shadow-black/10
-          hover:bg-gray-900 hover:scale-[1.01] transition-all duration-300
+          hover:bg-gray-900 hover:shadow-black/20 hover:scale-[1.01] transition-all duration-300
           active:scale-[0.98]
           disabled:opacity-70 disabled:pointer-events-none
           ${className}
         `}
       >
         {/* Shine effect */}
-        <div className="absolute inset-0 -translate-x-[100%] bg-gradient-to-r from-transparent via-white/10 to-transparent transition-transform duration-1000 group-hover:translate-x-[100%]" />
+        <div className="absolute inset-0 -translate-x-[100%] bg-gradient-to-r from-transparent via-white/15 to-transparent transition-transform duration-700 group-hover:translate-x-[100%]" />
 
         {loading ? (
           <>
             <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
-            <span className="font-semibold">Processing...</span>
+            <span className="font-semibold">Processing Payment...</span>
           </>
         ) : (
           <>
+            <LockIcon />
             <span className="font-bold">{label}</span>
+            {price != null && (
+              <span className="ml-1 bg-white/20 px-2.5 py-0.5 rounded-lg text-sm font-black">
+                ${Number(price).toFixed(2)}
+              </span>
+            )}
           </>
         )}
       </button>

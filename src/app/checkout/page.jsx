@@ -1,7 +1,7 @@
 // app/checkout/page.jsx
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -17,6 +17,7 @@ import {
 import { useCart } from "@/contexts/CartContext";
 import { useSession } from "next-auth/react";
 import PaymentButton from "@/components/common/payment-button/PaymentButton";
+import PromoCodeInput from "@/components/promoCode/PromoCodeInput";
 
 const SHOP_EMAIL = process.env.NEXT_PUBLIC_SHOP_EMAIL || "shop@unityshop.com";
 const SHOP_NAME = process.env.NEXT_PUBLIC_SHOP_NAME || "UnityShop";
@@ -35,6 +36,9 @@ export default function CheckoutPage() {
 
   if (checkoutGroups.length === 0) return null;
 
+  // ── Local promo state (pre-filled from cart if available) ──────────────
+  const [appliedPromo, setAppliedPromo] = useState(checkoutPromo || null);
+
   // ── Compute totals ────────────────────────────────────────────────────────
   const subtotal = checkoutGroups.reduce(
     (total, group) =>
@@ -42,8 +46,8 @@ export default function CheckoutPage() {
     0,
   );
 
-  const discountAmount = checkoutPromo
-    ? Math.min(checkoutPromo.discount, subtotal)
+  const discountAmount = appliedPromo
+    ? Math.min(appliedPromo.discount, subtotal)
     : 0;
 
   const grandTotal = Math.max(0, subtotal - discountAmount);
@@ -116,7 +120,9 @@ export default function CheckoutPage() {
                     </div>
                     <span
                       className={`text-xs font-bold uppercase tracking-wide hidden sm:block ${
-                        step.done || step.active ? "text-black" : "text-gray-400"
+                        step.done || step.active
+                          ? "text-black"
+                          : "text-gray-400"
                       }`}
                     >
                       {step.label}
@@ -157,7 +163,7 @@ export default function CheckoutPage() {
                           </span>
                           {group.seller.verified && (
                             <span className="inline-flex h-5 items-center gap-1 rounded-full bg-black px-2 text-[10px] font-medium text-white">
-                              <span className="w-1 h-1 rounded-full bg-white animate-pulse"/>
+                              <span className="w-1 h-1 rounded-full bg-white animate-pulse" />
                               Verified
                             </span>
                           )}
@@ -202,7 +208,9 @@ export default function CheckoutPage() {
                             </p>
                           )}
                           <div className="flex items-center gap-2 text-sm text-gray-500">
-                            <span className="font-semibold text-black">${item.price.toFixed(2)}</span>
+                            <span className="font-semibold text-black">
+                              ${item.price.toFixed(2)}
+                            </span>
                             <span className="text-gray-300">×</span>
                             <span>{item.quantity}</span>
                           </div>
@@ -216,11 +224,15 @@ export default function CheckoutPage() {
                       </div>
                     ))}
                   </div>
-                  
+
                   {/* Seller subtotal footer */}
                   <div className="px-6 py-3 bg-gray-50/30 border-t border-gray-100 flex justify-between items-center">
-                    <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Subtotal for this seller</span>
-                    <span className="text-sm font-bold text-black">${groupSubtotal.toFixed(2)}</span>
+                    <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Subtotal for this seller
+                    </span>
+                    <span className="text-sm font-bold text-black">
+                      ${groupSubtotal.toFixed(2)}
+                    </span>
                   </div>
                 </div>
               );
@@ -229,12 +241,13 @@ export default function CheckoutPage() {
             {/* Info banner */}
             <div className="flex items-start gap-4 text-sm text-gray-500 bg-gray-50 border border-gray-100 rounded-2xl px-6 py-5">
               <div className="w-8 h-8 rounded-full bg-white border border-gray-200 flex items-center justify-center flex-shrink-0 text-black">
-                 <FiInfo size={14} />
+                <FiInfo size={14} />
               </div>
               <p className="pt-1 leading-relaxed">
                 Your full payment is collected securely by{" "}
                 <span className="font-bold text-black">{SHOP_NAME}</span>. Funds
-                are distributed to each seller automatically after order confirmation.
+                are distributed to each seller automatically after order
+                confirmation.
               </p>
             </div>
           </div>
@@ -244,9 +257,11 @@ export default function CheckoutPage() {
             <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden sticky top-24 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
               {/* Summary header */}
               <div className="px-8 pt-8 pb-6 bg-gray-50/50 border-b border-gray-100">
-                <h2 className="text-xl font-black text-black tracking-tight">Order Summary</h2>
+                <h2 className="text-xl font-black text-black tracking-tight">
+                  Order Summary
+                </h2>
                 <div className="flex items-center gap-2 mt-2 text-xs font-medium text-gray-500">
-                  <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"/>
+                  <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
                   {totalUniqueProducts} products ready for checkout
                 </div>
               </div>
@@ -264,7 +279,7 @@ export default function CheckoutPage() {
                       className="flex justify-between items-center text-sm group"
                     >
                       <span className="text-gray-500 truncate max-w-[60%] flex items-center gap-2 group-hover:text-black transition-colors">
-                        <div className="w-1.5 h-1.5 rounded-full bg-gray-300 group-hover:bg-black transition-colors"/>
+                        <div className="w-1.5 h-1.5 rounded-full bg-gray-300 group-hover:bg-black transition-colors" />
                         {group.seller.name}
                       </span>
                       <span className="font-bold text-black">
@@ -275,19 +290,11 @@ export default function CheckoutPage() {
                 })}
 
                 {/* Divider + totals */}
-                <div className="border-t border-dashed border-gray-200 pt-4 space-y-3">
-                  <div className="flex justify-between text-gray-500 text-sm">
-                    <span>Subtotal</span>
-                    <span className="font-semibold text-black">
-                      ${grandTotal.toFixed(2)}
-                    </span>
-                  </div>
-                  <div className="flex justify-between text-gray-500 text-sm">
                 <div className="border-t border-gray-100 pt-2.5 space-y-2">
                   <div className="flex justify-between text-gray-500">
                     <span>
-                      Subtotal ({totalUniqueProducts}{' '}
-                      {totalUniqueProducts === 1 ? 'product' : 'products'},{' '}
+                      Subtotal ({totalUniqueProducts}{" "}
+                      {totalUniqueProducts === 1 ? "product" : "products"},{" "}
                       {totalQty} units)
                     </span>
                     <span className="text-gray-700">
@@ -295,16 +302,16 @@ export default function CheckoutPage() {
                     </span>
                   </div>
 
-                  {/* Promo discount — only shown if a code was applied in cart */}
-                  {checkoutPromo && discountAmount > 0 && (
+                  {/* Promo discount — only shown if a code was applied */}
+                  {appliedPromo && discountAmount > 0 && (
                     <div className="flex justify-between items-start text-emerald-600 text-sm">
                       <span className="flex items-center gap-1">
-                        🏷️{' '}
+                        🏷️{" "}
                         <span className="font-semibold">
-                          {checkoutPromo.code}
+                          {appliedPromo.code}
                         </span>
                         <span className="text-gray-400 text-xs font-normal">
-                          ({checkoutPromo.description})
+                          ({appliedPromo.description})
                         </span>
                       </span>
                       <span className="font-semibold whitespace-nowrap">
@@ -315,11 +322,15 @@ export default function CheckoutPage() {
 
                   <div className="flex justify-between text-gray-400 text-xs">
                     <span>Shipping</span>
-                    <span className="font-medium text-black bg-gray-100 px-2 py-0.5 rounded text-xs">Calculated next</span>
+                    <span className="font-medium text-black bg-gray-100 px-2 py-0.5 rounded text-xs">
+                      Calculated next
+                    </span>
                   </div>
                   <div className="flex justify-between text-gray-500 text-sm">
                     <span>Tax</span>
-                    <span className="font-medium text-black bg-gray-100 px-2 py-0.5 rounded text-xs">Calculated next</span>
+                    <span className="font-medium text-black bg-gray-100 px-2 py-0.5 rounded text-xs">
+                      Calculated next
+                    </span>
                   </div>
                 </div>
 
@@ -338,13 +349,23 @@ export default function CheckoutPage() {
 
               {/* Pay button */}
               <div className="px-8 pb-8 space-y-4">
+                {/* Promo Code Input */}
+                <PromoCodeInput
+                  subtotal={subtotal}
+                  onApply={(promo) => setAppliedPromo(promo)}
+                  onRemove={() => setAppliedPromo(null)}
+                />
+
                 {!userEmail ? (
                   <div className="text-xs font-medium text-gray-500 bg-gray-50 rounded-xl px-4 py-3 flex items-start gap-3 border border-gray-100">
                     <FiAlertCircle
                       size={16}
                       className="flex-shrink-0 text-black mt-0.5"
                     />
-                    <p>Please sign in to your account to complete this purchase securely.</p>
+                    <p>
+                      Please sign in to your account to complete this purchase
+                      securely.
+                    </p>
                   </div>
                 ) : (
                   <PaymentButton
@@ -355,7 +376,7 @@ export default function CheckoutPage() {
                     userEmail={userEmail}
                     sellerName={SHOP_NAME}
                     sellerEmail={SHOP_EMAIL}
-                    label="Complete Secure Payment"
+                    label="Pay Now"
                     className="w-full justify-center text-base py-4 font-bold rounded-xl"
                   />
                 )}
