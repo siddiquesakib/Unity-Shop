@@ -61,63 +61,63 @@ export default function VerificationQueue() {
 
   if (loading) {
     return (
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl flex items-center justify-center h-[400px]">
-        <Loader2 className="animate-spin text-indigo-400" size={32} />
+      <div className="bg-white border border-gray-200 rounded-xl flex items-center justify-center h-[400px]">
+        <Loader2 className="animate-spin text-gray-400" size={32} />
       </div>
     );
   }
 
   return (
-    <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden flex flex-col h-[400px]">
-      <div className="p-6 border-b border-slate-800 flex items-center justify-between shrink-0">
-        <h3 className="text-lg font-bold text-white">Verification Queue</h3>
-        <span className="px-2.5 py-1 rounded-full bg-indigo-500/10 text-indigo-400 text-xs font-medium">
+    <div className="bg-white border border-gray-200 rounded-xl overflow-hidden flex flex-col h-[400px]">
+      <div className="p-6 border-b border-gray-200 flex items-center justify-between shrink-0">
+        <h3 className="text-lg font-bold text-gray-900">Verification Queue</h3>
+        <span className="px-2.5 py-1 rounded-full bg-gray-100 text-gray-600 text-xs font-medium">
           {applications.length} Pending
         </span>
       </div>
 
       {applications.length === 0 ? (
-        <div className="flex-1 flex flex-col items-center justify-center text-slate-500 gap-3">
-          <UserX size={40} className="text-slate-600" />
+        <div className="flex-1 flex flex-col items-center justify-center text-gray-400 gap-3">
+          <UserX size={40} className="text-gray-300" />
           <p className="text-sm">No pending seller requests</p>
         </div>
       ) : (
         <div className="flex-1 overflow-y-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-slate-950/50 sticky top-0">
-                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+              <tr className="bg-gray-50 sticky top-0">
+                <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">
                   Name
                 </th>
-                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">
                   Email
                 </th>
-                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">
                   Requested
                 </th>
-                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider text-right">
+                <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider text-right">
                   Actions
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800/50">
+            <tbody className="divide-y divide-gray-100">
               {applications.map((app, index) => (
                 <motion.tr
                   key={app._id || app.email}
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ delay: index * 0.05 }}
-                  className="hover:bg-slate-800/30 transition-colors"
+                  className="hover:bg-gray-50 transition-colors"
                 >
                   <td className="px-6 py-4">
-                    <p className="text-sm font-medium text-white">
+                    <p className="text-sm font-medium text-gray-900">
                       {app.name || "Unknown"}
                     </p>
                   </td>
-                  <td className="px-6 py-4 text-sm text-slate-400">
+                  <td className="px-6 py-4 text-sm text-gray-500">
                     {app.email}
                   </td>
-                  <td className="px-6 py-4 text-sm text-slate-400">
+                  <td className="px-6 py-4 text-sm text-gray-500">
                     {app.sellerRequestDate
                       ? new Date(app.sellerRequestDate).toLocaleDateString()
                       : "N/A"}
@@ -126,21 +126,21 @@ export default function VerificationQueue() {
                     <div className="flex items-center justify-end gap-2">
                       {actionLoading === app.email ? (
                         <Loader2
-                          className="animate-spin text-slate-400"
+                          className="animate-spin text-gray-400"
                           size={16}
                         />
                       ) : (
                         <>
                           <button
                             onClick={() => handleApprove(app.email)}
-                            className="p-2 rounded-lg bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500 hover:text-white transition-all"
+                            className="p-2 rounded-lg bg-emerald-50 text-emerald-600 hover:bg-emerald-500 hover:text-white transition-all"
                             title="Approve"
                           >
                             <Check size={16} />
                           </button>
                           <button
                             onClick={() => handleReject(app.email)}
-                            className="p-2 rounded-lg bg-rose-500/10 text-rose-400 hover:bg-rose-500 hover:text-white transition-all"
+                            className="p-2 rounded-lg bg-red-50 text-red-500 hover:bg-red-500 hover:text-white transition-all"
                             title="Reject"
                           >
                             <X size={16} />
