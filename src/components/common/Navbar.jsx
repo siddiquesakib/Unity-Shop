@@ -8,6 +8,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useCart } from "@/hooks/useCart";
 import { useClickOutside } from "@/hooks/useClickOutside";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useNotifications } from "@/contexts/NotificationContext";
 import {
   FiMenu,
   FiX,
@@ -25,6 +26,8 @@ import {
   FiGlobe,
   FiUser,
   FiMapPin,
+  FiBell,
+  FiStar,
 } from "react-icons/fi";
 
 const navLinks = [
@@ -65,18 +68,34 @@ const Navbar = () => {
   const [searchCategory, setSearchCategory] = useState("all");
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showLangMenu, setShowLangMenu] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
 
   const { user, logout } = useAuth();
   const { totalUniqueItems: totalItems } = useCart();
   const { language, setLanguage, t, languages } = useLanguage();
+  const {
+    notifications = [],
+    unreadCount = 0,
+    markAsRead,
+    markAllAsRead,
+  } = useNotifications() || {};
+
+  // Debug
+  useEffect(() => {
+    console.log("Navbar notifications updated:", notifications);
+  }, [notifications]);
+
   const router = useRouter();
+
   const pathname = usePathname();
 
   const userMenuRef = useRef(null);
   const langMenuRef = useRef(null);
+  const notifRef = useRef(null);
 
   useClickOutside(userMenuRef, () => setShowUserMenu(false));
   useClickOutside(langMenuRef, () => setShowLangMenu(false));
+  useClickOutside(notifRef, () => setShowNotifications(false));
 
   const currentLang =
     languages.find((l) => l.code === language) || languages[0];
@@ -160,6 +179,104 @@ const Navbar = () => {
 
               {/* Right Actions */}
               <div className="flex items-center gap-1">
+                {/* Notifications */}
+                <div className="relative" ref={notifRef}>
+                  <button
+                    onClick={() => setShowNotifications(!showNotifications)}
+                    className="flex items-center gap-1.5 px-2.5 py-1.5 text-gray-300 hover:text-white rounded-md transition-colors relative"
+                  >
+                    <div className="relative">
+                      <FiBell size={18} />
+                      {unreadCount > 0 && (
+                        <span className="absolute -top-1.5 -right-1.5 min-w-4 h-4 px-1 bg-red-600 text-white text-[9px] font-bold rounded-full flex items-center justify-center border border-white">
+                          {unreadCount > 99 ? "99+" : unreadCount}
+                        </span>
+                      )}
+                    </div>
+                  </button>
+
+                  {showNotifications && (
+                    <div className="absolute top-full right-0 mt-2 w-80 bg-white rounded-lg shadow-xl border border-gray-200 z-50 overflow-hidden">
+                      <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
+                        <h3 className="text-sm font-bold text-gray-900">
+                          Notifications
+                        </h3>
+                        {unreadCount > 0 && (
+                          <button
+                            onClick={markAllAsRead}
+                            className="text-xs text-blue-600 hover:text-blue-800 transition-colors"
+                          >
+                            Mark all read
+                          </button>
+                        )}
+                      </div>
+                      <div className="max-h-72 overflow-y-auto">
+                        {notifications.length > 0 ? (
+                          notifications.map((n) => {
+                            // Determine icon based on type
+                            let Icon = FiBell;
+                            if (n.type === "order_confirmed") Icon = FiPackage;
+                            if (n.type === "payment_success")
+                              Icon = FiShoppingBag;
+                            if (n.type === "product_approved") Icon = FiStar; // import FiStar if needed
+                            if (n.type === "product_rejected") Icon = FiX;
+                            if (n.type === "coupon") Icon = FiStar;
+                            if (n.type === "cart_add") Icon = FiShoppingCart;
+
+                            return (
+                              <div
+                                key={n._id}
+                                className={`flex flex-col border-b border-gray-100 last:border-0 hover:bg-gray-50 transition-colors cursor-pointer ${
+                                  !n.read ? "bg-gray-50/80" : ""
+                                }`}
+                                onClick={() => markAsRead(n._id)}
+                              >
+                                <div className="flex items-start gap-3 px-4 py-3">
+                                  <div
+                                    className={`mt-0.5 w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
+                                      !n.read
+                                        ? "bg-black text-white"
+                                        : "bg-gray-100 text-gray-500"
+                                    }`}
+                                  >
+                                    <Icon size={14} />
+                                  </div>
+                                  <div className="flex-1 min-w-0">
+                                    <p
+                                      className={`text-sm leading-snug ${!n.read ? "font-bold text-gray-900" : "text-gray-600"}`}
+                                    >
+                                      {n.title || n.text}
+                                    </p>
+                                    <p className="text-xs text-gray-600 mt-0.5 line-clamp-2">
+                                      {n.message}
+                                    </p>
+                                    <p className="text-[10px] text-gray-400 mt-1">
+                                      {new Date(n.createdAt).toLocaleString()}
+                                    </p>
+                                  </div>
+                                  {!n.read && (
+                                    <div className="w-2 h-2 rounded-full bg-blue-600 mt-2 shrink-0" />
+                                  )}
+                                </div>
+                              </div>
+                            );
+                          })
+                        ) : (
+                          <div className="px-4 py-8 text-center">
+                            <FiBell
+                              size={24}
+                              className="mx-auto text-gray-300 mb-2"
+                            />
+                            <p className="text-sm text-gray-400">
+                              No notifications
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
                 {/* Favorites */}
                 <Link
                   href="/dashboard/wishlist"
@@ -307,7 +424,7 @@ const Navbar = () => {
                 {categoryLinks.slice(0, 6).map((cat) => (
                   <Link
                     key={cat}
-                    href={`/search?q=&category=${encodeURIComponent(cat)}`}
+                    href={`/products?category=${encodeURIComponent(cat)}`}
                     className="px-2.5 py-1.5 text-sm text-gray-400 hover:text-white transition-colors"
                   >
                     {cat}
@@ -394,6 +511,19 @@ const Navbar = () => {
                 <FiSearch size={14} />
               </button>
             </form>
+
+            {/* Notification */}
+            <button
+              onClick={() => setShowNotifications(!showNotifications)}
+              className="relative text-gray-300"
+            >
+              <FiBell size={20} />
+              {unreadCount > 0 && (
+                <span className="absolute -top-1.5 -right-1.5 min-w-3.5 h-3.5 px-0.5 bg-red-500 text-white text-[8px] font-bold rounded-full flex items-center justify-center">
+                  {unreadCount}
+                </span>
+              )}
+            </button>
 
             {/* Cart */}
             <Link href="/cart" className="relative text-gray-300">
@@ -487,7 +617,7 @@ const Navbar = () => {
                   {categoryLinks.map((cat) => (
                     <Link
                       key={cat}
-                      href={`/search?q=&category=${encodeURIComponent(cat)}`}
+                      href={`/products?category=${encodeURIComponent(cat)}`}
                       onClick={() => setIsOpen(false)}
                       className="block px-3 py-2 text-sm text-gray-400 hover:text-white hover:bg-gray-800/60 rounded-lg transition-colors"
                     >
