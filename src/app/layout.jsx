@@ -6,10 +6,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import NextAuthProvider from "@/components/providers/NextAuthProvider";
 import { CartProvider } from "@/contexts/CartContext";
 import { LanguageProvider } from "@/contexts/LanguageContext";
-import { SocketProvider } from "@/contexts/SocketContext";
-import { NotificationProvider } from "@/contexts/NotificationContext";
-import { Toaster } from "react-hot-toast";
-import NotificationListener from "@/components/common/NotificationListener";
+import { CurrencyProvider } from "@/contexts/CurrencyContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -22,8 +19,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  title: "Unity Shop",
-  description: "Your one-stop shop for everything unity!",
+  title: "Unity Shop - Global Marketplace",
+  description: "Shop from anywhere, pay in any currency",
 };
 
 export default function RootLayout({ children }) {
@@ -32,23 +29,19 @@ export default function RootLayout({ children }) {
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <NextAuthProvider>
-          <AuthProvider>
-            <SocketProvider>
-              <NotificationProvider>
+        <LanguageProvider>
+          <CurrencyProvider>
+            <NextAuthProvider>
+              <AuthProvider>
                 <CartProvider>
-                  <LanguageProvider>
-                    <Navbar />
-                    <NotificationListener />
-                    <Toaster position="top-right" />
-                    {children}
-                    <Footer />
-                  </LanguageProvider>
+                  <Navbar />
+                  {children}
+                  <Footer />
                 </CartProvider>
-              </NotificationProvider>
-            </SocketProvider>
-          </AuthProvider>
-        </NextAuthProvider>
+              </AuthProvider>
+            </NextAuthProvider>
+          </CurrencyProvider>
+        </LanguageProvider>
       </body>
     </html>
   );

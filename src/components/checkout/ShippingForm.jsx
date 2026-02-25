@@ -33,12 +33,9 @@ const ShippingForm = ({ initialData, onSubmit }) => {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <div>
-        <h2 className="text-xl font-black text-black tracking-tight uppercase">
-          Shipping Information
-        </h2>
-        <div className="w-10 h-0.5 bg-black mt-2 rounded-full" />
-      </div>
+      <h2 className="text-xl font-semibold text-gray-900">
+        Shipping Information
+      </h2>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
@@ -51,7 +48,7 @@ const ShippingForm = ({ initialData, onSubmit }) => {
             value={formData.fullName}
             onChange={handleChange}
             required
-            className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-black transition-colors bg-gray-50/50"
+            className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-orange-500"
           />
         </div>
         <div>
@@ -64,7 +61,7 @@ const ShippingForm = ({ initialData, onSubmit }) => {
             value={formData.phone}
             onChange={handleChange}
             required
-            className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-black transition-colors bg-gray-50/50"
+            className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-orange-500"
           />
         </div>
       </div>
@@ -79,7 +76,7 @@ const ShippingForm = ({ initialData, onSubmit }) => {
           value={formData.addressLine1}
           onChange={handleChange}
           required
-          className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-black transition-colors bg-gray-50/50"
+          className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-orange-500"
         />
       </div>
 
@@ -92,7 +89,7 @@ const ShippingForm = ({ initialData, onSubmit }) => {
           name="addressLine2"
           value={formData.addressLine2}
           onChange={handleChange}
-          className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-black transition-colors bg-gray-50/50"
+          className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-orange-500"
         />
       </div>
 
@@ -107,7 +104,7 @@ const ShippingForm = ({ initialData, onSubmit }) => {
             value={formData.city}
             onChange={handleChange}
             required
-            className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-black transition-colors bg-gray-50/50"
+            className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-orange-500"
           />
         </div>
         <div>
@@ -120,7 +117,7 @@ const ShippingForm = ({ initialData, onSubmit }) => {
             value={formData.state}
             onChange={handleChange}
             required
-            className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-black transition-colors bg-gray-50/50"
+            className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-orange-500"
           />
         </div>
         <div>
@@ -133,7 +130,7 @@ const ShippingForm = ({ initialData, onSubmit }) => {
             value={formData.zipCode}
             onChange={handleChange}
             required
-            className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-black transition-colors bg-gray-50/50"
+            className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-orange-500"
           />
         </div>
       </div>
@@ -147,7 +144,7 @@ const ShippingForm = ({ initialData, onSubmit }) => {
           value={formData.country}
           onChange={handleChange}
           required
-          className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-black transition-colors bg-gray-50/50"
+          className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-orange-500"
         >
           <option value="US">United States</option>
           <option value="CA">Canada</option>
@@ -167,7 +164,7 @@ const ShippingForm = ({ initialData, onSubmit }) => {
           id="saveAddress"
           checked={formData.saveAddress}
           onChange={handleChange}
-          className="w-4 h-4 accent-black rounded"
+          className="w-4 h-4 text-orange-500 rounded focus:ring-orange-500"
         />
         <label htmlFor="saveAddress" className="ml-2 text-sm text-gray-700">
           Save this address for future orders
@@ -177,7 +174,7 @@ const ShippingForm = ({ initialData, onSubmit }) => {
       <div className="flex justify-end">
         <button
           type="submit"
-          className="px-8 py-3.5 bg-black text-white font-bold rounded-full hover:bg-gray-800 shadow-2xl shadow-black/20 hover:shadow-black/30 hover:scale-[1.02] active:scale-[0.98] transition-all duration-300"
+          className="px-6 py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white font-semibold rounded-xl hover:shadow-lg transition"
         >
           Continue to Payment
         </button>

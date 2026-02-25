@@ -43,11 +43,11 @@ export default function ManagerOverview() {
         {[...Array(4)].map((_, i) => (
           <div
             key={i}
-            className="p-6 rounded-xl bg-white border border-gray-200 animate-pulse"
+            className="p-6 rounded-2xl bg-slate-900 border border-slate-800 animate-pulse"
           >
-            <div className="w-12 h-12 rounded-xl bg-gray-100 mb-4" />
-            <div className="h-4 bg-gray-100 rounded w-24 mb-2" />
-            <div className="h-8 bg-gray-100 rounded w-16" />
+            <div className="w-12 h-12 rounded-xl bg-slate-800 mb-4" />
+            <div className="h-4 bg-slate-800 rounded w-24 mb-2" />
+            <div className="h-8 bg-slate-800 rounded w-16" />
           </div>
         ))}
       </div>
@@ -66,8 +66,8 @@ export default function ManagerOverview() {
       value: stats?.totalOrders || 0,
       subtitle: `${pendingOrders} pending`,
       icon: Package,
-      color: "text-orange-600",
-      bg: "bg-orange-50",
+      color: "text-orange-400",
+      bg: "bg-orange-500/10",
       href: "/dashboard/manager/fulfillment",
     },
     {
@@ -75,8 +75,8 @@ export default function ManagerOverview() {
       value: `$${(stats?.totalRevenue || 0).toLocaleString()}`,
       subtitle: `$${(stats?.todaySales || 0).toLocaleString()} today`,
       icon: DollarSign,
-      color: "text-emerald-600",
-      bg: "bg-emerald-50",
+      color: "text-emerald-400",
+      bg: "bg-emerald-500/10",
       href: "/dashboard/manager/stats",
     },
     {
@@ -84,8 +84,8 @@ export default function ManagerOverview() {
       value: stats?.totalUsers || 0,
       subtitle: `${stats?.totalSellers || 0} sellers`,
       icon: Users,
-      color: "text-gray-700",
-      bg: "bg-gray-100",
+      color: "text-indigo-400",
+      bg: "bg-indigo-500/10",
       href: "/dashboard/manager/sellers",
     },
     {
@@ -93,8 +93,8 @@ export default function ManagerOverview() {
       value: stats?.totalProducts || 0,
       subtitle: `${stats?.pendingSellerRequests || 0} seller requests`,
       icon: ShoppingBag,
-      color: "text-purple-600",
-      bg: "bg-purple-50",
+      color: "text-purple-400",
+      bg: "bg-purple-500/10",
       href: "/dashboard/manager/sellers",
     },
   ];
@@ -110,7 +110,7 @@ export default function ManagerOverview() {
         >
           <Link
             href={panel.href}
-            className="block p-6 rounded-xl bg-white border border-gray-200 hover:border-gray-400 transition-all duration-300 group cursor-pointer"
+            className="block p-6 rounded-2xl bg-slate-900 border border-slate-800 hover:border-indigo-500/30 transition-all duration-300 group cursor-pointer"
           >
             <div className="flex items-start justify-between mb-4">
               <div className={`p-3 rounded-xl ${panel.bg}`}>
@@ -118,15 +118,15 @@ export default function ManagerOverview() {
               </div>
               <ArrowRight
                 size={20}
-                className="text-gray-400 group-hover:text-gray-900 transition-colors"
+                className="text-slate-600 group-hover:text-white transition-colors"
               />
             </div>
             <div>
-              <p className="text-sm text-gray-500 mb-1">{panel.title}</p>
-              <h3 className="text-2xl font-bold text-gray-900 mb-1">
+              <p className="text-sm text-slate-400 mb-1">{panel.title}</p>
+              <h3 className="text-2xl font-bold text-white mb-1">
                 {panel.value}
               </h3>
-              <p className="text-xs text-gray-400">{panel.subtitle}</p>
+              <p className="text-xs text-slate-500">{panel.subtitle}</p>
             </div>
           </Link>
         </motion.div>

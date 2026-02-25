@@ -8,8 +8,6 @@ import {
   FiEyeOff,
   FiCheck,
   FiAlertCircle,
-  FiArrowRight,
-  FiArrowLeft,
 } from "react-icons/fi";
 
 function ResetPasswordForm() {
@@ -93,24 +91,25 @@ function ResetPasswordForm() {
   // Invalid link state
   if (invalidLink) {
     return (
-      <div className="text-center py-8">
-        <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-red-50 flex items-center justify-center">
-          <FiAlertCircle className="text-red-500" size={32} />
+      <div className="text-center py-6">
+        <div className="flex justify-center mb-5">
+          <div className="w-16 h-16 bg-gradient-to-br from-red-400 to-red-600 rounded-full flex items-center justify-center shadow-lg">
+            <FiAlertCircle className="text-white text-3xl" />
+          </div>
         </div>
-        <h2 className="text-2xl font-bold text-gray-900 mb-3">
+        <h2 className="text-2xl font-bold text-white mb-3">
           Invalid Reset Link
         </h2>
-        <p className="text-gray-500 text-sm mb-6">
+        <p className="text-white/60 text-sm mb-6">
           This password reset link is invalid or has expired.
           <br />
           Please request a new one.
         </p>
         <Link
           href="/forgot-password"
-          className="inline-flex items-center gap-2 bg-black hover:bg-gray-900 text-white px-6 py-3 rounded-xl font-semibold shadow-lg shadow-black/20 transition-all duration-200"
+          className="inline-block bg-gradient-to-r from-orange-400 to-orange-600 text-white px-6 py-2.5 rounded-lg font-semibold shadow-lg hover:scale-105 transition-transform"
         >
           Request New Link
-          <FiArrowRight size={16} />
         </Link>
       </div>
     );
@@ -119,24 +118,25 @@ function ResetPasswordForm() {
   // Success state
   if (success) {
     return (
-      <div className="text-center py-8">
-        <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-black flex items-center justify-center">
-          <FiCheck className="text-white" size={32} />
+      <div className="text-center py-6">
+        <div className="flex justify-center mb-5">
+          <div className="w-16 h-16 bg-gradient-to-br from-green-400 to-emerald-500 rounded-full flex items-center justify-center shadow-lg shadow-green-500/30 animate-bounce">
+            <FiCheck className="text-white text-3xl" />
+          </div>
         </div>
-        <h2 className="text-2xl font-bold text-gray-900 mb-3">
-          Password Reset Successful!
+        <h2 className="text-2xl font-bold text-white mb-3">
+          Password Reset Successful! 🎉
         </h2>
-        <p className="text-gray-500 text-sm mb-6">
+        <p className="text-white/60 text-sm mb-6">
           Your password has been updated successfully.
           <br />
           You can now login with your new password.
         </p>
         <Link
           href="/login"
-          className="inline-flex items-center gap-2 bg-black hover:bg-gray-900 text-white px-8 py-3 rounded-xl font-semibold shadow-lg shadow-black/20 transition-all duration-200"
+          className="inline-block bg-gradient-to-r from-orange-400 to-orange-600 text-white px-8 py-2.5 rounded-lg font-semibold shadow-lg hover:scale-105 transition-transform"
         >
           Go to Login
-          <FiArrowRight size={16} />
         </Link>
       </div>
     );
@@ -145,47 +145,47 @@ function ResetPasswordForm() {
   // Reset form
   return (
     <>
-      <div className="mb-8">
-        <h2 className="text-3xl font-bold text-gray-900">
-          Create New Password
-        </h2>
-        <p className="text-gray-500 mt-2">
-          Your new password must be at least 6 characters long.
-        </p>
+      {/* Icon */}
+      <div className="flex justify-center mb-5">
+        <div className="w-16 h-16 bg-gradient-to-br from-orange-400 to-orange-600 rounded-2xl flex items-center justify-center shadow-lg shadow-orange-500/30">
+          <FiLock className="text-white text-2xl" />
+        </div>
       </div>
 
+      <h2 className="text-2xl font-bold text-white text-center mb-2">
+        Create New Password
+      </h2>
+      <p className="text-white/60 text-center text-sm mb-6">
+        Your new password must be at least 6 characters long.
+      </p>
+
       {error && (
-        <div className="mb-5 px-4 py-3 bg-red-50 border border-red-200 rounded-xl text-red-600 text-sm">
-          {error}
+        <div className="bg-red-500/20 border border-red-500/30 rounded-lg p-3 mb-4">
+          <p className="text-red-300 text-center text-sm">{error}</p>
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-5">
+      <form onSubmit={handleSubmit} className="space-y-4">
         {/* New Password */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1.5">
-            New Password
-          </label>
-          <div className="relative">
-            <FiLock
-              className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
-              size={16}
-            />
+          <label className="text-white text-sm font-medium">New Password</label>
+          <div className="relative mt-1">
+            <FiLock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-300" />
             <input
               type={showPassword ? "text" : "password"}
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
               placeholder="Enter new password"
-              className="w-full pl-11 pr-11 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder:text-gray-400 outline-none focus:border-black focus:ring-1 focus:ring-black transition-colors"
+              className="w-full pl-10 pr-10 py-2.5 rounded-lg bg-white/20 text-white placeholder-gray-300 outline-none focus:ring-2 focus:ring-orange-400 transition-all"
               required
               minLength={6}
             />
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700 transition-colors"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-300 hover:text-white transition-colors"
             >
-              {showPassword ? <FiEyeOff size={16} /> : <FiEye size={16} />}
+              {showPassword ? <FiEyeOff /> : <FiEye />}
             </button>
           </div>
 
@@ -197,7 +197,7 @@ function ResetPasswordForm() {
                   <div
                     key={i}
                     className={`h-1 flex-1 rounded-full transition-all ${
-                      i <= strength.level ? strength.color : "bg-gray-200"
+                      i <= strength.level ? strength.color : "bg-white/20"
                     }`}
                   />
                 ))}
@@ -205,12 +205,12 @@ function ResetPasswordForm() {
               <p
                 className={`text-xs ${
                   strength.level <= 1
-                    ? "text-red-500"
+                    ? "text-red-400"
                     : strength.level <= 2
-                      ? "text-yellow-500"
+                      ? "text-yellow-400"
                       : strength.level <= 3
-                        ? "text-blue-500"
-                        : "text-green-500"
+                        ? "text-blue-400"
+                        : "text-green-400"
                 }`}
               >
                 {strength.text}
@@ -221,25 +221,22 @@ function ResetPasswordForm() {
 
         {/* Confirm Password */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1.5">
+          <label className="text-white text-sm font-medium">
             Confirm Password
           </label>
-          <div className="relative">
-            <FiLock
-              className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
-              size={16}
-            />
+          <div className="relative mt-1">
+            <FiLock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-300" />
             <input
               type={showConfirm ? "text" : "password"}
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               placeholder="Confirm new password"
-              className={`w-full pl-11 pr-11 py-3 bg-gray-50 border rounded-xl text-gray-900 placeholder:text-gray-400 outline-none focus:ring-1 transition-colors ${
+              className={`w-full pl-10 pr-10 py-2.5 rounded-lg bg-white/20 text-white placeholder-gray-300 outline-none focus:ring-2 transition-all ${
                 confirmPassword && confirmPassword !== newPassword
-                  ? "border-red-300 focus:border-red-500 focus:ring-red-500"
+                  ? "focus:ring-red-400 ring-1 ring-red-400/50"
                   : confirmPassword && confirmPassword === newPassword
-                    ? "border-green-300 focus:border-green-500 focus:ring-green-500"
-                    : "border-gray-200 focus:border-black focus:ring-black"
+                    ? "focus:ring-green-400 ring-1 ring-green-400/50"
+                    : "focus:ring-orange-400"
               }`}
               required
               minLength={6}
@@ -247,17 +244,17 @@ function ResetPasswordForm() {
             <button
               type="button"
               onClick={() => setShowConfirm(!showConfirm)}
-              className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700 transition-colors"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-300 hover:text-white transition-colors"
             >
-              {showConfirm ? <FiEyeOff size={16} /> : <FiEye size={16} />}
+              {showConfirm ? <FiEyeOff /> : <FiEye />}
             </button>
           </div>
           {confirmPassword && confirmPassword !== newPassword && (
-            <p className="text-red-500 text-xs mt-1">Passwords do not match</p>
+            <p className="text-red-400 text-xs mt-1">Passwords do not match</p>
           )}
           {confirmPassword && confirmPassword === newPassword && (
-            <p className="text-green-500 text-xs mt-1 flex items-center gap-1">
-              <FiCheck size={12} /> Passwords match
+            <p className="text-green-400 text-xs mt-1 flex items-center gap-1">
+              <FiCheck className="text-xs" /> Passwords match
             </p>
           )}
         </div>
@@ -266,76 +263,70 @@ function ResetPasswordForm() {
         <button
           type="submit"
           disabled={isLoading || !newPassword || !confirmPassword}
-          className="w-full flex items-center justify-center gap-2 bg-black hover:bg-gray-900 text-white py-3 rounded-xl font-semibold shadow-lg shadow-black/20 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full bg-gradient-to-r from-orange-400 to-orange-600 hover:scale-105 transition-all transform text-white py-2.5 rounded-lg font-semibold shadow-lg shadow-orange-500/25 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
         >
           {isLoading ? (
-            <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+            <span className="flex items-center justify-center gap-2">
+              <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                  fill="none"
+                />
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                />
+              </svg>
+              Resetting...
+            </span>
           ) : (
-            <>
-              Reset Password
-              <FiArrowRight size={16} />
-            </>
+            "Reset Password"
           )}
         </button>
       </form>
 
-      <p className="text-center text-gray-500 text-sm mt-6">
+      <div className="mt-6 text-center">
         <Link
           href="/login"
-          className="inline-flex items-center gap-1.5 text-black font-semibold hover:underline"
+          className="text-white/60 hover:text-orange-300 text-sm transition-colors"
         >
-          <FiArrowLeft size={14} />
-          Back to Login
+          ← Back to Login
         </Link>
-      </p>
+      </div>
     </>
   );
 }
 
 export default function ResetPasswordPage() {
   return (
-    <div className="min-h-screen flex">
-      {/* Left Side - Branding */}
-      <div className="hidden lg:flex lg:w-1/2 bg-black relative overflow-hidden items-center justify-center">
-        {/* Decorative Elements */}
-        <div className="absolute top-0 right-0 w-96 h-96 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2" />
-        <div className="absolute bottom-0 left-0 w-72 h-72 bg-white/5 rounded-full translate-y-1/3 -translate-x-1/3" />
-        <div className="absolute top-1/4 left-1/4 w-2 h-2 bg-white/20 rounded-full" />
-        <div className="absolute top-1/3 right-1/3 w-3 h-3 bg-white/10 rounded-full" />
-        <div className="absolute bottom-1/4 right-1/4 w-2 h-2 bg-white/15 rounded-full" />
+    <div
+      className="min-h-screen flex items-center justify-center bg-cover bg-center relative"
+      style={{
+        backgroundImage:
+          "url('https://images.unsplash.com/photo-1555529669-e69e7aa0ba9a?auto=format&fit=crop&w=1740&q=80')",
+      }}
+    >
+      {/* Gradient Overlay */}
+      <div className="absolute inset-0 bg-gradient-to-br from-black/70 via-black/60 to-orange-900/60"></div>
 
-        <div className="relative z-10 text-center px-12">
-          <div className="w-20 h-20 mx-auto mb-8 bg-white rounded-2xl flex items-center justify-center shadow-2xl">
-            <FiLock className="text-3xl text-black" />
-          </div>
-          <h1 className="text-4xl font-bold text-white mb-4">New Password</h1>
-          <p className="text-gray-400 text-lg leading-relaxed max-w-sm mx-auto">
-            Create a strong password to keep your account secure and protected.
-          </p>
-        </div>
-      </div>
-
-      {/* Right Side - Form */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center bg-white px-6 py-12">
-        <div className="w-full max-w-md">
-          {/* Mobile Logo */}
-          <div className="lg:hidden flex justify-center mb-8">
-            <div className="w-14 h-14 bg-black rounded-xl flex items-center justify-center">
-              <FiLock className="text-xl text-white" />
+      {/* Card */}
+      <div className="relative z-10 bg-white/10 backdrop-blur-2xl p-8 rounded-3xl shadow-2xl w-[90%] max-w-md border border-white/20">
+        <Suspense
+          fallback={
+            <div className="text-center py-10">
+              <div className="animate-spin h-8 w-8 border-2 border-orange-400 border-t-transparent rounded-full mx-auto mb-4"></div>
+              <p className="text-white/60 text-sm">Loading...</p>
             </div>
-          </div>
-
-          <Suspense
-            fallback={
-              <div className="text-center py-10">
-                <div className="w-8 h-8 border-2 border-gray-300 border-t-black rounded-full animate-spin mx-auto mb-4" />
-                <p className="text-gray-500 text-sm">Loading...</p>
-              </div>
-            }
-          >
-            <ResetPasswordForm />
-          </Suspense>
-        </div>
+          }
+        >
+          <ResetPasswordForm />
+        </Suspense>
       </div>
     </div>
   );

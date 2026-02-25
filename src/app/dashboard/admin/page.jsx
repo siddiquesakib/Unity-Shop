@@ -36,15 +36,15 @@ export default function AdminDashboard() {
   const getStatusColor = (status) => {
     switch (status) {
       case "Delivered":
-        return "text-emerald-600";
+        return "text-emerald-400";
       case "Shipped":
-        return "text-blue-600";
+        return "text-blue-400";
       case "Processing":
-        return "text-amber-600";
+        return "text-yellow-400";
       case "Cancelled":
-        return "text-red-600";
+        return "text-rose-400";
       default:
-        return "text-gray-600";
+        return "text-indigo-400";
     }
   };
 
@@ -63,21 +63,21 @@ export default function AdminDashboard() {
       <div className="flex items-end justify-between pb-2">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <ShieldCheck className="text-gray-900" size={20} />
-            <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+            <ShieldCheck className="text-emerald-400" size={20} />
+            <span className="text-xs font-semibold text-emerald-400 uppercase tracking-wider">
               System Administrator
             </span>
           </div>
-          <h1 className="text-2xl font-bold text-gray-900 uppercase tracking-tight">
+          <h1 className="text-2xl font-bold text-white uppercase tracking-tight">
             Admin Control Center
           </h1>
-          <p className="text-gray-500">
+          <p className="text-slate-400">
             Platform-wide overview, user management, and system health.
           </p>
         </div>
-        <div className="p-2.5 rounded-xl bg-white border border-gray-200 flex items-center gap-3">
+        <div className="p-2.5 rounded-xl bg-slate-900 border border-slate-800 flex items-center gap-3">
           <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
-          <span className="text-xs font-medium text-gray-600">
+          <span className="text-xs font-medium text-slate-300">
             System Status: Optimal
           </span>
         </div>
@@ -93,21 +93,21 @@ export default function AdminDashboard() {
       </div>
 
       {/* Bottom Section - Recent Orders */}
-      <div className="p-6 rounded-xl bg-white border border-gray-200">
+      <div className="p-6 rounded-2xl bg-slate-900 border border-slate-800">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-            <Activity size={18} className="text-gray-400" />
+          <h3 className="text-lg font-bold text-white flex items-center gap-2">
+            <Activity size={18} className="text-indigo-400" />
             Recent Orders
           </h3>
-          <span className="text-xs text-gray-400">Last 10 transactions</span>
+          <span className="text-xs text-slate-500">Last 10 transactions</span>
         </div>
 
         {loadingOrders ? (
           <div className="flex items-center justify-center py-8">
-            <Loader2 className="animate-spin text-gray-400" size={24} />
+            <Loader2 className="animate-spin text-indigo-400" size={24} />
           </div>
         ) : recentOrders.length === 0 ? (
-          <div className="text-center py-8 text-gray-400 text-sm">
+          <div className="text-center py-8 text-slate-500 text-sm">
             No recent orders found
           </div>
         ) : (
@@ -115,17 +115,17 @@ export default function AdminDashboard() {
             {recentOrders.slice(0, 5).map((order, i) => (
               <div
                 key={order._id || i}
-                className="flex items-center justify-between p-4 rounded-xl bg-gray-50 border border-gray-100"
+                className="flex items-center justify-between p-4 rounded-xl bg-slate-950/50 border border-slate-800/50"
               >
                 <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center">
-                    <Package size={18} className="text-gray-500" />
+                  <div className="w-10 h-10 rounded-lg bg-indigo-500/10 flex items-center justify-center">
+                    <Package size={18} className="text-indigo-400" />
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-gray-900">
+                    <p className="text-sm font-medium text-white">
                       {order.productName || "Unknown Product"}
                     </p>
-                    <p className="text-xs text-gray-500">
+                    <p className="text-xs text-slate-500">
                       {order.customerName || order.customerEmail || "Unknown"} ·
                       $
                       {Number(
@@ -140,7 +140,7 @@ export default function AdminDashboard() {
                   >
                     {order.status || "New"}
                   </p>
-                  <p className="text-[11px] text-gray-400 mt-0.5">
+                  <p className="text-[11px] text-slate-600 mt-0.5">
                     {order.createdAt ? getTimeAgo(order.createdAt) : "N/A"}
                   </p>
                 </div>

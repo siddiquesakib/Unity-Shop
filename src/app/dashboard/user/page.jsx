@@ -20,14 +20,14 @@ export default function UserDashboard() {
     <div className="space-y-6">
       <div className="flex items-end justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">
-            {getGreeting()}, {user?.name?.split(" ")[0] || "User"}!
+          <h1 className="text-2xl font-bold text-white">
+            {getGreeting()}, {user?.name?.split(" ")[0] || "User"}! 👋
           </h1>
-          <p className="text-gray-500">
-            Here's an overview of your account activity.
+          <p className="text-slate-400">
+            Here's what's happening with your store today.
           </p>
         </div>
-        <div className="text-sm text-gray-400">
+        <div className="text-sm text-slate-500">
           {new Date().toLocaleDateString("en-US", {
             weekday: "long",
             month: "short",

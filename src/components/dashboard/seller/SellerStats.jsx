@@ -38,25 +38,25 @@ export default function SellerStats() {
       label: "Total Revenue",
       value: stats ? `$${stats.totalRevenue.toFixed(2)}` : "$0.00",
       icon: DollarSign,
-      color: "from-gray-800 to-gray-600",
+      color: "from-emerald-500 to-teal-400",
     },
     {
       label: "Total Sales",
       value: stats ? `${stats.totalOrders}` : "0",
       icon: ShoppingBag,
-      color: "from-gray-700 to-gray-500",
+      color: "from-blue-500 to-cyan-400",
     },
     {
       label: "Total Products",
       value: stats ? `${stats.totalProducts}` : "0",
       icon: Package,
-      color: "from-gray-900 to-gray-700",
+      color: "from-purple-500 to-pink-400",
     },
     {
       label: "New Orders",
       value: stats ? `${stats.statusCounts?.New || 0}` : "0",
       icon: TrendingUp,
-      color: "from-gray-600 to-gray-400",
+      color: "from-amber-500 to-orange-400",
     },
   ];
 
@@ -68,21 +68,21 @@ export default function SellerStats() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: index * 0.1 }}
-          className="p-6 rounded-xl bg-white border border-gray-200 transition-all duration-300"
+          className="p-6 rounded-2xl bg-slate-900 border border-slate-800 transition-all duration-300"
         >
           <div className="flex justify-between items-start mb-4">
             <div
               className={`w-12 h-12 rounded-xl bg-gradient-to-br ${stat.color} flex items-center justify-center shadow-lg`}
             >
-              <stat.icon size={24} className="text-gray-900" />
+              <stat.icon size={24} className="text-white" />
             </div>
           </div>
           <div>
-            <p className="text-gray-500 text-sm font-medium">{stat.label}</p>
+            <p className="text-slate-400 text-sm font-medium">{stat.label}</p>
             {loading ? (
-              <div className="h-9 w-24 bg-gray-100 rounded-lg animate-pulse mt-1" />
+              <div className="h-9 w-24 bg-slate-800 rounded-lg animate-pulse mt-1" />
             ) : (
-              <h3 className="text-3xl font-bold text-gray-900 mt-1">
+              <h3 className="text-3xl font-bold text-white mt-1">
                 {stat.value}
               </h3>
             )}

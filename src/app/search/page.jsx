@@ -1,14 +1,14 @@
 // app/search/page.jsx
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
+import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import SearchFilters from "@/components/search/SearchFilters";
 import SearchResults from "@/components/search/SearchResults";
 import { FiFilter } from "react-icons/fi";
 import Link from "next/link";
 
-function SearchContent() {
+export default function SearchPage() {
   const searchParams = useSearchParams();
   const query = searchParams.get("q") || "";
   const categoryParam = searchParams.get("category") || "";
@@ -126,13 +126,5 @@ function SearchContent() {
         )}
       </div>
     </div>
-  );
-}
-
-export default function SearchPage() {
-  return (
-    <Suspense fallback={<div>Loading search...</div>}>
-      <SearchContent />
-    </Suspense>
   );
 }

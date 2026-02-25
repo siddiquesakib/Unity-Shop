@@ -31,62 +31,51 @@ const PaymentForm = ({ initialData, onSubmit, onBack }) => {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <div>
-        <h2 className="text-xl font-black text-black tracking-tight uppercase">
-          Payment Method
-        </h2>
-        <div className="w-10 h-0.5 bg-black mt-2 rounded-full" />
-      </div>
+      <h2 className="text-xl font-semibold text-gray-900">Payment Method</h2>
 
       <div className="space-y-3">
-        <label
-          className={`flex items-center p-4 border-2 rounded-xl cursor-pointer transition-all duration-200 ${formData.method === "credit" ? "border-black bg-gray-50" : "border-gray-200 hover:border-gray-300"}`}
-        >
+        <label className="flex items-center p-4 border border-gray-200 rounded-lg cursor-pointer hover:border-orange-300">
           <input
             type="radio"
             name="method"
             value="credit"
             checked={formData.method === "credit"}
             onChange={handleChange}
-            className="w-4 h-4 accent-black"
+            className="w-4 h-4 text-orange-500 focus:ring-orange-500"
           />
           <div className="ml-3 flex items-center space-x-2">
-            <span className="text-gray-700 font-medium">Credit/Debit Card</span>
-            <span className="text-[10px] bg-black text-white px-2 py-0.5 rounded-full font-medium">
+            <span className="text-gray-700">Credit/Debit Card</span>
+            <span className="text-xs bg-gray-100 px-2 py-1 rounded">
               Visa/MC/Amex
             </span>
           </div>
         </label>
 
-        <label
-          className={`flex items-center p-4 border-2 rounded-xl cursor-pointer transition-all duration-200 ${formData.method === "paypal" ? "border-black bg-gray-50" : "border-gray-200 hover:border-gray-300"}`}
-        >
+        <label className="flex items-center p-4 border border-gray-200 rounded-lg cursor-pointer hover:border-orange-300">
           <input
             type="radio"
             name="method"
             value="paypal"
             checked={formData.method === "paypal"}
             onChange={handleChange}
-            className="w-4 h-4 accent-black"
+            className="w-4 h-4 text-orange-500 focus:ring-orange-500"
           />
           <div className="ml-3">
-            <span className="text-gray-700 font-medium">PayPal</span>
+            <span className="text-gray-700">PayPal</span>
           </div>
         </label>
 
-        <label
-          className={`flex items-center p-4 border-2 rounded-xl cursor-pointer transition-all duration-200 ${formData.method === "bank" ? "border-black bg-gray-50" : "border-gray-200 hover:border-gray-300"}`}
-        >
+        <label className="flex items-center p-4 border border-gray-200 rounded-lg cursor-pointer hover:border-orange-300">
           <input
             type="radio"
             name="method"
             value="bank"
             checked={formData.method === "bank"}
             onChange={handleChange}
-            className="w-4 h-4 accent-black"
+            className="w-4 h-4 text-orange-500 focus:ring-orange-500"
           />
           <div className="ml-3">
-            <span className="text-gray-700 font-medium">Bank Transfer</span>
+            <span className="text-gray-700">Bank Transfer</span>
           </div>
         </label>
       </div>
@@ -104,7 +93,7 @@ const PaymentForm = ({ initialData, onSubmit, onBack }) => {
               onChange={handleChange}
               placeholder="1234 5678 9012 3456"
               required
-              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-black transition-colors bg-gray-50/50"
+              className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-orange-500"
             />
           </div>
 
@@ -118,7 +107,7 @@ const PaymentForm = ({ initialData, onSubmit, onBack }) => {
               value={formData.cardName}
               onChange={handleChange}
               required
-              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-black transition-colors bg-gray-50/50"
+              className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-orange-500"
             />
           </div>
 
@@ -134,7 +123,7 @@ const PaymentForm = ({ initialData, onSubmit, onBack }) => {
                 onChange={handleChange}
                 placeholder="MM/YY"
                 required
-                className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-black transition-colors bg-gray-50/50"
+                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-orange-500"
               />
             </div>
             <div>
@@ -148,7 +137,7 @@ const PaymentForm = ({ initialData, onSubmit, onBack }) => {
                 onChange={handleChange}
                 placeholder="123"
                 required
-                className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-black transition-colors bg-gray-50/50"
+                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-orange-500"
               />
             </div>
           </div>
@@ -160,7 +149,7 @@ const PaymentForm = ({ initialData, onSubmit, onBack }) => {
               id="saveCard"
               checked={formData.saveCard}
               onChange={handleChange}
-              className="w-4 h-4 accent-black rounded"
+              className="w-4 h-4 text-orange-500 rounded focus:ring-orange-500"
             />
             <label htmlFor="saveCard" className="ml-2 text-sm text-gray-700">
               Save card for future purchases
@@ -180,7 +169,7 @@ const PaymentForm = ({ initialData, onSubmit, onBack }) => {
             id="billingSameAsShipping"
             checked={formData.billingSameAsShipping}
             onChange={handleChange}
-            className="w-4 h-4 accent-black rounded"
+            className="w-4 h-4 text-orange-500 rounded focus:ring-orange-500"
           />
           <label
             htmlFor="billingSameAsShipping"
@@ -195,13 +184,13 @@ const PaymentForm = ({ initialData, onSubmit, onBack }) => {
         <button
           type="button"
           onClick={onBack}
-          className="px-6 py-2.5 border-2 border-gray-200 text-gray-700 font-semibold rounded-full hover:border-black hover:text-black transition-all duration-300"
+          className="px-6 py-2 border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50"
         >
           Back
         </button>
         <button
           type="submit"
-          className="px-8 py-3.5 bg-black text-white font-bold rounded-full hover:bg-gray-800 shadow-2xl shadow-black/20 hover:shadow-black/30 hover:scale-[1.02] active:scale-[0.98] transition-all duration-300"
+          className="px-6 py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white font-semibold rounded-xl hover:shadow-lg transition"
         >
           Continue to Review
         </button>

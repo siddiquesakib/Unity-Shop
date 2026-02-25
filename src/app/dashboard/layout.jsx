@@ -43,10 +43,10 @@ export default function DashboardLayout({ children }) {
 
   if (loading) {
     return (
-      <div className="flex h-screen items-center justify-center bg-gray-50 text-gray-700">
+      <div className="flex h-screen items-center justify-center bg-slate-950 text-slate-200">
         <div className="flex flex-col items-center gap-4">
-          <div className="w-12 h-12 border-4 border-gray-200 border-t-gray-900 rounded-full animate-spin"></div>
-          <p className="text-gray-400">Loading...</p>
+          <div className="w-12 h-12 border-4 border-indigo-500/30 border-t-indigo-500 rounded-full animate-spin"></div>
+          <p className="text-slate-400">Loading...</p>
         </div>
       </div>
     );
@@ -57,7 +57,7 @@ export default function DashboardLayout({ children }) {
   }
 
   return (
-    <div className="flex min-h-screen bg-gray-50 text-gray-800 font-sans selection:bg-gray-200">
+    <div className="flex min-h-screen bg-slate-950 text-slate-200 font-sans selection:bg-indigo-500/30">
       <Sidebar />
       <div className="flex-1 flex flex-col min-w-0">
         <Topbar />

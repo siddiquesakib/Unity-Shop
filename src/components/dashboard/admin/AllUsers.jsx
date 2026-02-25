@@ -22,30 +22,30 @@ const API_BASE =
 const ROLE_CONFIG = {
   admin: {
     label: "Admin",
-    color: "text-red-600",
-    bg: "bg-red-50",
-    border: "border-red-200",
+    color: "text-rose-400",
+    bg: "bg-rose-500/10",
+    border: "border-rose-500/20",
     icon: ShieldCheck,
   },
   manager: {
     label: "Manager",
-    color: "text-purple-600",
-    bg: "bg-purple-50",
-    border: "border-purple-200",
+    color: "text-purple-400",
+    bg: "bg-purple-500/10",
+    border: "border-purple-500/20",
     icon: UserCog,
   },
   seller: {
     label: "Seller",
-    color: "text-amber-600",
-    bg: "bg-amber-50",
-    border: "border-amber-200",
+    color: "text-amber-400",
+    bg: "bg-amber-500/10",
+    border: "border-amber-500/20",
     icon: Store,
   },
   user: {
     label: "User",
-    color: "text-blue-600",
-    bg: "bg-blue-50",
-    border: "border-blue-200",
+    color: "text-sky-400",
+    bg: "bg-sky-500/10",
+    border: "border-sky-500/20",
     icon: User,
   },
 };
@@ -119,22 +119,17 @@ export default function AllUsers() {
   };
 
   const filterTabs = [
-    { key: "all", label: "All", icon: Users, color: "text-gray-600" },
-    { key: "admin", label: "Admins", icon: ShieldCheck, color: "text-red-600" },
-    {
-      key: "manager",
-      label: "Managers",
-      icon: UserCog,
-      color: "text-purple-600",
-    },
-    { key: "seller", label: "Sellers", icon: Store, color: "text-amber-600" },
-    { key: "user", label: "Users", icon: User, color: "text-blue-600" },
+    { key: "all", label: "All", icon: Users, color: "text-indigo-400" },
+    { key: "admin", label: "Admins", icon: ShieldCheck, color: "text-rose-400" },
+    { key: "manager", label: "Managers", icon: UserCog, color: "text-purple-400" },
+    { key: "seller", label: "Sellers", icon: Store, color: "text-amber-400" },
+    { key: "user", label: "Users", icon: User, color: "text-sky-400" },
   ];
 
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <Loader2 className="animate-spin text-gray-500" size={32} />
+        <Loader2 className="animate-spin text-indigo-400" size={32} />
       </div>
     );
   }
@@ -145,25 +140,25 @@ export default function AllUsers() {
       <div className="flex items-end justify-between pb-2">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <Users className="text-gray-500" size={20} />
-            <span className="text-xs font-semibold text-gray-900 uppercase tracking-wider">
+            <Users className="text-indigo-400" size={20} />
+            <span className="text-xs font-semibold text-indigo-400 uppercase tracking-wider">
               User Management
             </span>
           </div>
-          <h1 className="text-2xl font-bold text-gray-900 uppercase tracking-tight">
+          <h1 className="text-2xl font-bold text-white uppercase tracking-tight">
             All Users
           </h1>
-          <p className="text-gray-500">
+          <p className="text-slate-400">
             View and manage all platform users, change roles, and monitor
             accounts.
           </p>
         </div>
         <button
           onClick={fetchUsers}
-          className="p-2.5 rounded-xl bg-white border border-gray-200 hover:border-gray-300 transition-colors"
+          className="p-2.5 rounded-xl bg-slate-900 border border-slate-800 hover:border-indigo-500/50 transition-colors"
           title="Refresh"
         >
-          <RefreshCw size={16} className="text-gray-500" />
+          <RefreshCw size={16} className="text-slate-400" />
         </button>
       </div>
 
@@ -177,17 +172,17 @@ export default function AllUsers() {
               onClick={() => setRoleFilter(tab.key)}
               className={`p-4 rounded-xl border transition-all text-left ${
                 isActive
-                  ? "bg-gray-100 border-gray-300"
-                  : "bg-white border-gray-200 hover:border-gray-300"
+                  ? "bg-indigo-600/20 border-indigo-500/50 shadow-lg shadow-indigo-500/10"
+                  : "bg-slate-900 border-slate-800 hover:border-slate-700"
               }`}
             >
               <div className="flex items-center gap-2 mb-2">
                 <tab.icon size={16} className={tab.color} />
-                <span className="text-xs font-medium text-gray-500">
+                <span className="text-xs font-medium text-slate-400">
                   {tab.label}
                 </span>
               </div>
-              <p className="text-xl font-bold text-gray-900">
+              <p className="text-xl font-bold text-white">
                 {roleCounts[tab.key]}
               </p>
             </button>
@@ -199,47 +194,47 @@ export default function AllUsers() {
       <div className="relative">
         <Search
           size={16}
-          className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
+          className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500"
         />
         <input
           type="text"
           placeholder="Search by name or email..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full pl-11 pr-4 py-3 rounded-xl bg-white border border-gray-200 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-gray-400 transition-colors"
+          className="w-full pl-11 pr-4 py-3 rounded-xl bg-slate-900 border border-slate-800 text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500/50 transition-colors"
         />
       </div>
 
       {/* Users Table */}
-      <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
+      <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-gray-50">
-                <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+              <tr className="bg-slate-950/50">
+                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">
                   User
                 </th>
-                <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">
                   Email
                 </th>
-                <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">
                   Role
                 </th>
-                <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">
                   Joined
                 </th>
-                <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider text-right">
+                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider text-right">
                   Actions
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200">
+            <tbody className="divide-y divide-slate-800/50">
               <AnimatePresence>
                 {filteredUsers.length === 0 ? (
                   <tr>
                     <td
                       colSpan={5}
-                      className="px-6 py-12 text-center text-gray-400"
+                      className="px-6 py-12 text-center text-slate-500"
                     >
                       No users found
                     </td>
@@ -254,12 +249,12 @@ export default function AllUsers() {
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         transition={{ delay: index * 0.02 }}
-                        className="hover:bg-gray-50 transition-colors"
+                        className="hover:bg-slate-800/30 transition-colors"
                       >
                         {/* User info */}
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-3">
-                            <div className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center overflow-hidden border border-gray-300">
+                            <div className="w-9 h-9 rounded-full bg-slate-800 flex items-center justify-center overflow-hidden border border-slate-700">
                               {u.image ? (
                                 <Image
                                   src={u.image}
@@ -269,10 +264,10 @@ export default function AllUsers() {
                                   className="w-full h-full object-cover"
                                 />
                               ) : (
-                                <User size={16} className="text-gray-400" />
+                                <User size={16} className="text-slate-500" />
                               )}
                             </div>
-                            <p className="text-sm font-medium text-gray-900">
+                            <p className="text-sm font-medium text-white">
                               {u.name || "Unknown"}
                             </p>
                           </div>
@@ -281,8 +276,8 @@ export default function AllUsers() {
                         {/* Email */}
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-2">
-                            <Mail size={13} className="text-gray-400" />
-                            <span className="text-sm text-gray-500">
+                            <Mail size={13} className="text-slate-600" />
+                            <span className="text-sm text-slate-400">
                               {u.email}
                             </span>
                           </div>
@@ -301,8 +296,8 @@ export default function AllUsers() {
                         {/* Joined */}
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-2">
-                            <Calendar size={13} className="text-gray-400" />
-                            <span className="text-sm text-gray-500">
+                            <Calendar size={13} className="text-slate-600" />
+                            <span className="text-sm text-slate-400">
                               {u.createdAt
                                 ? new Date(u.createdAt).toLocaleDateString()
                                 : "N/A"}
@@ -314,7 +309,7 @@ export default function AllUsers() {
                         <td className="px-6 py-4 text-right">
                           {actionLoading === u.email ? (
                             <Loader2
-                              className="animate-spin text-gray-500 inline-block"
+                              className="animate-spin text-slate-400 inline-block"
                               size={16}
                             />
                           ) : (
@@ -332,7 +327,7 @@ export default function AllUsers() {
                                   });
                                 }
                               }}
-                              className="px-3 py-1.5 rounded-lg bg-gray-100 border border-gray-300 text-xs text-gray-600 hover:border-gray-300 focus:border-gray-400 focus:outline-none transition-all cursor-pointer appearance-none"
+                              className="px-3 py-1.5 rounded-lg bg-slate-800 border border-slate-700 text-xs text-slate-300 hover:border-indigo-500/50 focus:border-indigo-500 focus:outline-none transition-all cursor-pointer appearance-none"
                               style={{
                                 backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E")`,
                                 backgroundRepeat: "no-repeat",
@@ -357,8 +352,8 @@ export default function AllUsers() {
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
-          <p className="text-xs text-gray-400">
+        <div className="px-6 py-4 border-t border-slate-800 flex items-center justify-between">
+          <p className="text-xs text-slate-500">
             Showing {filteredUsers.length} of {users.length} users
           </p>
         </div>
@@ -371,34 +366,28 @@ export default function AllUsers() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-100 flex items-center justify-center bg-black/40 backdrop-blur-sm"
+            className="fixed inset-0 z-100 flex items-center justify-center bg-black/60 backdrop-blur-sm"
             onClick={() => setConfirmModal(null)}
           >
             <motion.div
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-white border border-gray-200 rounded-xl p-6 w-full max-w-md mx-4 shadow-2xl"
+              className="bg-slate-900 border border-slate-700 rounded-2xl p-6 w-full max-w-md mx-4 shadow-2xl"
               onClick={(e) => e.stopPropagation()}
             >
-              <h3 className="text-lg font-bold text-gray-900 mb-2">
+              <h3 className="text-lg font-bold text-white mb-2">
                 Confirm Role Change
               </h3>
-              <p className="text-sm text-gray-500 mb-6">
+              <p className="text-sm text-slate-400 mb-6">
                 Are you sure you want to change{" "}
-                <span className="text-gray-900 font-medium">
-                  {confirmModal.name}
-                </span>
+                <span className="text-white font-medium">{confirmModal.name}</span>
                 &apos;s role from{" "}
-                <span
-                  className={`font-medium ${ROLE_CONFIG[confirmModal.currentRole]?.color}`}
-                >
+                <span className={`font-medium ${ROLE_CONFIG[confirmModal.currentRole]?.color}`}>
                   {ROLE_CONFIG[confirmModal.currentRole]?.label}
                 </span>{" "}
                 to{" "}
-                <span
-                  className={`font-medium ${ROLE_CONFIG[confirmModal.newRole]?.color}`}
-                >
+                <span className={`font-medium ${ROLE_CONFIG[confirmModal.newRole]?.color}`}>
                   {ROLE_CONFIG[confirmModal.newRole]?.label}
                 </span>
                 ?
@@ -406,13 +395,13 @@ export default function AllUsers() {
               <div className="flex gap-3 justify-end">
                 <button
                   onClick={() => setConfirmModal(null)}
-                  className="px-4 py-2 rounded-lg bg-gray-100 border border-gray-200 text-sm text-gray-600 hover:bg-gray-200 transition-colors"
+                  className="px-4 py-2 rounded-lg bg-slate-800 border border-slate-700 text-sm text-slate-300 hover:bg-slate-700 transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleRoleChange}
-                  className="px-4 py-2 rounded-lg bg-black text-sm text-white font-medium hover:bg-gray-800 transition-colors"
+                  className="px-4 py-2 rounded-lg bg-indigo-600 text-sm text-white font-medium hover:bg-indigo-500 transition-colors"
                 >
                   Yes, Change Role
                 </button>

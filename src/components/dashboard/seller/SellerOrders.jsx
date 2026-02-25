@@ -56,17 +56,17 @@ export default function SellerOrders() {
   const getStatusColor = (status) => {
     switch (status) {
       case "New":
-        return "bg-blue-50 text-blue-600 border-blue-200";
+        return "bg-blue-500/10 text-blue-400 border-blue-500/20";
       case "Processing":
-        return "bg-amber-50 text-amber-600 border-amber-200";
+        return "bg-amber-500/10 text-amber-400 border-amber-500/20";
       case "Shipped":
-        return "bg-purple-50 text-purple-600 border-purple-200";
+        return "bg-purple-500/10 text-purple-400 border-purple-500/20";
       case "Delivered":
-        return "bg-emerald-50 text-emerald-600 border-emerald-200";
+        return "bg-emerald-500/10 text-emerald-400 border-emerald-500/20";
       case "Cancelled":
-        return "bg-red-50 text-red-500 border-red-200";
+        return "bg-red-500/10 text-red-400 border-red-500/20";
       default:
-        return "bg-gray-100 text-gray-500 border-gray-200";
+        return "bg-slate-500/10 text-slate-400 border-slate-500/20";
     }
   };
 
@@ -75,13 +75,13 @@ export default function SellerOrders() {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.2 }}
-      className="bg-white border border-gray-200 rounded-xl p-6 h-full"
+      className="bg-slate-900 border border-slate-800 rounded-2xl p-6 h-full"
     >
       <div className="flex items-center justify-between mb-6">
-        <h3 className="text-lg font-bold text-gray-900">Recent Orders</h3>
+        <h3 className="text-lg font-bold text-white">Recent Orders</h3>
         <Link
           href="/dashboard/seller/orders"
-          className="text-sm text-gray-500 hover:text-gray-600 transition-colors"
+          className="text-sm text-indigo-400 hover:text-indigo-300 transition-colors"
         >
           View All Orders
         </Link>
@@ -92,15 +92,15 @@ export default function SellerOrders() {
           {[...Array(3)].map((_, i) => (
             <div
               key={i}
-              className="h-14 bg-gray-100 rounded-xl animate-pulse"
+              className="h-14 bg-slate-800/50 rounded-xl animate-pulse"
             />
           ))}
         </div>
       ) : orders.length === 0 ? (
         <div className="text-center py-10">
-          <Package size={36} className="mx-auto text-gray-300 mb-3" />
-          <p className="text-gray-500 text-sm">No orders yet</p>
-          <p className="text-gray-400 text-xs mt-1">
+          <Package size={36} className="mx-auto text-slate-700 mb-3" />
+          <p className="text-slate-400 text-sm">No orders yet</p>
+          <p className="text-slate-500 text-xs mt-1">
             Orders will appear here when customers purchase your products.
           </p>
         </div>
@@ -108,37 +108,37 @@ export default function SellerOrders() {
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="text-left border-b border-gray-200">
-                <th className="pb-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+              <tr className="text-left border-b border-slate-800">
+                <th className="pb-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">
                   Order ID
                 </th>
-                <th className="pb-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                <th className="pb-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">
                   Customer
                 </th>
-                <th className="pb-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                <th className="pb-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">
                   Total
                 </th>
-                <th className="pb-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                <th className="pb-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">
                   Status
                 </th>
-                <th className="pb-4 text-xs font-semibold text-gray-400 uppercase tracking-wider text-right">
+                <th className="pb-4 text-xs font-semibold text-slate-500 uppercase tracking-wider text-right">
                   Actions
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100">
+            <tbody className="divide-y divide-slate-800/50">
               {orders.map((order) => (
                 <tr
                   key={order._id}
-                  className="group hover:bg-gray-100/30 transition-colors"
+                  className="group hover:bg-slate-800/30 transition-colors"
                 >
-                  <td className="py-4 text-sm font-mono text-gray-500">
+                  <td className="py-4 text-sm font-mono text-indigo-400">
                     #{(order.transitionId || order._id).slice(-8).toUpperCase()}
                   </td>
-                  <td className="py-4 text-sm text-gray-500">
+                  <td className="py-4 text-sm text-slate-400">
                     {order.customerName || "Unknown"}
                   </td>
-                  <td className="py-4 text-sm font-semibold text-gray-900">
+                  <td className="py-4 text-sm font-semibold text-white">
                     ${Number(order.amountPaid || 0).toFixed(2)}
                   </td>
                   <td className="py-4">
@@ -156,7 +156,7 @@ export default function SellerOrders() {
                         <button
                           onClick={() => updateStatus(order._id, "Processing")}
                           title="Process Order"
-                          className="p-2 rounded-lg hover:bg-gray-100 text-gray-500 hover:text-amber-600 transition-colors"
+                          className="p-2 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-amber-400 transition-colors"
                         >
                           <CheckCircle size={16} />
                         </button>
@@ -165,7 +165,7 @@ export default function SellerOrders() {
                         <button
                           onClick={() => updateStatus(order._id, "Shipped")}
                           title="Mark Shipped"
-                          className="p-2 rounded-lg hover:bg-gray-100 text-gray-500 hover:text-purple-600 transition-colors"
+                          className="p-2 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-purple-400 transition-colors"
                         >
                           <Truck size={16} />
                         </button>
@@ -175,7 +175,7 @@ export default function SellerOrders() {
                           <button
                             onClick={() => updateStatus(order._id, "Cancelled")}
                             title="Cancel Order"
-                            className="p-2 rounded-lg hover:bg-gray-100 text-gray-500 hover:text-red-500 transition-colors"
+                            className="p-2 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-red-400 transition-colors"
                           >
                             <XCircle size={16} />
                           </button>

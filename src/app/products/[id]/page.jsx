@@ -26,9 +26,9 @@ export default async function ProductPage({ params }) {
     return (
       <div className="min-h-screen bg-white pt-20 flex items-center justify-center">
         <div className="text-center">
-          <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-gray-100 flex items-center justify-center">
+          <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-stone-100 flex items-center justify-center">
             <svg
-              className="w-10 h-10 text-gray-300"
+              className="w-10 h-10 text-stone-300"
               fill="none"
               stroke="currentColor"
               strokeWidth={1.5}
@@ -41,10 +41,10 @@ export default async function ProductPage({ params }) {
               />
             </svg>
           </div>
-          <h1 className="text-2xl font-black text-gray-900 mb-2 uppercase tracking-tight">
+          <h1 className="text-2xl font-black text-black mb-2 uppercase tracking-tight">
             Product Not Found
           </h1>
-          <p className="text-gray-500 text-sm">
+          <p className="text-stone-400 text-sm">
             The product you&apos;re looking for doesn&apos;t exist or has been
             removed.
           </p>
@@ -54,7 +54,7 @@ export default async function ProductPage({ params }) {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-stone-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
         <ProductDetailClient product={product} />
       </div>
