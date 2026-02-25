@@ -4,6 +4,8 @@ import Footer from "@/components/common/Footer";
 import Navbar from "@/components/common/Navbar";
 import { AuthProvider } from "@/contexts/AuthContext";
 import NextAuthProvider from "@/components/providers/NextAuthProvider";
+import { CartProvider } from "@/contexts/CartContext";
+import { LanguageProvider } from "@/contexts/LanguageContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -28,9 +30,13 @@ export default function RootLayout({ children }) {
       >
         <NextAuthProvider>
           <AuthProvider>
-            <Navbar />
-            {children}
-            <Footer />
+            <CartProvider>
+              <LanguageProvider>
+                <Navbar />
+                {children}
+                <Footer />
+              </LanguageProvider>
+            </CartProvider>
           </AuthProvider>
         </NextAuthProvider>
       </body>

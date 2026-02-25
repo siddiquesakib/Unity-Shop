@@ -1,81 +1,105 @@
 // components/search/SearchResults.jsx
 "use client";
 
-import { useState, useEffect } from "react";
-import ProductCardB2B from "@/components/product/ProductCardB2B";
-import { FiGrid, FiList, FiChevronLeft, FiChevronRight } from "react-icons/fi";
+import { useState, useEffect, useCallback } from "react";
+import {
+  FiGrid,
+  FiList,
+  FiChevronLeft,
+  FiChevronRight,
+  FiAlertCircle,
+  FiSearch,
+} from "react-icons/fi";
+import ProductCard from "../product/ProductCard";
 
-// Mock results data
-const mockResults = Array.from({ length: 24 }, (_, i) => ({
-  id: `result-${i + 1}`,
-  name: `High-Quality Product ${i + 1} with Long Name That Might Wrap`,
-  images: [
-    "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&auto=format",
-  ],
-  priceMin: 5.99 + i * 2,
-  priceMax: 12.99 + i * 3,
-  unit: "piece",
-  moq: 100 + i * 50,
-  discount: i % 3 === 0 ? 10 : null,
-  isNew: i < 3,
-  supplier: {
-    name: `Supplier ${i + 1}`,
-    location: i % 2 === 0 ? "Shenzhen, China" : "Guangzhou, China",
-    rating: 4.5 + (i % 5) * 0.1,
-    responseRate: 95 + (i % 5),
-  },
-  reviewCount: 100 + i * 10,
-}));
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+
+const allCategories = [
+  { id: "electronics", name: "Electronics" },
+  { id: "fashion", name: "Fashion" },
+  { id: "living", name: "Home & Living" },
+  { id: "kitchen", name: "Kitchen" },
+  { id: "bedroom", name: "Bedroom" },
+  { id: "office", name: "Office" },
+  { id: "mobile", name: "Mobiles" },
+  { id: "watches", name: "Watches" },
+  { id: "audio", name: "Audio" },
+  { id: "cameras", name: "Cameras" },
+  { id: "gaming", name: "Gaming" },
+  { id: "lighting", name: "Lighting" },
+  { id: "beauty", name: "Beauty" },
+  { id: "health", name: "Health" },
+  { id: "sports", name: "Sports" },
+  { id: "outdoor", name: "Outdoor" },
+  { id: "books", name: "Books" },
+  { id: "stationery", name: "Stationery" },
+  { id: "toys", name: "Toys & Baby" },
+  { id: "grocery", name: "Grocery" },
+  { id: "tools", name: "Tools" },
+  { id: "automotive", name: "Automotive" },
+];
 
 const SearchResults = ({ query, filters }) => {
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [view, setView] = useState("grid"); // 'grid' or 'list'
+  const [error, setError] = useState(null);
+  const [view, setView] = useState("grid");
   const [sortBy, setSortBy] = useState("recommended");
   const [currentPage, setCurrentPage] = useState(1);
   const [totalResults, setTotalResults] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
   const resultsPerPage = 24;
 
-  // Simulate fetching results
-  useEffect(() => {
+  // Fetch results from backend
+  const fetchResults = useCallback(async () => {
     setLoading(true);
-    // In real app, fetch with query, filters, page, sort
-    setTimeout(() => {
-      let filtered = [...mockResults];
+    setError(null);
+    try {
+      const params = new URLSearchParams();
+      if (query) params.set("q", query);
+      if (filters.category) params.set("category", filters.category);
+      if (filters.priceMin) params.set("priceMin", filters.priceMin);
+      if (filters.priceMax) params.set("priceMax", filters.priceMax);
+      if (filters.rating > 0) params.set("rating", filters.rating);
+      params.set("sort", sortBy);
+      params.set("page", currentPage);
+      params.set("limit", resultsPerPage);
 
-      // Apply search query (simple mock)
-      if (query) {
-        filtered = filtered.filter((p) =>
-          p.name.toLowerCase().includes(query.toLowerCase()),
-        );
-      }
+      const res = await fetch(
+        `${API_URL}/products/search?${params.toString()}`,
+      );
+      if (!res.ok) throw new Error("Failed to fetch search results");
+      const data = await res.json();
 
-      // Apply filters (simplified)
-      if (filters.priceMin) {
-        filtered = filtered.filter(
-          (p) => p.priceMin >= Number(filters.priceMin),
-        );
-      }
-      if (filters.priceMax) {
-        filtered = filtered.filter(
-          (p) => p.priceMax <= Number(filters.priceMax),
-        );
-      }
-      if (filters.rating > 0) {
-        filtered = filtered.filter((p) => p.supplier.rating >= filters.rating);
-      }
-
-      setTotalResults(filtered.length);
-      setResults(filtered.slice(0, resultsPerPage));
+      setResults(data.products || []);
+      setTotalResults(data.total || 0);
+      setTotalPages(data.totalPages || 0);
+    } catch (err) {
+      console.error("Search fetch error:", err);
+      setError("Could not load results. Please try again.");
+      setResults([]);
+      setTotalResults(0);
+      setTotalPages(0);
+    } finally {
       setLoading(false);
-    }, 500);
-  }, [query, filters, currentPage, sortBy]);
+    }
+  }, [query, filters, sortBy, currentPage, resultsPerPage]);
+
+  useEffect(() => {
+    fetchResults();
+  }, [fetchResults]);
+
+  // Reset to page 1 when query/filters/sort change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [query, filters, sortBy]);
 
   const sortOptions = [
     { value: "recommended", label: "Recommended" },
     { value: "price-asc", label: "Price: Low to High" },
     { value: "price-desc", label: "Price: High to Low" },
     { value: "newest", label: "Newest" },
+    { value: "rating", label: "Top Rated" },
   ];
 
   const handleSortChange = (e) => {
@@ -86,8 +110,6 @@ const SearchResults = ({ query, filters }) => {
     setCurrentPage(page);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
-
-  const totalPages = Math.ceil(totalResults / resultsPerPage);
 
   if (loading) {
     return (
@@ -103,6 +125,36 @@ const SearchResults = ({ query, filters }) => {
             ))}
           </div>
         </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20 text-gray-500">
+        <FiAlertCircle size={48} className="mb-4 text-gray-300" />
+        <p className="text-lg font-medium mb-2">Something went wrong</p>
+        <p className="text-sm mb-4">{error}</p>
+        <button
+          onClick={fetchResults}
+          className="px-6 py-2 bg-black text-white rounded-full text-sm font-medium hover:bg-gray-800 transition-colors"
+        >
+          Try Again
+        </button>
+      </div>
+    );
+  }
+
+  if (!loading && results.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20 text-gray-500">
+        <FiSearch size={48} className="mb-4 text-gray-300" />
+        <p className="text-lg font-medium mb-1">No products found</p>
+        <p className="text-sm">
+          {query
+            ? `No results for "${query}". Try a different search.`
+            : "Try searching for something."}
+        </p>
       </div>
     );
   }
@@ -159,7 +211,8 @@ const SearchResults = ({ query, filters }) => {
           {filters.category && (
             <span className="inline-flex items-center px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-sm">
               Category:{" "}
-              {categories.find((c) => c.id === filters.category)?.name}
+              {categories.find((c) => c.id === filters.category)?.name ||
+                filters.category}
               <button
                 onClick={() => onFilterChange?.({ ...filters, category: "" })}
                 className="ml-2 hover:text-orange-900"
@@ -200,39 +253,52 @@ const SearchResults = ({ query, filters }) => {
       {view === "grid" ? (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {results.map((product) => (
-            <ProductCardB2B key={product.id} product={product} />
+            <ProductCard key={product._id} product={product} />
           ))}
         </div>
       ) : (
         <div className="space-y-4">
           {results.map((product) => (
             <div
-              key={product.id}
+              key={product._id}
               className="bg-white rounded-2xl p-4 border border-gray-100"
             >
-              {/* List view item - can be expanded later */}
               <div className="flex gap-4">
-                <div className="w-24 h-24 bg-gray-100 rounded-lg overflow-hidden">
+                <div className="w-24 h-24 bg-gray-100 rounded-lg overflow-hidden shrink-0">
                   <img
-                    src={product.images[0]}
+                    src={product.image || product.images?.[0]}
                     alt={product.name}
                     className="w-full h-full object-cover"
                   />
                 </div>
-                <div className="flex-1">
-                  <h3 className="font-semibold text-gray-900">
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-semibold text-gray-900 truncate">
                     {product.name}
                   </h3>
-                  <p className="text-sm text-gray-600">
-                    Supplier: {product.supplier.name}
+                  {product.category && (
+                    <p className="text-xs text-gray-400 capitalize mt-0.5">
+                      {product.category}
+                    </p>
+                  )}
+                  <p className="text-sm text-gray-600 line-clamp-1 mt-1">
+                    {product.description || "No description"}
                   </p>
                   <div className="mt-2 flex items-center justify-between">
-                    <span className="text-xl font-bold text-orange-600">
-                      ${product.priceMin}
-                    </span>
-                    <button className="px-4 py-2 bg-orange-500 text-white rounded-lg text-sm">
-                      Contact
-                    </button>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xl font-bold text-gray-900">
+                        ${product.price}
+                      </span>
+                      {product.originalPrice > product.price && (
+                        <span className="text-sm text-gray-400 line-through">
+                          ${product.originalPrice}
+                        </span>
+                      )}
+                    </div>
+                    {product.rating > 0 && (
+                      <span className="text-sm text-gray-500">
+                        ★ {product.rating}
+                      </span>
+                    )}
                   </div>
                 </div>
               </div>
@@ -289,16 +355,7 @@ const SearchResults = ({ query, filters }) => {
   );
 };
 
-// Helper for category name lookup (should be imported or defined)
-const categories = [
-  { id: "electronics", name: "Electronics" },
-  { id: "fashion", name: "Fashion" },
-  { id: "home-garden", name: "Home & Garden" },
-  { id: "health-beauty", name: "Health & Beauty" },
-  { id: "sports", name: "Sports & Outdoors" },
-  { id: "toys", name: "Toys & Kids" },
-  { id: "automotive", name: "Automotive" },
-  { id: "office", name: "Office Supplies" },
-];
+// Use allCategories defined at top for category name lookup
+const categories = allCategories;
 
 export default SearchResults;

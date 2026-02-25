@@ -13,325 +13,113 @@ import {
   FiMapPin,
 } from "react-icons/fi";
 
+const footerLinks = [
+  {
+    title: "Company",
+    links: [
+      { href: "/about", label: "About Us" },
+      { href: "/contact", label: "Contact" },
+      { href: "/careers", label: "Careers" },
+    ],
+  },
+  {
+    title: "Shop",
+    links: [
+      { href: "/products", label: "Products" },
+      { href: "/categories", label: "Categories" },
+      { href: "/deals", label: "Deals" },
+    ],
+  },
+  {
+    title: "Support",
+    links: [
+      { href: "/help", label: "Help Center" },
+      { href: "/faq", label: "FAQ" },
+      { href: "/policies", label: "Policies" },
+    ],
+  },
+];
+
 const Footer = () => {
   return (
-    <footer className="bg-gradient-to-b from-gray-900 to-gray-950 text-gray-300 pt-16 pb-8 glass bg-base-200 border-t border-base-300 relative overflow-hidden">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 lg:gap-12">
-          {/* Column 1: About */}
-          <div className="lg:col-span-1">
-            <h3 className="text-white text-lg font-semibold mb-4">
-              About Unity Shop
-            </h3>
-            <ul className="space-y-2">
-              <li>
-                <Link
-                  href="/about"
-                  className="hover:text-orange-400 transition"
-                >
-                  About Us
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/how-it-works"
-                  className="hover:text-orange-400 transition"
-                >
-                  How It Works
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/contact"
-                  className="hover:text-orange-400 transition"
-                >
-                  Contact Us
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/careers"
-                  className="hover:text-orange-400 transition"
-                >
-                  Careers
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/press"
-                  className="hover:text-orange-400 transition"
-                >
-                  Press
-                </Link>
-              </li>
-            </ul>
-          </div>
-
-          {/* Column 2: Buy */}
-          <div>
-            <h3 className="text-white text-lg font-semibold mb-4">
-              Buy on Unity Shop
-            </h3>
-            <ul className="space-y-2">
-              <li>
-                <Link href="/rfq" className="hover:text-orange-400 transition">
-                  Request for Quotation
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/trade-assurance"
-                  className="hover:text-orange-400 transition"
-                >
-                  Trade Assurance
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/categories"
-                  className="hover:text-orange-400 transition"
-                >
-                  Product Categories
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/search"
-                  className="hover:text-orange-400 transition"
-                >
-                  Search Products
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/deals"
-                  className="hover:text-orange-400 transition"
-                >
-                  Deals & Promotions
-                </Link>
-              </li>
-            </ul>
-          </div>
-
-          {/* Column 3: Sell */}
-          <div>
-            <h3 className="text-white text-lg font-semibold mb-4">
-              Sell on Unity Shop
-            </h3>
-            <ul className="space-y-2">
-              <li>
-                <Link
-                  href="/become-seller"
-                  className="hover:text-orange-400 transition"
-                >
-                  Start Selling
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/sellers/dashboard"
-                  className="hover:text-orange-400 transition"
-                >
-                  Seller Central
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/sellers/verification"
-                  className="hover:text-orange-400 transition"
-                >
-                  Become Verified
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/sellers/resources"
-                  className="hover:text-orange-400 transition"
-                >
-                  Seller Resources
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/sellers/pricing"
-                  className="hover:text-orange-400 transition"
-                >
-                  Pricing Plans
-                </Link>
-              </li>
-            </ul>
-          </div>
-
-          {/* Column 4: Help */}
-          <div>
-            <h3 className="text-white text-lg font-semibold mb-4">
-              Help & Support
-            </h3>
-            <ul className="space-y-2">
-              <li>
-                <Link href="/help" className="hover:text-orange-400 transition">
-                  Help Center
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/disputes"
-                  className="hover:text-orange-400 transition"
-                >
-                  Dispute Resolution
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/report"
-                  className="hover:text-orange-400 transition"
-                >
-                  Report Abuse
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/policies"
-                  className="hover:text-orange-400 transition"
-                >
-                  Policies
-                </Link>
-              </li>
-              <li>
-                <Link href="/faq" className="hover:text-orange-400 transition">
-                  FAQ
-                </Link>
-              </li>
-            </ul>
-          </div>
-
-          {/* Column 5: Connect */}
-          <div>
-            <h3 className="text-white text-lg font-semibold mb-4">
-              Connect With Us
-            </h3>
-            <div className="flex space-x-4 mb-6">
-              <a
-                href="#"
-                className="text-gray-400 hover:text-orange-400 transition"
-              >
-                <FiFacebook size={20} />
-              </a>
-              <a
-                href="#"
-                className="text-gray-400 hover:text-orange-400 transition"
-              >
-                <FiTwitter size={20} />
-              </a>
-              <a
-                href="#"
-                className="text-gray-400 hover:text-orange-400 transition"
-              >
-                <FiLinkedin size={20} />
-              </a>
-              <a
-                href="#"
-                className="text-gray-400 hover:text-orange-400 transition"
-              >
-                <FiInstagram size={20} />
-              </a>
-              <a
-                href="#"
-                className="text-gray-400 hover:text-orange-400 transition"
-              >
-                <FiYoutube size={20} />
-              </a>
-            </div>
-            <div className="space-y-3">
-              <div className="flex items-center space-x-3">
-                <FiMail className="text-orange-400" />
-                <span>support@unityshop.com</span>
+    <footer className="bg-black text-gray-400 border-t border-gray-800">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        {/* Top: Links + Contact */}
+        <div className="flex flex-col md:flex-row justify-between gap-8">
+          {/* Link columns */}
+          <div className="flex gap-16">
+            {footerLinks.map((col) => (
+              <div key={col.title}>
+                <h4 className="text-white text-xs font-semibold uppercase tracking-wider mb-3">
+                  {col.title}
+                </h4>
+                <ul className="space-y-1.5">
+                  {col.links.map((link) => (
+                    <li key={link.href}>
+                      <Link
+                        href={link.href}
+                        className="text-sm hover:text-white transition-colors"
+                      >
+                        {link.label}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
               </div>
-              <div className="flex items-center space-x-3">
-                <FiPhone className="text-orange-400" />
-                <span>+1 (800) 123-4567</span>
-              </div>
-              <div className="flex items-center space-x-3">
-                <FiMapPin className="text-orange-400" />
-                <span>123 Market St, San Francisco, CA</span>
-              </div>
-            </div>
-            <div className="mt-6">
-              <h4 className="text-white text-sm font-semibold mb-2">
-                Download App
-              </h4>
-              <div className="flex space-x-2">
-                <a
-                  href="#"
-                  className="bg-gray-800 hover:bg-gray-700 px-3 py-2 rounded-lg text-xs"
-                >
-                  App Store
-                </a>
-                <a
-                  href="#"
-                  className="bg-gray-800 hover:bg-gray-700 px-3 py-2 rounded-lg text-xs"
-                >
-                  Google Play
-                </a>
-              </div>
-            </div>
+            ))}
           </div>
-        </div>
 
-        {/* Newsletter signup */}
-        <div className="border-t border-gray-800 mt-12 pt-8">
-          <div className="flex flex-col md:flex-row items-center justify-between">
-            <div className="mb-4 md:mb-0">
-              <h4 className="text-white text-lg font-semibold">
-                Subscribe to our newsletter
-              </h4>
-              <p className="text-sm text-gray-400">
-                Get the latest deals and offers
-              </p>
-            </div>
-            <form className="flex w-full md:w-auto" suppressHydrationWarning>
+          {/* Right: Newsletter + Socials */}
+          <div className="max-w-xs">
+            <h4 className="text-white text-xs font-semibold uppercase tracking-wider mb-3">
+              Stay updated
+            </h4>
+            <form className="flex mb-4" suppressHydrationWarning>
               <input
                 type="email"
-                placeholder="Your email address"
-                className="px-4 py-2 bg-gray-800 text-white rounded-l-lg focus:outline-none focus:ring-1 focus:ring-orange-500 w-full md:w-64"
+                placeholder="Email address"
+                className="flex-1 px-3 py-1.5 text-sm bg-gray-900 text-white rounded-l-full border border-gray-700 focus:outline-none focus:border-gray-500"
                 suppressHydrationWarning
               />
-              <button className="px-6 py-2 bg-orange-500 text-white rounded-r-lg hover:bg-orange-600 transition">
+              <button className="px-4 py-1.5 text-sm bg-white text-black font-semibold rounded-r-full hover:bg-gray-200 transition-colors">
                 Subscribe
               </button>
             </form>
+            <div className="flex items-center gap-3">
+              {[FiFacebook, FiTwitter, FiInstagram, FiLinkedin, FiYoutube].map(
+                (Icon, i) => (
+                  <a
+                    key={i}
+                    href="#"
+                    className="text-gray-500 hover:text-white transition-colors"
+                  >
+                    <Icon size={16} />
+                  </a>
+                ),
+              )}
+            </div>
           </div>
         </div>
 
         {/* Bottom bar */}
-        <div className="border-t border-gray-800 mt-8 pt-8 flex flex-col md:flex-row items-center justify-between text-sm">
-          <div className="text-gray-400 mb-4 md:mb-0">
-            © 2026 Unity Shop. All rights reserved.
-          </div>
-          <div className="flex space-x-6">
-            <Link href="/privacy" className="hover:text-orange-400 transition">
-              Privacy Policy
+        <div className="border-t border-gray-800 mt-8 pt-5 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-gray-500">
+          <span>© 2026 Unity Shop. All rights reserved.</span>
+          <div className="flex items-center gap-4">
+            <Link
+              href="/privacy"
+              className="hover:text-white transition-colors"
+            >
+              Privacy
             </Link>
-            <Link href="/terms" className="hover:text-orange-400 transition">
-              Terms of Service
+            <Link href="/terms" className="hover:text-white transition-colors">
+              Terms
             </Link>
-            <Link href="/sitemap" className="hover:text-orange-400 transition">
+            <Link
+              href="/sitemap"
+              className="hover:text-white transition-colors"
+            >
               Sitemap
             </Link>
-            <select className="bg-gray-800 text-gray-300 border border-gray-700 rounded px-2 py-1 text-sm">
-              <option>English</option>
-              <option>Spanish</option>
-              <option>French</option>
-              <option>German</option>
-              <option>Chinese</option>
-            </select>
-            <select className="bg-gray-800 text-gray-300 border border-gray-700 rounded px-2 py-1 text-sm">
-              <option>USD ($)</option>
-              <option>EUR (€)</option>
-              <option>GBP (£)</option>
-              <option>JPY (¥)</option>
-              <option>CNY (¥)</option>
-            </select>
           </div>
         </div>
       </div>

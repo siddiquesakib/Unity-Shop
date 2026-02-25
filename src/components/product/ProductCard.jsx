@@ -4,11 +4,15 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
-import { FiShoppingCart, FiEye, FiStar } from "react-icons/fi";
+import { FiShoppingCart, FiEye, FiStar, FiCheck } from "react-icons/fi";
+import { useCart } from "@/contexts/CartContext";
 
 const ProductCard = ({ product }) => {
   const [isHovered, setIsHovered] = useState(false);
   const [imageError, setImageError] = useState(false);
+  const [addedFeedback, setAddedFeedback] = useState(false);
+
+  const { addToCart } = useCart();
 
   const placeholderImage =
     "https://via.placeholder.com/400x400?text=Product+Image";
@@ -38,10 +42,8 @@ const ProductCard = ({ product }) => {
     }
   };
 
-  // Support both _id (MongoDB) and id
   const productId = product._id || product.id;
 
-  // Calculate discount percentage
   const discount =
     product.originalPrice && product.originalPrice > product.price
       ? Math.round(
@@ -50,65 +52,98 @@ const ProductCard = ({ product }) => {
         )
       : null;
 
+  const handleAddToCart = (e) => {
+    e.preventDefault();
+    if (addedFeedback) return;
+    addToCart(product, product.moq || 1);
+    setAddedFeedback(true);
+    setTimeout(() => setAddedFeedback(false), 1500);
+  };
+
   return (
     <div
-      className="group relative bg-white rounded-xl border border-gray-100 hover:border-gray-200 hover:shadow-lg transition-all duration-200 overflow-hidden"
+      className="group relative bg-white rounded-xl overflow-hidden transition-all duration-300 hover:shadow-xl hover:shadow-gray-200/60"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      {/* Image Container */}
+      {/* Image */}
       <div className="relative aspect-square overflow-hidden bg-gray-50">
         <Image
           src={getSafeImageUrl()}
           alt={product.name}
           fill
-          sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 20vw"
-          className="object-cover group-hover:scale-105 transition-transform duration-300"
+          sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
+          className="object-cover group-hover:scale-110 transition-transform duration-500 ease-out"
           onError={() => setImageError(true)}
         />
 
-        {/* Hover Overlay */}
+        {/* Hover overlay — B&W */}
         <div
-          className={`absolute inset-0 bg-black/30 flex items-center justify-center gap-2 transition-opacity duration-200 ${
+          className={`absolute inset-0 bg-black/40 flex items-center justify-center gap-3 transition-all duration-300 ${
             isHovered ? "opacity-100" : "opacity-0 pointer-events-none"
           }`}
         >
-          <button className="p-2.5 bg-white rounded-full hover:bg-orange-500 hover:text-white transition-colors shadow-md">
-            <FiShoppingCart className="w-4 h-4" />
+          <button
+            onClick={handleAddToCart}
+            title="Add to cart"
+            className={`p-3 rounded-full transition-all duration-200 ${
+              addedFeedback
+                ? "bg-white text-gray-900 scale-110"
+                : "bg-white/90 hover:bg-white text-gray-900 hover:scale-110"
+            }`}
+          >
+            {addedFeedback ? (
+              <FiCheck className="w-4.5 h-4.5" />
+            ) : (
+              <FiShoppingCart className="w-4.5 h-4.5" />
+            )}
           </button>
           <Link
             href={`/products/${productId}`}
-            className="p-2.5 bg-white rounded-full hover:bg-orange-500 hover:text-white transition-colors shadow-md"
+            title="View details"
+            className="p-3 bg-white/90 rounded-full hover:bg-white text-gray-900 hover:scale-110 transition-all duration-200"
           >
-            <FiEye className="w-4 h-4" />
+            <FiEye className="w-4.5 h-4.5" />
           </Link>
         </div>
 
-        {/* Badges */}
-        {product.badge && (
-          <span className="absolute top-2 left-2 px-2 py-0.5 bg-linear-to-r from-blue-500 to-cyan-500 text-white text-[10px] font-semibold rounded-full shadow">
-            {product.badge}
-          </span>
-        )}
+        {/* Discount badge — top right */}
         {discount && (
-          <span className="absolute top-2 right-2 px-2 py-0.5 bg-linear-to-r from-orange-500 to-red-500 text-white text-[10px] font-semibold rounded-full shadow">
+          <span className="absolute top-3 right-3 px-2.5 py-1 bg-gray-900 text-white text-[10px] font-bold rounded-full">
             -{discount}%
           </span>
         )}
       </div>
 
       {/* Content */}
-      <div className="p-3 space-y-1.5">
-        {/* Product Title */}
+      <div className="p-4 space-y-2">
         <Link href={`/products/${productId}`} className="block">
-          <h3 className="text-sm text-gray-800 font-medium line-clamp-2 hover:text-orange-600 transition-colors leading-snug">
+          <h3 className="text-sm font-semibold text-gray-900 line-clamp-1 group-hover:underline decoration-gray-300 underline-offset-2 transition-all leading-snug">
             {product.name}
           </h3>
         </Link>
 
+        {/* Rating */}
+        <div className="flex items-center gap-1">
+          {[...Array(5)].map((_, i) => (
+            <FiStar
+              key={i}
+              className={`w-3.5 h-3.5 ${
+                i < Math.round(product.rating || 0)
+                  ? "text-yellow-400 fill-yellow-400"
+                  : "text-gray-200 fill-gray-200"
+              }`}
+            />
+          ))}
+          <span className="text-xs text-gray-400 ml-0.5">
+            {product.rating || 0}
+            <span className="text-gray-300">/{product.reviews || 0}</span>
+          </span>
+        </div>
+
         {/* Price */}
-        <div className="flex items-baseline gap-1.5">
-          <span className="text-base sm:text-lg font-bold text-gray-900">
+        <div className="flex items-baseline gap-2">
+          <span className="text-lg font-black text-gray-900">
             ${Number(product.price).toFixed(2)}
           </span>
           {product.originalPrice && product.originalPrice > product.price && (
@@ -117,36 +152,6 @@ const ProductCard = ({ product }) => {
             </span>
           )}
         </div>
-
-        {/* Rating & Reviews */}
-        <div className="flex items-center justify-between pt-1.5 border-t border-gray-50">
-          <div className="flex items-center gap-1">
-            <FiStar className="w-3.5 h-3.5 text-yellow-400 fill-yellow-400" />
-            <span className="text-xs font-medium text-gray-600">
-              {product.rating || 0}
-            </span>
-            <span className="text-[11px] text-gray-400">
-              ({product.reviews || 0})
-            </span>
-          </div>
-
-          {/* Seller Info */}
-          <div className="flex items-center gap-1">
-            <div className="w-4 h-4 rounded-full bg-linear-to-br from-orange-400 to-orange-600 flex items-center justify-center text-white text-[8px] font-bold">
-              {product.sellerName?.charAt(0)?.toUpperCase() || "S"}
-            </div>
-            <span className="text-[11px] text-gray-400 truncate max-w-17.5">
-              {product.sellerName || "UnityShop"}
-            </span>
-          </div>
-        </div>
-
-        {/* Category */}
-        {product.category && (
-          <span className="inline-block text-[10px] px-2 py-0.5 bg-gray-50 text-gray-500 rounded-full capitalize">
-            {product.category}
-          </span>
-        )}
       </div>
     </div>
   );
