@@ -27,8 +27,8 @@ export default function PlatformChart() {
 
   if (loading) {
     return (
-      <div className="p-6 rounded-2xl bg-slate-900 border border-slate-800 flex items-center justify-center h-[400px]">
-        <Loader2 className="animate-spin text-indigo-400" size={32} />
+      <div className="p-6 rounded-xl bg-white border border-gray-200 flex items-center justify-center h-[400px]">
+        <Loader2 className="animate-spin text-gray-400" size={32} />
       </div>
     );
   }
@@ -49,26 +49,25 @@ export default function PlatformChart() {
   };
 
   return (
-    <div className="p-6 rounded-2xl bg-slate-900 border border-slate-800 flex flex-col h-[400px]">
+    <div className="p-6 rounded-xl bg-white border border-gray-200 flex flex-col h-[400px]">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h3 className="text-lg font-bold text-white flex items-center gap-2">
-            Platform Growth{" "}
-            <TrendingUp size={18} className="text-emerald-400" />
+          <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+            Platform Growth <TrendingUp size={18} className="text-gray-400" />
           </h3>
-          <p className="text-sm text-slate-500">
+          <p className="text-sm text-gray-400">
             Last 12 months — {modeLabels[viewMode]}
           </p>
         </div>
-        <div className="flex items-center gap-1 bg-slate-800 rounded-lg p-0.5">
+        <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-0.5">
           {["orders", "revenue", "newUsers"].map((mode) => (
             <button
               key={mode}
               onClick={() => setViewMode(mode)}
               className={`px-2.5 py-1 rounded-md text-[11px] font-medium transition-all ${
                 viewMode === mode
-                  ? "bg-indigo-500 text-white"
-                  : "text-slate-400 hover:text-white"
+                  ? "bg-black text-white"
+                  : "text-gray-400 hover:text-gray-900"
               }`}
             >
               {mode === "newUsers"
@@ -91,15 +90,15 @@ export default function PlatformChart() {
                 initial={{ height: 0 }}
                 animate={{ height: `${Math.max(height, 2)}%` }}
                 transition={{ duration: 1, delay: index * 0.05 }}
-                className="w-full max-w-[32px] rounded-t-lg bg-gradient-to-t from-indigo-600 to-indigo-400 group-hover:from-indigo-500 group-hover:to-purple-500 transition-all duration-300 relative"
+                className="w-full max-w-[32px] rounded-t-lg bg-gradient-to-t from-gray-900 to-gray-600 group-hover:from-black group-hover:to-gray-700 transition-all duration-300 relative"
               >
-                <div className="absolute -top-10 left-1/2 -translate-x-1/2 px-2 py-1 rounded bg-slate-800 text-[10px] text-white opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                <div className="absolute -top-10 left-1/2 -translate-x-1/2 px-2 py-1 rounded bg-gray-900 text-[10px] text-white opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
                   {viewMode === "revenue"
                     ? `$${value.toLocaleString()}`
                     : value}
                 </div>
               </motion.div>
-              <span className="text-[10px] text-slate-500 font-medium">
+              <span className="text-[10px] text-gray-400 font-medium">
                 {months[index]}
               </span>
             </div>

@@ -1,14 +1,24 @@
 // src/components/product/ProductsClient.jsx
 "use client";
 
-import { useState, useMemo, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import ProductCard from "@/components/product/ProductCard";
 import ProductFilters, {
   categories,
 } from "@/components/product/ProductFilters";
-import { FiChevronLeft, FiChevronRight } from "react-icons/fi";
+import {
+  FiChevronLeft,
+  FiChevronRight,
+  FiSearch,
+  FiX,
+  FiSliders,
+  FiGrid,
+  FiList,
+  FiPackage,
+  FiArrowRight,
+} from "react-icons/fi";
 
 const PRODUCTS_PER_PAGE = 30;
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
@@ -16,8 +26,8 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 const sortOptions = [
   { value: "featured", label: "Featured" },
   { value: "newest", label: "Newest" },
-  { value: "price-asc", label: "Price: Low → High" },
-  { value: "price-desc", label: "Price: High → Low" },
+  { value: "price-asc", label: "Price: Low to High" },
+  { value: "price-desc", label: "Price: High to Low" },
   { value: "rating", label: "Top Rated" },
 ];
 
@@ -167,60 +177,48 @@ export default function ProductsClient() {
   const displayCount = totalResults || products.length;
 
   return (
-    <div className="min-h-screen bg-stone-50">
-      {/* ── Page Header ───────────────────────────────────────────────────── */}
-      <div className="bg-white border-b border-stone-200">
-        <div className="max-w-7xl mx-auto px-4 md:px-8 py-10 md:py-14">
-          <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6">
+    <div className="min-h-screen bg-gray-50 pt-24">
+      {/* Header */}
+      <div className="bg-white border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
+          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-5">
             <div>
-              <p className="text-xs tracking-[0.3em] uppercase text-amber-800 font-medium mb-2">
-                Our Store
+              <p className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-1">
+                Shop
               </p>
-              <h1 className="font-display text-5xl md:text-6xl font-light text-stone-900 tracking-tight leading-none">
+              <h1 className="text-3xl sm:text-4xl font-black text-gray-900 tracking-tight">
                 {searchQuery ? `"${searchQuery}"` : activeLabel}
               </h1>
-              <p className="font-body text-stone-500 text-lg mt-3">
+              <p className="text-sm text-gray-500 mt-1.5">
                 {displayCount} {displayCount === 1 ? "product" : "products"}{" "}
                 found
                 {searchQuery && activeCategory !== "all" && (
-                  <span className="text-stone-400"> in {activeLabel}</span>
+                  <span className="text-gray-400"> in {activeLabel}</span>
                 )}
                 {totalPages > 1 && (
-                  <span className="text-stone-400 ml-2">
-                    · Page {currentPage} of {totalPages}
+                  <span className="text-gray-400 ml-1">
+                    &middot; Page {currentPage} of {totalPages}
                   </span>
                 )}
               </p>
             </div>
 
-            {/* Search bar */}
-            <div className="relative w-full md:w-80">
-              <svg
-                className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth={2}
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                />
-              </svg>
+            {/* Search */}
+            <div className="relative w-full sm:w-80">
+              <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
               <input
                 type="text"
-                placeholder="Search products…"
+                placeholder="Search products..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-11 pr-10 py-3 rounded-full border border-stone-200 bg-stone-50 text-stone-900 text-sm placeholder:text-stone-400 focus:outline-none focus:border-stone-900 focus:ring-2 focus:ring-stone-900/10 transition-all"
+                className="w-full pl-11 pr-10 py-3 rounded-full border border-gray-200 bg-gray-50 text-gray-900 text-sm placeholder:text-gray-400 focus:outline-none focus:border-black focus:ring-1 focus:ring-black/5 transition-all"
               />
               {searchQuery && (
                 <button
                   onClick={() => setSearchQuery("")}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-700 transition-colors"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700 transition-colors"
                 >
-                  ✕
+                  <FiX size={16} />
                 </button>
               )}
             </div>
@@ -228,12 +226,12 @@ export default function ProductsClient() {
         </div>
       </div>
 
-      {/* ── Body ─────────────────────────────────────────────────────────── */}
-      <div className="max-w-7xl mx-auto px-4 md:px-8 py-8">
-        <div className="flex gap-8 lg:gap-12">
+      {/* Body */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="flex gap-8">
           {/* Desktop Sidebar */}
-          <div className="hidden lg:block w-60 shrink-0">
-            <div className="sticky top-8 bg-white rounded-2xl border border-stone-200 p-6">
+          <div className="hidden lg:block w-56 shrink-0">
+            <div className="sticky top-28 bg-white rounded-2xl border border-gray-200 p-5 max-h-[calc(100vh-8rem)] overflow-y-auto">
               <ProductFilters
                 activeCategory={activeCategory}
                 setActiveCategory={handleCategoryChange}
@@ -246,40 +244,26 @@ export default function ProductsClient() {
             </div>
           </div>
 
-          {/* Main Content */}
+          {/* Main */}
           <div className="flex-1 min-w-0">
-            {/* ── Toolbar ─────────────────────────────────────────────── */}
-            <div className="flex items-center justify-between mb-6 gap-4">
-              {/* Mobile filter trigger */}
+            {/* Toolbar */}
+            <div className="flex items-center justify-between mb-6 gap-3">
               <button
                 onClick={() => setSidebarOpen(true)}
-                className="lg:hidden flex items-center gap-2 px-4 py-2.5 rounded-full border border-stone-200 bg-white text-sm text-stone-700 hover:border-stone-400 transition-all"
+                className="lg:hidden flex items-center gap-2 px-4 py-2.5 rounded-full border border-gray-200 bg-white text-sm font-medium text-gray-700 hover:border-gray-400 transition-all"
               >
-                <svg
-                  className="w-4 h-4"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M3 4h18M7 12h10M11 20h2"
-                  />
-                </svg>
+                <FiSliders size={15} />
                 Filters
                 {hasActiveFilters && (
-                  <span className="w-2 h-2 bg-amber-700 rounded-full" />
+                  <span className="w-2 h-2 bg-black rounded-full" />
                 )}
               </button>
 
-              <div className="flex items-center gap-3 ml-auto">
-                {/* Sort */}
+              <div className="flex items-center gap-2 ml-auto">
                 <select
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value)}
-                  className="text-sm border border-stone-200 rounded-full px-4 py-2.5 bg-white text-stone-700 focus:outline-none focus:border-stone-900 transition-all cursor-pointer"
+                  className="text-sm border border-gray-200 rounded-full px-4 py-2.5 bg-white text-gray-700 focus:outline-none focus:border-black transition-all cursor-pointer font-medium"
                 >
                   {sortOptions.map((o) => (
                     <option key={o.value} value={o.value}>
@@ -288,103 +272,97 @@ export default function ProductsClient() {
                   ))}
                 </select>
 
-                {/* Grid / List toggle */}
-                <div className="flex items-center gap-1 bg-white border border-stone-200 rounded-full p-1">
+                <div className="hidden sm:flex items-center gap-1 bg-white border border-gray-200 rounded-full p-1">
                   <button
                     onClick={() => setView("grid")}
                     aria-label="Grid view"
-                    className={`p-2 rounded-full transition-all ${view === "grid" ? "bg-stone-900 text-white" : "text-stone-500 hover:text-stone-900"}`}
+                    className={`p-2 rounded-full transition-all ${
+                      view === "grid"
+                        ? "bg-black text-white"
+                        : "text-gray-400 hover:text-gray-900"
+                    }`}
                   >
-                    <svg
-                      className="w-4 h-4"
-                      fill="currentColor"
-                      viewBox="0 0 16 16"
-                    >
-                      <path d="M1 2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 01-1 1H2a1 1 0 01-1-1V2zm5 0a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 01-1 1H7a1 1 0 01-1-1V2zm5 0a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 01-1 1h-2a1 1 0 01-1-1V2zM1 7a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 01-1 1H2a1 1 0 01-1-1V7zm5 0a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 01-1 1H7a1 1 0 01-1-1V7zm5 0a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 01-1 1h-2a1 1 0 01-1-1V7zM1 12a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 01-1 1H2a1 1 0 01-1-1v-2zm5 0a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 01-1 1H7a1 1 0 01-1-1v-2zm5 0a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 01-1 1h-2a1 1 0 01-1-1v-2z" />
-                    </svg>
+                    <FiGrid size={15} />
                   </button>
                   <button
                     onClick={() => setView("list")}
                     aria-label="List view"
-                    className={`p-2 rounded-full transition-all ${view === "list" ? "bg-stone-900 text-white" : "text-stone-500 hover:text-stone-900"}`}
+                    className={`p-2 rounded-full transition-all ${
+                      view === "list"
+                        ? "bg-black text-white"
+                        : "text-gray-400 hover:text-gray-900"
+                    }`}
                   >
-                    <svg
-                      className="w-4 h-4"
-                      fill="currentColor"
-                      viewBox="0 0 16 16"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M2.5 12a.5.5 0 01.5-.5h10a.5.5 0 010 1H3a.5.5 0 01-.5-.5zm0-4a.5.5 0 01.5-.5h10a.5.5 0 010 1H3a.5.5 0 01-.5-.5zm0-4a.5.5 0 01.5-.5h10a.5.5 0 010 1H3a.5.5 0 01-.5-.5z"
-                      />
-                    </svg>
+                    <FiList size={15} />
                   </button>
                 </div>
               </div>
             </div>
 
-            {/* ── Active Filter Chips ──────────────────────────────────── */}
+            {/* Active Filter Chips */}
             {hasActiveFilters && (
               <div className="flex flex-wrap gap-2 mb-6">
                 {activeCategory !== "all" && (
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-stone-900 text-white text-xs rounded-full">
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-black text-white text-xs font-semibold rounded-full">
                     {activeLabel}
                     <button
                       onClick={() => handleCategoryChange("all")}
-                      className="hover:text-stone-300"
+                      className="hover:text-gray-300"
                     >
-                      ✕
+                      <FiX size={12} />
                     </button>
                   </span>
                 )}
                 {priceRange[1] < 5000 && (
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-stone-900 text-white text-xs rounded-full">
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-black text-white text-xs font-semibold rounded-full">
                     Under ${priceRange[1]}
                     <button
                       onClick={() => setPriceRange([0, 5000])}
-                      className="hover:text-stone-300"
+                      className="hover:text-gray-300"
                     >
-                      ✕
+                      <FiX size={12} />
                     </button>
                   </span>
                 )}
                 {onSaleOnly && (
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-rose-600 text-white text-xs rounded-full">
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-red-600 text-white text-xs font-semibold rounded-full">
                     On Sale
                     <button
                       onClick={() => setOnSaleOnly(false)}
-                      className="hover:text-rose-200"
+                      className="hover:text-red-200"
                     >
-                      ✕
+                      <FiX size={12} />
                     </button>
                   </span>
                 )}
                 {searchQuery && (
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-stone-900 text-white text-xs rounded-full">
-                    {searchQuery}
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-black text-white text-xs font-semibold rounded-full">
+                    &quot;{searchQuery}&quot;
                     <button
                       onClick={() => setSearchQuery("")}
-                      className="hover:text-stone-300"
+                      className="hover:text-gray-300"
                     >
-                      ✕
+                      <FiX size={12} />
                     </button>
                   </span>
                 )}
               </div>
             )}
 
-            {/* ── Product Grid / List ──────────────────────────────────── */}
+            {/* Product Grid */}
             {loading ? (
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-5">
-                {[...Array(10)].map((_, i) => (
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                {[...Array(12)].map((_, i) => (
                   <div
                     key={i}
-                    className="bg-white rounded-2xl border border-gray-100 p-4 animate-pulse"
+                    className="bg-white rounded-xl border border-gray-100 overflow-hidden animate-pulse"
                   >
-                    <div className="aspect-square bg-gray-200 rounded-xl mb-4" />
-                    <div className="h-4 bg-gray-200 rounded w-3/4 mb-3" />
-                    <div className="h-6 bg-gray-200 rounded w-1/2 mb-3" />
-                    <div className="h-3 bg-gray-200 rounded w-full" />
+                    <div className="aspect-square bg-gray-100" />
+                    <div className="p-4 space-y-3">
+                      <div className="h-4 bg-gray-100 rounded w-3/4" />
+                      <div className="h-3 bg-gray-100 rounded w-1/2" />
+                      <div className="h-5 bg-gray-100 rounded w-1/3" />
+                    </div>
                   </div>
                 ))}
               </div>
@@ -393,48 +371,43 @@ export default function ProductsClient() {
                 <div
                   className={
                     view === "grid"
-                      ? "grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-5"
-                      : "flex flex-col gap-4"
+                      ? "grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4"
+                      : "flex flex-col gap-3"
                   }
                 >
                   {products.map((product, i) => (
                     <div
                       key={product._id || product.id || i}
                       className="animate-fadeInUp"
-                      style={{ animationDelay: `${i * 40}ms` }}
+                      style={{ animationDelay: `${i * 30}ms` }}
                     >
                       <ProductCard product={product} view={view} />
                     </div>
                   ))}
                 </div>
 
-                {/* ── Pagination ──────────────────────────────────────── */}
+                {/* Pagination */}
                 {totalPages > 1 && (
-                  <div className="flex justify-center items-center gap-2 mt-10 mb-4">
-                    {/* Prev */}
+                  <div className="flex justify-center items-center gap-1.5 mt-10">
                     <button
                       onClick={() => handlePageChange(currentPage - 1)}
                       disabled={currentPage === 1}
-                      className="w-10 h-10 flex items-center justify-center rounded-full border border-stone-200 bg-white text-stone-600 disabled:opacity-40 disabled:cursor-not-allowed hover:border-stone-900 hover:text-stone-900 transition-all"
+                      className="w-10 h-10 flex items-center justify-center rounded-full border border-gray-200 bg-white text-gray-600 disabled:opacity-30 disabled:cursor-not-allowed hover:border-black hover:text-black transition-all"
                     >
-                      <FiChevronLeft size={18} />
+                      <FiChevronLeft size={16} />
                     </button>
 
-                    {/* Page numbers */}
                     {(() => {
                       const pages = [];
                       const maxVisible = 7;
-
                       if (totalPages <= maxVisible) {
                         for (let i = 1; i <= totalPages; i++) pages.push(i);
                       } else {
                         pages.push(1);
                         if (currentPage > 3) pages.push("...");
-
                         const start = Math.max(2, currentPage - 1);
                         const end = Math.min(totalPages - 1, currentPage + 1);
                         for (let i = start; i <= end; i++) pages.push(i);
-
                         if (currentPage < totalPages - 2) pages.push("...");
                         pages.push(totalPages);
                       }
@@ -443,18 +416,18 @@ export default function ProductsClient() {
                         p === "..." ? (
                           <span
                             key={`dots-${idx}`}
-                            className="w-10 h-10 flex items-center justify-center text-stone-400 text-sm"
+                            className="w-10 h-10 flex items-center justify-center text-gray-400 text-sm"
                           >
-                            ···
+                            ...
                           </span>
                         ) : (
                           <button
                             key={p}
                             onClick={() => handlePageChange(p)}
-                            className={`w-10 h-10 flex items-center justify-center rounded-full text-sm font-medium transition-all ${
+                            className={`w-10 h-10 flex items-center justify-center rounded-full text-sm font-bold transition-all ${
                               currentPage === p
-                                ? "bg-stone-900 text-white"
-                                : "border border-stone-200 bg-white text-stone-600 hover:border-stone-900 hover:text-stone-900"
+                                ? "bg-black text-white"
+                                : "border border-gray-200 bg-white text-gray-600 hover:border-black hover:text-black"
                             }`}
                           >
                             {p}
@@ -463,55 +436,39 @@ export default function ProductsClient() {
                       );
                     })()}
 
-                    {/* Next */}
                     <button
                       onClick={() => handlePageChange(currentPage + 1)}
                       disabled={currentPage === totalPages}
-                      className="w-10 h-10 flex items-center justify-center rounded-full border border-stone-200 bg-white text-stone-600 disabled:opacity-40 disabled:cursor-not-allowed hover:border-stone-900 hover:text-stone-900 transition-all"
+                      className="w-10 h-10 flex items-center justify-center rounded-full border border-gray-200 bg-white text-gray-600 disabled:opacity-30 disabled:cursor-not-allowed hover:border-black hover:text-black transition-all"
                     >
-                      <FiChevronRight size={18} />
+                      <FiChevronRight size={16} />
                     </button>
                   </div>
                 )}
               </>
             ) : (
-              // ── Empty State ──────────────────────────────────────────
-              <div className="flex flex-col items-center justify-center py-32 text-center">
-                <div className="w-32 h-32 mx-auto mb-8 bg-linear-to-br from-stone-100 to-amber-50 rounded-full flex items-center justify-center">
-                  <svg
-                    className="w-16 h-16 text-stone-300"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth={1.2}
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
-                    />
-                  </svg>
+              /* Empty State */
+              <div className="flex flex-col items-center justify-center py-24 text-center">
+                <div className="w-24 h-24 mx-auto mb-6 bg-gray-100 rounded-full flex items-center justify-center">
+                  <FiPackage className="w-10 h-10 text-gray-300" />
                 </div>
-                <h3 className="font-display text-2xl font-semibold text-stone-800 mb-3">
-                  {activeCategory !== "all"
-                    ? `No products in "${activeLabel || activeCategory}"`
-                    : "No products found"}
+                <h3 className="text-xl font-bold text-gray-900 mb-2">
+                  No products found
                 </h3>
-                <p className="font-body text-stone-400 mb-8 max-w-md mx-auto">
-                  {activeCategory !== "all"
-                    ? "This category doesn't have any products yet. Check back later or browse other categories!"
-                    : "Try adjusting your filters or search term to find what you're looking for."}
+                <p className="text-sm text-gray-500 mb-6 max-w-sm">
+                  Try adjusting your filters or search term to find what
+                  you&apos;re looking for.
                 </p>
                 <div className="flex gap-3">
                   <button
                     onClick={handleReset}
-                    className="px-6 py-3 bg-stone-900 text-white rounded-full text-sm hover:bg-amber-800 transition-colors"
+                    className="px-6 py-2.5 bg-black text-white text-sm font-bold rounded-full hover:bg-gray-800 transition-colors"
                   >
-                    Browse All Products
+                    Browse All
                   </button>
                   <Link
                     href="/"
-                    className="px-6 py-3 border border-stone-300 text-stone-700 rounded-full text-sm hover:border-stone-500 transition-colors"
+                    className="px-6 py-2.5 border border-gray-200 text-gray-700 text-sm font-medium rounded-full hover:border-gray-400 transition-colors"
                   >
                     Go Home
                   </Link>
@@ -522,28 +479,24 @@ export default function ProductsClient() {
         </div>
       </div>
 
-      {/* ── Mobile Sidebar Drawer ─────────────────────────────────────────── */}
+      {/* Mobile Filter Drawer */}
       {sidebarOpen && (
         <div className="fixed inset-0 z-50 lg:hidden">
-          {/* Backdrop */}
           <div
             className="absolute inset-0 bg-black/40 backdrop-blur-sm"
             onClick={() => setSidebarOpen(false)}
           />
-          {/* Panel */}
           <div className="absolute right-0 top-0 h-full w-80 bg-white shadow-2xl overflow-y-auto">
-            <div className="flex items-center justify-between p-6 border-b border-stone-100">
-              <h2 className="font-display text-xl font-light text-stone-900">
-                Filters
-              </h2>
+            <div className="flex items-center justify-between p-5 border-b border-gray-100">
+              <h2 className="text-lg font-bold text-gray-900">Filters</h2>
               <button
                 onClick={() => setSidebarOpen(false)}
-                className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-stone-100 text-stone-500 transition-colors"
+                className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 text-gray-500 transition-colors"
               >
-                ✕
+                <FiX size={18} />
               </button>
             </div>
-            <div className="p-6">
+            <div className="p-5">
               <ProductFilters
                 activeCategory={activeCategory}
                 setActiveCategory={handleCategoryChange}
