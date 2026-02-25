@@ -1,6 +1,8 @@
 // components/product/ProductCard.jsx
 "use client";
 
+import { useLanguage } from "@/contexts/LanguageContext";
+import { useCurrency } from "@/contexts/CurrencyContext";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
@@ -11,6 +13,9 @@ const ProductCard = ({ product }) => {
   const [isHovered, setIsHovered] = useState(false);
   const [imageError, setImageError] = useState(false);
   const [addedFeedback, setAddedFeedback] = useState(false);
+
+  const { t } = useLanguage();
+  const { formatPrice } = useCurrency();
 
   const { addToCart } = useCart();
 
@@ -99,9 +104,10 @@ const ProductCard = ({ product }) => {
               <FiShoppingCart className="w-4 h-4" />
             )}
           </button>
-          <span
-            title="View details"
-            className="p-3 bg-white/90 rounded-full hover:bg-white text-gray-900 hover:scale-110 transition-all duration-200 shadow-sm"
+          <Link
+            href={`/products/${productId}`}
+            title={t("viewDetails")} // 👈 translated
+            className="p-3 bg-white/90 rounded-full hover:bg-white text-gray-900 hover:scale-110 transition-all duration-200"
           >
             <FiEye className="w-4 h-4" />
           </span>
@@ -143,11 +149,11 @@ const ProductCard = ({ product }) => {
         {/* Price */}
         <div className="flex items-baseline gap-2 mt-2">
           <span className="text-lg font-black text-gray-900">
-            ${Number(product.price).toFixed(2)}
+            {formatPrice(product.price, product.currency || "USD")}
           </span>
           {product.originalPrice && product.originalPrice > product.price && (
             <span className="text-xs text-gray-400 line-through">
-              ${Number(product.originalPrice).toFixed(2)}
+              {formatPrice(product.originalPrice, product.currency || "USD")}
             </span>
           )}
         </div>

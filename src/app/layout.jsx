@@ -6,6 +6,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import NextAuthProvider from "@/components/providers/NextAuthProvider";
 import { CartProvider } from "@/contexts/CartContext";
 import { LanguageProvider } from "@/contexts/LanguageContext";
+import { CurrencyProvider } from "@/contexts/CurrencyContext";
 import { SocketProvider } from "@/contexts/SocketContext";
 import { NotificationProvider } from "@/contexts/NotificationContext";
 import { Toaster } from "react-hot-toast";
@@ -32,6 +33,19 @@ export default function RootLayout({ children }) {
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        <LanguageProvider>
+          <CurrencyProvider>
+            <NextAuthProvider>
+              <AuthProvider>
+                <CartProvider>
+                  <Navbar />
+                  {children}
+                  <Footer />
+                </CartProvider>
+              </AuthProvider>
+            </NextAuthProvider>
+          </CurrencyProvider>
+        </LanguageProvider>
         <NextAuthProvider>
           <AuthProvider>
             <SocketProvider>

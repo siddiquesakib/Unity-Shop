@@ -23,6 +23,7 @@
     "motion-dom": "^12.34.3",
     "next": "16.1.6",
     "next-auth": "^4.24.13",
+    "next-google-translate-widget": "^1.0.1",
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "react-hot-toast": "^2.6.0",
