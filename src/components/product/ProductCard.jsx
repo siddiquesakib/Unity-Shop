@@ -61,8 +61,9 @@ const ProductCard = ({ product }) => {
   };
 
   return (
-    <div
-      className="group relative bg-white rounded-xl border border-gray-100 overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-gray-200/80 hover:border-gray-200"
+    <Link
+      href={`/products/${productId}`}
+      className="group relative bg-white rounded-xl border border-gray-100 overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-gray-200/80 hover:border-gray-200 block"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
@@ -98,13 +99,12 @@ const ProductCard = ({ product }) => {
               <FiShoppingCart className="w-4 h-4" />
             )}
           </button>
-          <Link
-            href={`/products/${productId}`}
+          <span
             title="View details"
             className="p-3 bg-white/90 rounded-full hover:bg-white text-gray-900 hover:scale-110 transition-all duration-200 shadow-sm"
           >
             <FiEye className="w-4 h-4" />
-          </Link>
+          </span>
         </div>
 
         {/* Discount badge */}
@@ -117,11 +117,9 @@ const ProductCard = ({ product }) => {
 
       {/* Content */}
       <div className="p-3.5">
-        <Link href={`/products/${productId}`} className="block">
-          <h3 className="text-sm font-semibold text-gray-900 line-clamp-1 group-hover:text-black transition-colors leading-snug">
-            {product.name}
-          </h3>
-        </Link>
+        <h3 className="text-sm font-semibold text-gray-900 line-clamp-1 group-hover:text-black transition-colors leading-snug">
+          {product.name}
+        </h3>
 
         {/* Rating */}
         <div className="flex items-center gap-1 mt-1.5">
@@ -154,7 +152,7 @@ const ProductCard = ({ product }) => {
           )}
         </div>
       </div>
-    </div>
+    </Link>
   );
 };
 
