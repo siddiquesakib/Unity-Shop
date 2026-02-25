@@ -8,6 +8,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useCart } from "@/hooks/useCart";
 import { useClickOutside } from "@/hooks/useClickOutside";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useCurrency } from "@/contexts/CurrencyContext";
 import {
   FiMenu,
   FiX,
@@ -22,16 +23,13 @@ import {
   FiShoppingBag,
   FiInfo,
   FiPhone,
-  FiGlobe,
-  FiUser,
-  FiMapPin,
 } from "react-icons/fi";
 
 const navLinks = [
-  { name: "Home", href: "/", icon: FiHome },
-  { name: "Products", href: "/products", icon: FiShoppingBag },
-  { name: "About", href: "/about", icon: FiInfo },
-  { name: "Contact", href: "/contact", icon: FiPhone },
+  { name: "home", href: "/", icon: FiHome },
+  { name: "products", href: "/products", icon: FiShoppingBag },
+  { name: "about", href: "/about", icon: FiInfo },
+  { name: "contact", href: "/contact", icon: FiPhone },
 ];
 
 const categoryLinks = [
@@ -65,18 +63,22 @@ const Navbar = () => {
   const [searchCategory, setSearchCategory] = useState("all");
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showLangMenu, setShowLangMenu] = useState(false);
+  const [showCurrencyMenu, setShowCurrencyMenu] = useState(false);
 
   const { user, logout } = useAuth();
   const { totalItems } = useCart();
   const { language, setLanguage, t, languages } = useLanguage();
+  const { currency, setCurrency, currencies, currentCurrency } = useCurrency();
   const router = useRouter();
   const pathname = usePathname();
 
   const userMenuRef = useRef(null);
   const langMenuRef = useRef(null);
+  const currencyMenuRef = useRef(null);
 
   useClickOutside(userMenuRef, () => setShowUserMenu(false));
   useClickOutside(langMenuRef, () => setShowLangMenu(false));
+  useClickOutside(currencyMenuRef, () => setShowCurrencyMenu(false));
 
   const currentLang =
     languages.find((l) => l.code === language) || languages[0];
@@ -272,7 +274,6 @@ const Navbar = () => {
                       href="/login"
                       className="flex items-center gap-1.5 px-2.5 py-1.5 text-gray-300 hover:text-white rounded-md transition-colors text-sm font-medium"
                     >
-                      <FiUser size={18} />
                       <span className="hidden xl:inline">{t("signIn")}</span>
                     </Link>
                   </div>
@@ -282,7 +283,7 @@ const Navbar = () => {
           </div>
         </div>
 
-        {/* ── Row 2: Nav Links + Location + Language ── */}
+        {/* ── Row 2: Nav Links + Location + Language + Currency ── */}
         <div className="bg-gray-900 border-t border-gray-800">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-center h-10 justify-between">
@@ -298,7 +299,7 @@ const Navbar = () => {
                         : "text-gray-300 hover:text-white hover:bg-gray-800"
                     }`}
                   >
-                    {t(link.name.toLowerCase())}
+                    {t(link.name)}
                   </Link>
                 ))}
 
@@ -307,7 +308,7 @@ const Navbar = () => {
                 {categoryLinks.slice(0, 6).map((cat) => (
                   <Link
                     key={cat}
-                    href={`/search?q=&category=${encodeURIComponent(cat)}`}
+                    href={`/products?category=${encodeURIComponent(cat)}`}
                     className="px-2.5 py-1.5 text-sm text-gray-400 hover:text-white transition-colors"
                   >
                     {cat}
@@ -315,8 +316,55 @@ const Navbar = () => {
                 ))}
               </div>
 
-              {/* Right: Language */}
+              {/* Right: Currency + Language */}
               <div className="flex items-center gap-3">
+                {/* Currency Switcher */}
+                <div className="relative" ref={currencyMenuRef}>
+                  <button
+                    onClick={() => setShowCurrencyMenu(!showCurrencyMenu)}
+                    className="flex items-center gap-1.5 px-2 py-1 text-gray-300 hover:text-white rounded transition-colors text-sm"
+                  >
+                    <span className="text-base">{currentCurrency?.flag}</span>
+                    <span className="font-medium">{currentCurrency?.code}</span>
+                    <FiChevronDown
+                      size={12}
+                      className={`text-gray-500 transition-transform ${showCurrencyMenu ? "rotate-180" : ""}`}
+                    />
+                  </button>
+
+                  {showCurrencyMenu && (
+                    <div className="absolute top-full right-0 mt-2 w-52 bg-white rounded-lg shadow-xl border border-gray-200 py-1 z-50 max-h-72 overflow-y-auto">
+                      {currencies.map((curr) => (
+                        <button
+                          key={curr.code}
+                          onClick={() => {
+                            setCurrency(curr.code);
+                            setShowCurrencyMenu(false);
+                          }}
+                          className={`flex items-center gap-2.5 w-full px-3 py-2 text-sm transition-colors ${
+                            currency === curr.code
+                              ? "bg-gray-100 text-black font-semibold"
+                              : "text-gray-600 hover:bg-gray-50 hover:text-black"
+                          }`}
+                        >
+                          <span className="text-base">{curr.flag}</span>
+                          <div className="flex-1 text-left">
+                            <div className="font-medium">{curr.code}</div>
+                            <div className="text-xs text-gray-400">
+                              {curr.name}
+                            </div>
+                          </div>
+                          {currency === curr.code && (
+                            <span className="text-black">✓</span>
+                          )}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                <div className="w-px h-4 bg-gray-700" />
+
                 {/* Language Switcher */}
                 <div className="relative" ref={langMenuRef}>
                   <button
@@ -472,7 +520,7 @@ const Navbar = () => {
                       }`}
                     >
                       <Icon size={16} />
-                      {t(link.name.toLowerCase())}
+                      {t(link.name)}
                     </Link>
                   );
                 })}
@@ -484,10 +532,10 @@ const Navbar = () => {
                   {t("categories")}
                 </p>
                 <div className="space-y-0.5">
-                  {categoryLinks.map((cat) => (
+                  {categoryLinks.slice(0, 12).map((cat) => (
                     <Link
                       key={cat}
-                      href={`/search?q=&category=${encodeURIComponent(cat)}`}
+                      href={`/products?category=${encodeURIComponent(cat)}`}
                       onClick={() => setIsOpen(false)}
                       className="block px-3 py-2 text-sm text-gray-400 hover:text-white hover:bg-gray-800/60 rounded-lg transition-colors"
                     >
@@ -533,6 +581,29 @@ const Navbar = () => {
                   </div>
                 </div>
               )}
+
+              {/* Currency Switcher - Mobile */}
+              <div className="px-3 py-3 border-t border-gray-800">
+                <p className="px-3 mb-2 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">
+                  {t("currency")}
+                </p>
+                <div className="grid grid-cols-2 gap-1.5">
+                  {currencies.map((curr) => (
+                    <button
+                      key={curr.code}
+                      onClick={() => setCurrency(curr.code)}
+                      className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors ${
+                        currency === curr.code
+                          ? "bg-white text-black font-semibold"
+                          : "text-gray-400 hover:bg-gray-800/60 hover:text-white"
+                      }`}
+                    >
+                      <span>{curr.flag}</span>
+                      <span className="truncate">{curr.code}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
 
               {/* Language Switcher - Mobile */}
               <div className="px-3 py-3 border-t border-gray-800">
