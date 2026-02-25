@@ -357,10 +357,10 @@ export default function CheckoutPage() {
                 />
 
                 {!userEmail ? (
-                  <div className="text-xs font-medium text-gray-500 bg-gray-50 rounded-xl px-4 py-3 flex items-start gap-3 border border-gray-100">
+                  <div className="text-xs font-medium text-red-500 bg-gray-50 rounded-xl px-4 py-3 flex items-start gap-3 border border-gray-100">
                     <FiAlertCircle
                       size={16}
-                      className="flex-shrink-0 text-black mt-0.5"
+                      className="flex-shrink-0  mt-0.5"
                     />
                     <p>
                       Please sign in to your account to complete this purchase
