@@ -87,43 +87,40 @@ export default function PaymentButton({
   };
 
   return (
-    <div className="flex flex-col items-start gap-2">
+    <div className="flex flex-col items-start gap-2 w-full">
       <button
         onClick={handlePayment}
         disabled={loading}
         className={`
-          inline-flex items-center justify-center gap-2
-          px-8 py-3.5 rounded-full font-bold text-sm tracking-wide
+          relative w-full overflow-hidden
+          inline-flex items-center justify-center gap-3
+          px-8 py-4 rounded-xl font-bold text-sm tracking-wide uppercase
           bg-black text-white
-          shadow-2xl shadow-black/20
-          hover:bg-gray-800 hover:shadow-black/30 hover:scale-[1.04]
+          shadow-xl shadow-black/10
+          hover:bg-gray-900 hover:scale-[1.01] transition-all duration-300
           active:scale-[0.98]
-          disabled:opacity-60 disabled:cursor-not-allowed disabled:scale-100
-          transition-all duration-300 ease-out
+          disabled:opacity-70 disabled:pointer-events-none
           ${className}
         `}
       >
+        {/* Shine effect */}
+        <div className="absolute inset-0 -translate-x-[100%] bg-gradient-to-r from-transparent via-white/10 to-transparent transition-transform duration-1000 group-hover:translate-x-[100%]" />
+
         {loading ? (
           <>
-            <Spinner />
-            <span>Redirecting to Checkout…</span>
+            <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+            <span className="font-semibold">Processing...</span>
           </>
         ) : (
           <>
-            <LockIcon />
-            <span>{label}</span>
-            {price && quantity && (
-              <span className="ml-1 opacity-60 font-normal">
-                · ${(price * quantity).toFixed(2)}
-              </span>
-            )}
+            <span className="font-bold">{label}</span>
           </>
         )}
       </button>
 
       {error && (
-        <p className="text-red-500 text-xs flex items-center gap-1">
-          <span>⚠</span> {error}
+        <p className="text-xs text-red-500 font-medium bg-red-50 px-3 py-2 rounded-lg border border-red-100 w-full text-center">
+          {error}
         </p>
       )}
     </div>
