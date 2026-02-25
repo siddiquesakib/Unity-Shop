@@ -25,6 +25,13 @@ const currencies = [
     rate: 1.53,
   },
   { code: "SAR", symbol: "ر.س", flag: "🇸🇦", name: "Saudi Riyal", rate: 3.75 },
+  {
+    code: "BDT",
+    symbol: "৳",
+    flag: "🇧🇩",
+    name: "Bangladeshi Taka",
+    rate: 108.5,
+  },
 ];
 
 const CurrencyContext = createContext();

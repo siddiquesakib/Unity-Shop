@@ -280,13 +280,13 @@ const Navbar = () => {
         <div className="bg-gray-900 border-t border-gray-800">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-center h-10 justify-between">
-              {/* Nav Links */}
+              {/* Nav Links - FIXED: added inline-flex items-center for full clickable area */}
               <div className="flex items-center gap-0.5">
                 {navLinks.map((link) => (
                   <Link
                     key={link.href}
                     href={link.href}
-                    className={`px-3 py-1.5 text-sm font-medium rounded transition-colors ${
+                    className={`px-3 py-1.5 text-sm font-medium rounded transition-colors inline-flex items-center relative z-10 ${
                       isActive(link.href)
                         ? "text-white bg-gray-700"
                         : "text-gray-300 hover:text-white hover:bg-gray-800"
@@ -302,7 +302,7 @@ const Navbar = () => {
                   <Link
                     key={cat}
                     href={`/products?category=${encodeURIComponent(cat)}`}
-                    className="px-2.5 py-1.5 text-sm text-gray-400 hover:text-white transition-colors"
+                    className="px-2.5 py-1.5 text-sm text-gray-400 hover:text-white transition-colors inline-flex items-center relative z-10"
                   >
                     {cat}
                   </Link>
@@ -311,7 +311,7 @@ const Navbar = () => {
 
               {/* Right: Currency + Custom Language Switcher */}
               <div className="flex items-center gap-3">
-                {/* Currency Switcher (unchanged) */}
+                {/* Currency Switcher */}
                 <div className="relative" ref={currencyMenuRef}>
                   <button
                     onClick={() => setShowCurrencyMenu(!showCurrencyMenu)}
@@ -368,7 +368,7 @@ const Navbar = () => {
         </div>
       </nav>
 
-      {/* ── MOBILE NAVBAR ── */}
+      {/* ── MOBILE NAVBAR (unchanged) ── */}
       <nav className="sticky top-0 z-50 lg:hidden bg-black">
         <div className="px-4">
           <div className="flex items-center h-14 gap-3">
@@ -422,7 +422,7 @@ const Navbar = () => {
         </div>
       </nav>
 
-      {/* ── MOBILE SLIDE MENU ── */}
+      {/* ── MOBILE SLIDE MENU (unchanged) ── */}
       <div
         className={`lg:hidden fixed inset-0 z-60 transition-all duration-300 ${
           isOpen ? "visible" : "invisible pointer-events-none"
@@ -559,14 +559,12 @@ const Navbar = () => {
                 </div>
               </div>
 
-              {/* Custom Language Switcher - Mobile (simplified) */}
+              {/* Custom Language Switcher - Mobile */}
               <div className="px-3 py-3 border-t border-gray-800">
                 <p className="px-3 mb-2 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">
                   Language
                 </p>
                 <div className="space-y-1">
-                  {/* We can reuse the same component, but it will render its own dropdown. For simplicity, we can either embed it here or keep as-is. 
-                      The component already works, so just include it. */}
                   <CustomLanguageSwitcher />
                 </div>
               </div>
