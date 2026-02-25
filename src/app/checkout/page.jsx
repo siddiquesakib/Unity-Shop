@@ -22,7 +22,7 @@ const SHOP_EMAIL = process.env.NEXT_PUBLIC_SHOP_EMAIL || "shop@unityshop.com";
 const SHOP_NAME = process.env.NEXT_PUBLIC_SHOP_NAME || "UnityShop";
 
 export default function CheckoutPage() {
-  const { checkoutGroups } = useCart();
+  const { checkoutGroups, checkoutPromo } = useCart();
   const router = useRouter();
   const { data: session } = useSession();
   const userEmail = session?.user?.email || "";
@@ -35,11 +35,18 @@ export default function CheckoutPage() {
 
   if (checkoutGroups.length === 0) return null;
 
-  const grandTotal = checkoutGroups.reduce(
+  // ── Compute totals ────────────────────────────────────────────────────────
+  const subtotal = checkoutGroups.reduce(
     (total, group) =>
       total + group.items.reduce((s, i) => s + i.price * i.quantity, 0),
     0,
   );
+
+  const discountAmount = checkoutPromo
+    ? Math.min(checkoutPromo.discount, subtotal)
+    : 0;
+
+  const grandTotal = Math.max(0, subtotal - discountAmount);
 
   const totalQty = checkoutGroups.reduce(
     (total, group) => total + group.items.reduce((s, i) => s + i.quantity, 0),
@@ -276,6 +283,37 @@ export default function CheckoutPage() {
                     </span>
                   </div>
                   <div className="flex justify-between text-gray-500 text-sm">
+                <div className="border-t border-gray-100 pt-2.5 space-y-2">
+                  <div className="flex justify-between text-gray-500">
+                    <span>
+                      Subtotal ({totalUniqueProducts}{' '}
+                      {totalUniqueProducts === 1 ? 'product' : 'products'},{' '}
+                      {totalQty} units)
+                    </span>
+                    <span className="text-gray-700">
+                      ${subtotal.toFixed(2)}
+                    </span>
+                  </div>
+
+                  {/* Promo discount — only shown if a code was applied in cart */}
+                  {checkoutPromo && discountAmount > 0 && (
+                    <div className="flex justify-between items-start text-emerald-600 text-sm">
+                      <span className="flex items-center gap-1">
+                        🏷️{' '}
+                        <span className="font-semibold">
+                          {checkoutPromo.code}
+                        </span>
+                        <span className="text-gray-400 text-xs font-normal">
+                          ({checkoutPromo.description})
+                        </span>
+                      </span>
+                      <span className="font-semibold whitespace-nowrap">
+                        −${discountAmount.toFixed(2)}
+                      </span>
+                    </div>
+                  )}
+
+                  <div className="flex justify-between text-gray-400 text-xs">
                     <span>Shipping</span>
                     <span className="font-medium text-black bg-gray-100 px-2 py-0.5 rounded text-xs">Calculated next</span>
                   </div>

@@ -18,6 +18,12 @@ import {
   FiLock,
 } from "react-icons/fi";
 import { useCart } from "@/contexts/CartContext";
+  FiChevronRight,
+  FiAlertCircle,
+} from 'react-icons/fi';
+import { useCart } from '@/contexts/CartContext';
+import PromoCodeInput from '@/components/promoCode/PromoCodeInput';
+// import PromoCodeInput from '@/components/cart/PromoCodeInput';
 
 export default function CartPage() {
   const { cartGroups, removeItem, updateQuantity, prepareCheckout, hydrated } =
@@ -31,6 +37,13 @@ export default function CartPage() {
   const [removingId, setRemovingId] = useState(null);
 
   const allItemIds = cartGroups.flatMap((g) => g.items.map((i) => i.id));
+
+  // ── Promo state ────────────────────────────────────────────────────────────
+  const [appliedPromo, setAppliedPromo] = useState(null);
+  // appliedPromo shape: { code, discount, description } | null
+
+  // ─── Selection helpers ────────────────────────────────────────────────────
+  const allItemIds = cartGroups.flatMap(g => g.items.map(i => i.id));
 
   const toggleSelectAll = () => {
     const next = !selectAll;
@@ -69,6 +82,24 @@ export default function CartPage() {
     0,
   );
 
+  // Discount only applies against the selected subtotal
+  const discountAmount = appliedPromo
+    ? Math.min(appliedPromo.discount, subtotal) // never discount more than subtotal
+    : 0;
+
+  const grandTotal = Math.max(0, subtotal - discountAmount);
+
+  const selectedQtyTotal = cartGroups.reduce(
+    (total, group) =>
+      total +
+      group.items.reduce(
+        (sum, item) => (selectedItems[item.id] ? sum + item.quantity : sum),
+        0,
+      ),
+    0,
+  );
+
+  // ─── Quantity helpers ─────────────────────────────────────────────────────
   const handleQtyChange = (item, delta) => {
     updateQuantity(item.id, item.quantity + delta * item.moq);
   };
@@ -85,6 +116,7 @@ export default function CartPage() {
     }, 300);
   };
 
+  // ─── Proceed to Checkout ──────────────────────────────────────────────────
   const handleProceedToCheckout = () => {
     const selectedGroups = cartGroups
       .map((group) => ({
