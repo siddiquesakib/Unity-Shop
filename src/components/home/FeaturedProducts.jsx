@@ -4,21 +4,21 @@
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import ProductCard from "../product/ProductCard";
-import { FiGrid } from "react-icons/fi";
+import { FiGrid, FiArrowRight } from "react-icons/fi";
 
 const filters = [
   { id: "recommended", label: "Recommended", sort: "recommended" },
-  { id: "latest", label: "Latest", sort: "latest" },
+  { id: "latest", label: "New Arrivals", sort: "latest" },
   { id: "topRated", label: "Top Rated", sort: "top-rated" },
 ];
 
 const PRODUCTS_LIMIT = 20;
 
 const FeaturedProducts = ({
-  title = "Recommended Products",
+  title = "NEW ARRIVALS",
   viewAllLink = "/products",
 }) => {
-  const [activeFilter, setActiveFilter] = useState("recommended");
+  const [activeFilter, setActiveFilter] = useState("latest");
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -42,7 +42,6 @@ const FeaturedProducts = ({
     }
   }, []);
 
-  // Fetch on mount and when filter changes
   useEffect(() => {
     const currentSort =
       filters.find((f) => f.id === activeFilter)?.sort || "recommended";
@@ -55,73 +54,57 @@ const FeaturedProducts = ({
   };
 
   return (
-    <section className="py-10 sm:py-12 bg-gray-50/50">
+    <section className="py-16 sm:py-20 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
-          <div>
-            <h2 className="text-xl sm:text-2xl font-bold text-gray-900">
-              {title}
-            </h2>
-            <p className="text-sm text-gray-500 mt-0.5">
-              Top-quality products from verified suppliers
-            </p>
-          </div>
-          <Link
-            href={viewAllLink}
-            className="mt-3 sm:mt-0 inline-flex items-center text-sm text-orange-600 hover:text-orange-700 font-medium group"
-          >
-            View All Products
-            <svg
-              className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M9 5l7 7-7 7"
-              />
-            </svg>
-          </Link>
+        <div className="text-center mb-10">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-black uppercase tracking-tight">
+            {title}
+          </h2>
+          <div className="w-16 h-1 bg-black mx-auto mt-4 rounded-full" />
         </div>
 
-        {/* Filter Tabs */}
-        <div className="flex flex-wrap gap-2 mb-6">
+        {/* Filter Tabs — centered, minimal */}
+        <div className="flex items-center justify-center gap-3 sm:gap-4 mb-10">
           {filters.map((f) => (
             <button
               key={f.id}
               onClick={() => handleFilterChange(f.id)}
-              className={`px-4 py-1.5 rounded-full text-xs sm:text-sm font-medium transition-all ${
+              className={`relative px-5 py-2 text-sm font-medium transition-all duration-300 ${
                 activeFilter === f.id
-                  ? "bg-gray-900 text-white shadow-sm"
-                  : "bg-white text-gray-600 border border-gray-200 hover:border-gray-300 hover:text-gray-900"
+                  ? "text-black"
+                  : "text-gray-400 hover:text-gray-600"
               }`}
             >
               {f.label}
+              {/* Active underline */}
+              <span
+                className={`absolute bottom-0 left-1/2 -translate-x-1/2 h-0.5 bg-black rounded-full transition-all duration-300 ${
+                  activeFilter === f.id ? "w-full" : "w-0"
+                }`}
+              />
             </button>
           ))}
         </div>
 
         {/* Product Grid */}
         {loading ? (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-            {Array.from({ length: 10 }).map((_, i) => (
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-5">
+            {Array.from({ length: 12 }).map((_, i) => (
               <div key={i} className="animate-pulse">
-                <div className="bg-gray-200 rounded-2xl aspect-square" />
-                <div className="mt-4 space-y-2">
-                  <div className="h-4 bg-gray-200 rounded w-3/4" />
-                  <div className="h-4 bg-gray-200 rounded w-1/2" />
+                <div className="bg-gray-100 rounded-xl aspect-square" />
+                <div className="mt-4 space-y-2.5 px-1">
+                  <div className="h-3.5 bg-gray-100 rounded-full w-3/4" />
+                  <div className="h-3.5 bg-gray-50 rounded-full w-1/2" />
+                  <div className="h-3 bg-gray-50 rounded-full w-1/3" />
                 </div>
               </div>
             ))}
           </div>
         ) : error ? (
-          <div className="text-center py-16 text-gray-400">
-            <FiGrid className="w-12 h-12 mx-auto mb-3 opacity-40" />
-            <p className="text-base font-medium">{error}</p>
+          <div className="text-center py-20">
+            <FiGrid className="w-14 h-14 mx-auto mb-4 text-gray-200" />
+            <p className="text-base text-gray-400 font-medium">{error}</p>
             <button
               onClick={() =>
                 fetchProducts(
@@ -129,21 +112,36 @@ const FeaturedProducts = ({
                     "recommended",
                 )
               }
-              className="mt-3 text-sm text-orange-600 hover:text-orange-700 font-medium"
+              className="mt-4 text-sm text-black hover:underline font-semibold"
             >
               Try Again
             </button>
           </div>
         ) : products.length === 0 ? (
-          <div className="text-center py-16 text-gray-400">
-            <FiGrid className="w-12 h-12 mx-auto mb-3 opacity-40" />
-            <p className="text-lg font-medium">No products found</p>
+          <div className="text-center py-20">
+            <FiGrid className="w-14 h-14 mx-auto mb-4 text-gray-200" />
+            <p className="text-lg text-gray-400 font-medium">
+              No products found
+            </p>
           </div>
         ) : (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-5">
             {products.map((product) => (
               <ProductCard key={product._id || product.id} product={product} />
             ))}
+          </div>
+        )}
+
+        {/* View All */}
+        {products.length > 0 && (
+          <div className="text-center mt-12">
+            <Link
+              href={viewAllLink}
+              className="inline-flex items-center gap-2.5 px-10 py-4 text-sm font-bold text-black border-2 border-black rounded-full hover:bg-black hover:text-white transition-all duration-300"
+            >
+              View All
+              <FiArrowRight className="w-4 h-4" />
+            </Link>
           </div>
         )}
       </div>
