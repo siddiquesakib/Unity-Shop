@@ -37,32 +37,21 @@ export default function RootLayout({ children }) {
           <CurrencyProvider>
             <NextAuthProvider>
               <AuthProvider>
-                <CartProvider>
-                  <Navbar />
-                  {children}
-                  <Footer />
-                </CartProvider>
+                <SocketProvider>
+                  <NotificationProvider>
+                    <CartProvider>
+                      <Navbar />
+                      <NotificationListener />
+                      <Toaster position="top-right" />
+                      {children}
+                      <Footer />
+                    </CartProvider>
+                  </NotificationProvider>
+                </SocketProvider>
               </AuthProvider>
             </NextAuthProvider>
           </CurrencyProvider>
         </LanguageProvider>
-        <NextAuthProvider>
-          <AuthProvider>
-            <SocketProvider>
-              <NotificationProvider>
-                <CartProvider>
-                  <LanguageProvider>
-                    <Navbar />
-                    <NotificationListener />
-                    <Toaster position="top-right" />
-                    {children}
-                    <Footer />
-                  </LanguageProvider>
-                </CartProvider>
-              </NotificationProvider>
-            </SocketProvider>
-          </AuthProvider>
-        </NextAuthProvider>
       </body>
     </html>
   );
