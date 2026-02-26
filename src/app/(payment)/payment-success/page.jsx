@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useCart } from "@/contexts/CartContext";
 import { useNotifications } from "@/contexts/NotificationContext";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+const API_BASE = process.env.NEXT_PUBLIC_API_URL;
 
 export default function PaymentSuccess() {
   return (
@@ -237,7 +237,6 @@ function Row({ label, value, bold }) {
     <div className="flex justify-between items-center py-2.5 border-b border-gray-50 last:border-0">
       <span className="text-sm text-gray-400">{label}</span>
       <span
-        className={`text-sm ${bold ? "text-black font-black text-base" : "text-gray-700 font-medium"}`}
         className={`text-sm ${
           bold
             ? "text-emerald-600 font-bold text-base"

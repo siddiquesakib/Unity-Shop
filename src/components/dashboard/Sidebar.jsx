@@ -68,6 +68,7 @@ export default function Sidebar() {
     { name: "Overview", href: "/dashboard/admin", icon: ShieldCheck },
     { name: "Manage Users", href: "/dashboard/admin/users", icon: Users },
     { name: "Sellers Info", href: "/dashboard/admin/sellers", icon: UserCog },
+    { name: "Products", href: "/dashboard/admin/products", icon: Package },
     {
       name: "System Settings",
       href: "/dashboard/admin/settings",
@@ -83,6 +84,7 @@ export default function Sidebar() {
       href: "/dashboard/manager/sellers",
       icon: UserCog,
     },
+    { name: "Products", href: "/dashboard/manager/products", icon: Package },
     {
       name: "Fulfillment",
       href: "/dashboard/manager/fulfillment",
