@@ -110,7 +110,7 @@ const ProductCard = ({ product }) => {
             className="p-3 bg-white/90 rounded-full hover:bg-white text-gray-900 hover:scale-110 transition-all duration-200"
           >
             <FiEye className="w-4 h-4" />
-          </span>
+          </Link>
         </div>
 
         {/* Discount badge */}

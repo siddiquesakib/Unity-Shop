@@ -154,15 +154,12 @@ const Navbar = () => {
   const [searchCategory, setSearchCategory] = useState("all");
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showCurrencyMenu, setShowCurrencyMenu] = useState(false);
-
-  const { user, logout } = useAuth();
-  const { totalItems } = useCart();
-  const { currency, setCurrency, currencies, currentCurrency } = useCurrency();
   const [showLangMenu, setShowLangMenu] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
 
   const { user, logout } = useAuth();
   const { totalUniqueItems: totalItems } = useCart();
+  const { currency, setCurrency, currencies, currentCurrency } = useCurrency();
   const { language, setLanguage, t, languages } = useLanguage();
   const {
     notifications = [],
