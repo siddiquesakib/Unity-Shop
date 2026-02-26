@@ -1,4 +1,3 @@
-// components/home/CategoryGrid.jsx
 "use client";
 
 import Link from "next/link";
@@ -98,7 +97,6 @@ const CategoryGrid = () => {
         );
         if (res.ok) {
           const data = await res.json();
-          // Build a map: { living: 5, kitchen: 5, ... }
           const counts = {};
           data.forEach((c) => {
             counts[c.name] = c.count;
@@ -164,7 +162,7 @@ const CategoryGrid = () => {
             </p>
           </div>
 
-          {/* Scroll Arrows */}
+          {/* Scroll Arrows (hidden on mobile) */}
           <div className="hidden sm:flex items-center gap-2">
             <button
               onClick={() => scroll("left")}
@@ -185,16 +183,16 @@ const CategoryGrid = () => {
 
         {/* Loading Skeleton */}
         {loading ? (
-          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-11 gap-3">
+          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-11 gap-2 sm:gap-3">
             {[...Array(22)].map((_, i) => (
               <div
                 key={i}
-                className="bg-white rounded-xl p-3 animate-pulse border border-gray-100"
+                className="bg-white rounded-xl p-2 sm:p-3 animate-pulse border border-gray-100"
               >
                 <div className="flex flex-col items-center space-y-2">
-                  <div className="w-10 h-10 rounded-xl bg-gray-200" />
-                  <div className="h-3 bg-gray-200 rounded-full w-14" />
-                  <div className="h-2.5 bg-gray-100 rounded-full w-10" />
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-gray-200" />
+                  <div className="h-3 bg-gray-200 rounded-full w-12 sm:w-14" />
+                  <div className="h-2.5 bg-gray-100 rounded-full w-8 sm:w-10" />
                 </div>
               </div>
             ))}
@@ -210,7 +208,7 @@ const CategoryGrid = () => {
 
             <div
               ref={scrollRef}
-              className="flex sm:grid sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-11 gap-3 overflow-x-auto sm:overflow-visible scrollbar-hide pb-2 sm:pb-0 -mx-4 px-4 sm:mx-0 sm:px-0 snap-x snap-mandatory sm:snap-none"
+              className="flex sm:grid sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-11 gap-2 sm:gap-3 overflow-x-auto sm:overflow-visible scrollbar-hide pb-2 sm:pb-0 -mx-4 px-4 sm:mx-0 sm:px-0 snap-x snap-mandatory sm:snap-none"
             >
               {allCategories.map((cat, index) => {
                 const meta = categoryMeta[cat.id] || defaultMeta;
@@ -220,21 +218,21 @@ const CategoryGrid = () => {
                   <Link
                     key={cat.id}
                     href={`/products?category=${encodeURIComponent(cat.id)}`}
-                    className="group relative shrink-0 w-28 sm:w-auto snap-start"
+                    className="group relative shrink-0 w-24 xs:w-28 sm:w-auto snap-start"
                     style={{ animationDelay: `${index * 30}ms` }}
                   >
-                    <div className="relative bg-white rounded-xl p-3 sm:p-4 border border-gray-200 hover:border-black hover:shadow-lg hover:shadow-gray-200/50 transition-all duration-300 ease-out overflow-hidden h-full">
+                    <div className="relative bg-white rounded-xl p-2 sm:p-3 border border-gray-200 hover:border-black hover:shadow-lg hover:shadow-gray-200/50 transition-all duration-300 ease-out overflow-hidden h-full">
                       <div className="relative flex flex-col items-center text-center space-y-1.5">
                         {/* Icon Container */}
                         <div
-                          className={`relative w-10 h-10 rounded-xl flex items-center justify-center ring-1 transition-all duration-300 ease-out ${
+                          className={`relative w-8 h-8 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center ring-1 transition-all duration-300 ease-out ${
                             count > 0
                               ? "bg-gray-100 ring-gray-200 group-hover:ring-2 group-hover:ring-black group-hover:bg-black group-hover:scale-110"
                               : "bg-gray-50 ring-gray-100 group-hover:ring-gray-300 group-hover:scale-105"
                           }`}
                         >
                           <Icon
-                            className={`w-4.5 h-4.5 transition-all duration-300 ${
+                            className={`w-3.5 h-3.5 sm:w-4.5 sm:h-4.5 transition-all duration-300 ${
                               count > 0
                                 ? "text-gray-700 group-hover:text-white"
                                 : "text-gray-300 group-hover:text-gray-500"
@@ -244,7 +242,7 @@ const CategoryGrid = () => {
 
                         {/* Label */}
                         <h3
-                          className={`text-[11px] sm:text-xs font-semibold transition-colors duration-200 leading-tight ${
+                          className={`text-[10px] xs:text-[11px] sm:text-xs font-semibold transition-colors duration-200 leading-tight ${
                             count > 0
                               ? "text-gray-800 group-hover:text-black"
                               : "text-gray-400 group-hover:text-gray-600"
@@ -253,15 +251,17 @@ const CategoryGrid = () => {
                           {cat.label}
                         </h3>
 
-                        {/* Product count */}
+                        {/* Product count – hidden on very small screens if zero */}
                         <span
-                          className={`text-[10px] font-medium transition-colors duration-200 ${
+                          className={`text-[8px] xs:text-[10px] font-medium transition-colors duration-200 ${
                             count > 0
                               ? "text-gray-400 group-hover:text-black"
                               : "text-gray-300"
-                          }`}
+                          } ${count === 0 && "hidden xs:inline"}`}
                         >
-                          {count} {count === 1 ? "item" : "items"}
+                          {count > 0
+                            ? `${count} ${count === 1 ? "item" : "items"}`
+                            : "0 items"}
                         </span>
                       </div>
 

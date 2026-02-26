@@ -65,10 +65,10 @@ const FlashDeals = () => {
   if (!loading && products.length === 0) return null;
 
   return (
-    <section className="py-10 sm:py-16 bg-white">
+    <section className="py-12 sm:py-16 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6 sm:mb-8">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
           <div>
             <div className="flex items-center gap-2 mb-2">
               <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center shrink-0">
@@ -83,14 +83,14 @@ const FlashDeals = () => {
             </p>
           </div>
 
-          <div className="flex items-center gap-4 w-full sm:w-auto">
+          {/* Countdown + Scroll arrows */}
+          <div className="flex items-center justify-between w-full sm:w-auto gap-3">
             {/* Countdown */}
-            <div className="flex items-center gap-1 flex-wrap sm:flex-nowrap">
-              <span className="text-xs text-gray-500 font-medium mr-1 hidden xs:inline">
+            <div className="flex items-center gap-1 sm:gap-1.5 flex-wrap sm:flex-nowrap">
+              <span className="text-xs text-gray-500 font-medium hidden xs:inline">
                 Ends in
               </span>
-              {/* For very small screens, show a short label */}
-              <span className="text-xs text-gray-500 font-medium mr-1 xs:hidden">
+              <span className="text-xs text-gray-500 font-medium xs:hidden">
                 Ends:
               </span>
               {[
@@ -131,7 +131,10 @@ const FlashDeals = () => {
         {loading ? (
           <div className="flex gap-4 overflow-hidden">
             {Array.from({ length: 5 }).map((_, i) => (
-              <div key={i} className="shrink-0 w-40 sm:w-48 animate-pulse">
+              <div
+                key={i}
+                className="shrink-0 w-36 xs:w-40 sm:w-48 animate-pulse"
+              >
                 <div className="bg-gray-100 rounded-xl aspect-square" />
                 <div className="mt-3 space-y-2 px-1">
                   <div className="h-3 bg-gray-100 rounded-full w-3/4" />
@@ -148,7 +151,7 @@ const FlashDeals = () => {
             {products.map((product) => (
               <div
                 key={product._id || product.id}
-                className="shrink-0 w-40 sm:w-48 snap-start"
+                className="shrink-0 w-36 xs:w-40 sm:w-48 snap-start"
               >
                 <ProductCard product={product} />
               </div>
@@ -158,10 +161,10 @@ const FlashDeals = () => {
 
         {/* View All */}
         {products.length > 0 && (
-          <div className="text-center mt-6 sm:mt-8">
+          <div className="text-center mt-8">
             <Link
               href="/products"
-              className="inline-flex items-center gap-2 px-5 sm:px-6 py-2 text-sm sm:text-base font-bold text-black border-2 border-black rounded-full hover:bg-black hover:text-white transition-all duration-300"
+              className="inline-flex items-center gap-2 px-6 py-2.5 text-sm font-bold text-black border-2 border-black rounded-full hover:bg-black hover:text-white transition-all duration-300"
             >
               View All Deals <FiArrowRight className="w-3.5 h-3.5" />
             </Link>
