@@ -1,4 +1,3 @@
-// components/home/FlashDeals.jsx
 "use client";
 
 import { useState, useEffect, useRef } from "react";
@@ -66,37 +65,41 @@ const FlashDeals = () => {
   if (!loading && products.length === 0) return null;
 
   return (
-    <section className="py-12 sm:py-16 bg-white">
+    <section className="py-10 sm:py-16 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6 sm:mb-8">
           <div>
             <div className="flex items-center gap-2 mb-2">
-              <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center">
+              <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center shrink-0">
                 <FiZap className="w-4 h-4 text-white" />
               </div>
               <h2 className="text-2xl sm:text-3xl font-extrabold text-black">
                 Flash Deals
               </h2>
             </div>
-            <p className="text-sm text-gray-500">
+            <p className="text-xs sm:text-sm text-gray-500">
               Limited time offers — grab them before they&apos;re gone!
             </p>
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4 w-full sm:w-auto">
             {/* Countdown */}
-            <div className="flex items-center gap-1.5">
-              <span className="text-xs text-gray-500 font-medium mr-1">
+            <div className="flex items-center gap-1 flex-wrap sm:flex-nowrap">
+              <span className="text-xs text-gray-500 font-medium mr-1 hidden xs:inline">
                 Ends in
+              </span>
+              {/* For very small screens, show a short label */}
+              <span className="text-xs text-gray-500 font-medium mr-1 xs:hidden">
+                Ends:
               </span>
               {[
                 { val: pad(timeLeft.hours), label: "h" },
                 { val: pad(timeLeft.minutes), label: "m" },
                 { val: pad(timeLeft.seconds), label: "s" },
               ].map((t, i) => (
-                <div key={i} className="flex items-center gap-1.5">
-                  <div className="bg-black text-white text-sm font-mono font-bold px-2 py-1 rounded-md min-w-8 text-center">
+                <div key={i} className="flex items-center gap-1">
+                  <div className="bg-black text-white text-xs sm:text-sm font-mono font-bold px-1.5 sm:px-2 py-1 rounded-md min-w-7 sm:min-w-8 text-center">
                     {t.val}
                   </div>
                   {i < 2 && (
@@ -106,8 +109,8 @@ const FlashDeals = () => {
               ))}
             </div>
 
-            {/* Scroll arrows */}
-            <div className="hidden sm:flex items-center gap-1.5">
+            {/* Scroll arrows (hidden on mobile) */}
+            <div className="hidden sm:flex items-center gap-1.5 shrink-0">
               <button
                 onClick={() => scroll("left")}
                 className="p-1.5 rounded-full border border-gray-300 hover:bg-black hover:text-white hover:border-black transition-all"
@@ -128,7 +131,7 @@ const FlashDeals = () => {
         {loading ? (
           <div className="flex gap-4 overflow-hidden">
             {Array.from({ length: 5 }).map((_, i) => (
-              <div key={i} className="shrink-0 w-48 animate-pulse">
+              <div key={i} className="shrink-0 w-40 sm:w-48 animate-pulse">
                 <div className="bg-gray-100 rounded-xl aspect-square" />
                 <div className="mt-3 space-y-2 px-1">
                   <div className="h-3 bg-gray-100 rounded-full w-3/4" />
@@ -145,7 +148,7 @@ const FlashDeals = () => {
             {products.map((product) => (
               <div
                 key={product._id || product.id}
-                className="shrink-0 w-44 sm:w-48 snap-start"
+                className="shrink-0 w-40 sm:w-48 snap-start"
               >
                 <ProductCard product={product} />
               </div>
@@ -155,10 +158,10 @@ const FlashDeals = () => {
 
         {/* View All */}
         {products.length > 0 && (
-          <div className="text-center mt-8">
+          <div className="text-center mt-6 sm:mt-8">
             <Link
               href="/products"
-              className="inline-flex items-center gap-2 px-6 py-2.5 text-sm font-bold text-black border-2 border-black rounded-full hover:bg-black hover:text-white transition-all duration-300"
+              className="inline-flex items-center gap-2 px-5 sm:px-6 py-2 text-sm sm:text-base font-bold text-black border-2 border-black rounded-full hover:bg-black hover:text-white transition-all duration-300"
             >
               View All Deals <FiArrowRight className="w-3.5 h-3.5" />
             </Link>
