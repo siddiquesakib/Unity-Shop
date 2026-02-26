@@ -7,7 +7,9 @@ import { useRouter, usePathname } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { useCart } from "@/hooks/useCart";
 import { useClickOutside } from "@/hooks/useClickOutside";
+import { useCurrency } from "@/contexts/CurrencyContext";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useNotifications } from "@/contexts/NotificationContext";
 import {
   FiMenu,
   FiX,
@@ -25,7 +27,94 @@ import {
   FiGlobe,
   FiUser,
   FiMapPin,
+  FiBell,
+  FiStar,
+  FiCheckCircle,
+  FiCreditCard,
+  FiTruck,
+  FiTag,
+  FiTrash2,
 } from "react-icons/fi";
+import CustomLanguageSwitcher from "@/components/CustomLanguageSwitcher";
+
+// ─── Time ago helper ────────────────────────────────────────────────────────
+function timeAgo(date) {
+  const now = new Date();
+  const d = new Date(date);
+  const seconds = Math.floor((now - d) / 1000);
+  if (seconds < 60) return "just now";
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return `${minutes}m ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  if (days < 7) return `${days}d ago`;
+  return d.toLocaleDateString();
+}
+
+// ─── Notification style config ──────────────────────────────────────────────
+const NOTIF_CONFIG = {
+  cart_add: {
+    icon: FiShoppingCart,
+    bg: "bg-blue-50",
+    iconColor: "text-blue-600",
+    label: "Cart",
+  },
+  payment_success: {
+    icon: FiCreditCard,
+    bg: "bg-green-50",
+    iconColor: "text-green-600",
+    label: "Payment",
+  },
+  order_confirmed: {
+    icon: FiCheckCircle,
+    bg: "bg-emerald-50",
+    iconColor: "text-emerald-600",
+    label: "Order",
+  },
+  order_status: {
+    icon: FiTruck,
+    bg: "bg-indigo-50",
+    iconColor: "text-indigo-600",
+    label: "Order",
+  },
+  product_approved: {
+    icon: FiCheckCircle,
+    bg: "bg-green-50",
+    iconColor: "text-green-600",
+    label: "Product",
+  },
+  product_rejected: {
+    icon: FiX,
+    bg: "bg-red-50",
+    iconColor: "text-red-500",
+    label: "Product",
+  },
+  seller_approved: {
+    icon: FiStar,
+    bg: "bg-amber-50",
+    iconColor: "text-amber-600",
+    label: "Seller",
+  },
+  seller_rejected: {
+    icon: FiX,
+    bg: "bg-red-50",
+    iconColor: "text-red-500",
+    label: "Seller",
+  },
+  coupon: {
+    icon: FiTag,
+    bg: "bg-purple-50",
+    iconColor: "text-purple-600",
+    label: "Promo",
+  },
+};
+const DEFAULT_NOTIF = {
+  icon: FiBell,
+  bg: "bg-gray-100",
+  iconColor: "text-gray-500",
+  label: "",
+};
 
 const navLinks = [
   { name: "Home", href: "/", icon: FiHome },
@@ -64,19 +153,42 @@ const Navbar = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchCategory, setSearchCategory] = useState("all");
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [showCurrencyMenu, setShowCurrencyMenu] = useState(false);
   const [showLangMenu, setShowLangMenu] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
 
   const { user, logout } = useAuth();
-  const { totalItems } = useCart();
+  const { totalUniqueItems: totalItems } = useCart();
+  const { currency, setCurrency, currencies, currentCurrency } = useCurrency();
   const { language, setLanguage, t, languages } = useLanguage();
+  const {
+    notifications = [],
+    unreadCount = 0,
+    markAsRead,
+    markAllAsRead,
+    deleteNotification,
+  } = useNotifications() || {};
+
+  // Debug
+  useEffect(() => {
+    console.log("Navbar notifications updated:", notifications);
+  }, [notifications]);
+
   const router = useRouter();
+
   const pathname = usePathname();
 
   const userMenuRef = useRef(null);
+  const currencyMenuRef = useRef(null);
+
+  useClickOutside(userMenuRef, () => setShowUserMenu(false));
+  useClickOutside(currencyMenuRef, () => setShowCurrencyMenu(false));
   const langMenuRef = useRef(null);
+  const notifRef = useRef(null);
 
   useClickOutside(userMenuRef, () => setShowUserMenu(false));
   useClickOutside(langMenuRef, () => setShowLangMenu(false));
+  useClickOutside(notifRef, () => setShowNotifications(false));
 
   const currentLang =
     languages.find((l) => l.code === language) || languages[0];
@@ -109,9 +221,8 @@ const Navbar = () => {
 
   return (
     <>
-      {/* ── DESKTOP NAVBAR ── */}
       <nav className="sticky top-0 z-50 hidden lg:block">
-        {/* ── Row 1: Logo + Search + Actions ── */}
+        {/* Row 1: Logo + Search + Actions */}
         <div className="bg-black">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-center h-14 gap-4">
@@ -134,9 +245,7 @@ const Navbar = () => {
                   onChange={(e) => setSearchCategory(e.target.value)}
                   className="h-9 px-3 text-xs font-medium bg-gray-200 text-gray-800 border-0 rounded-l-lg outline-none cursor-pointer"
                 >
-                  <option value="all">
-                    {t("all")} {t("categories")}
-                  </option>
+                  <option value="all">All Categories</option>
                   {categoryLinks.map((cat) => (
                     <option key={cat} value={cat}>
                       {cat}
@@ -147,7 +256,7 @@ const Navbar = () => {
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder={t("searchProducts")}
+                  placeholder="Search products..."
                   className="flex-1 h-9 px-4 text-sm bg-white text-gray-900 border-0 outline-none placeholder:text-gray-400"
                 />
                 <button
@@ -160,6 +269,150 @@ const Navbar = () => {
 
               {/* Right Actions */}
               <div className="flex items-center gap-1">
+                {/* Notifications */}
+                <div className="relative" ref={notifRef}>
+                  <button
+                    onClick={() => setShowNotifications(!showNotifications)}
+                    className="flex items-center gap-1.5 px-2.5 py-1.5 text-gray-300 hover:text-white rounded-md transition-colors relative"
+                  >
+                    <div className="relative">
+                      <FiBell size={18} />
+                      {unreadCount > 0 && (
+                        <span className="absolute -top-1.5 -right-1.5 min-w-4 h-4 px-1 bg-red-600 text-white text-[9px] font-bold rounded-full flex items-center justify-center border border-white">
+                          {unreadCount > 99 ? "99+" : unreadCount}
+                        </span>
+                      )}
+                    </div>
+                  </button>
+
+                  {showNotifications && (
+                    <div className="absolute top-full right-0 mt-2 w-96 bg-white rounded-2xl shadow-2xl border border-gray-200/80 z-50 overflow-hidden">
+                      {/* Header */}
+                      <div className="flex items-center justify-between px-5 py-3.5 bg-linear-to-r from-gray-50 to-white border-b border-gray-100">
+                        <div className="flex items-center gap-2">
+                          <h3 className="text-sm font-bold text-gray-900">
+                            Notifications
+                          </h3>
+                          {unreadCount > 0 && (
+                            <span className="min-w-5 h-5 px-1.5 bg-black text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+                              {unreadCount}
+                            </span>
+                          )}
+                        </div>
+                        {unreadCount > 0 && (
+                          <button
+                            onClick={markAllAsRead}
+                            className="text-xs font-medium text-gray-500 hover:text-black transition-colors"
+                          >
+                            Mark all read
+                          </button>
+                        )}
+                      </div>
+
+                      {/* Notification List */}
+                      <div className="max-h-105 overflow-y-auto divide-y divide-gray-100">
+                        {notifications.length > 0 ? (
+                          notifications.map((n) => {
+                            const cfg = NOTIF_CONFIG[n.type] || DEFAULT_NOTIF;
+                            const Icon = cfg.icon;
+
+                            return (
+                              <div
+                                key={n._id}
+                                className={`group relative flex items-start gap-3 px-5 py-3.5 transition-all cursor-pointer ${
+                                  !n.read
+                                    ? "bg-blue-50/40 hover:bg-blue-50/70"
+                                    : "hover:bg-gray-50"
+                                }`}
+                                onClick={() => markAsRead(n._id)}
+                              >
+                                {/* Delete button */}
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    deleteNotification(n._id);
+                                  }}
+                                  className="absolute top-3 right-3 p-1 text-gray-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all"
+                                  title="Delete"
+                                >
+                                  <FiTrash2 size={13} />
+                                </button>
+
+                                {/* Icon */}
+                                <div
+                                  className={`mt-0.5 w-9 h-9 rounded-xl ${cfg.bg} ${cfg.iconColor} flex items-center justify-center shrink-0`}
+                                >
+                                  <Icon size={16} />
+                                </div>
+
+                                {/* Content */}
+                                <div className="flex-1 min-w-0 pr-6">
+                                  <div className="flex items-center gap-2">
+                                    <p
+                                      className={`text-sm leading-snug ${!n.read ? "font-semibold text-gray-900" : "font-medium text-gray-600"}`}
+                                    >
+                                      {n.title || n.text}
+                                    </p>
+                                    {!n.read && (
+                                      <span className="w-2 h-2 rounded-full bg-blue-500 shrink-0" />
+                                    )}
+                                  </div>
+                                  {n.message && (
+                                    <p className="text-xs text-gray-500 mt-0.5 line-clamp-2 leading-relaxed">
+                                      {n.message}
+                                    </p>
+                                  )}
+                                  <div className="flex items-center gap-2 mt-1.5">
+                                    {cfg.label && (
+                                      <span
+                                        className={`text-[10px] font-semibold uppercase tracking-wide ${cfg.iconColor}`}
+                                      >
+                                        {cfg.label}
+                                      </span>
+                                    )}
+                                    <span className="text-[10px] text-gray-400">
+                                      {timeAgo(n.createdAt)}
+                                    </span>
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          })
+                        ) : (
+                          <div className="px-5 py-12 text-center">
+                            <div className="w-14 h-14 mx-auto mb-3 rounded-2xl bg-gray-100 flex items-center justify-center">
+                              <FiBell size={24} className="text-gray-300" />
+                            </div>
+                            {user ? (
+                              <>
+                                <p className="text-sm font-medium text-gray-400">
+                                  No notifications yet
+                                </p>
+                                <p className="text-xs text-gray-300 mt-1">
+                                  We&apos;ll notify you when something arrives
+                                </p>
+                              </>
+                            ) : (
+                              <>
+                                <p className="text-sm font-medium text-gray-400">
+                                  Sign in to see notifications
+                                </p>
+                                <Link
+                                  href="/login"
+                                  onClick={() => setShowNotifications(false)}
+                                  className="inline-block mt-2 text-xs font-medium text-black bg-gray-100 hover:bg-gray-200 px-4 py-1.5 rounded-full transition-colors"
+                                >
+                                  Sign In
+                                </Link>
+                              </>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
                 {/* Favorites */}
                 <Link
                   href="/dashboard/wishlist"
@@ -167,7 +420,7 @@ const Navbar = () => {
                 >
                   <FiHeart size={18} />
                   <span className="text-sm font-medium hidden xl:inline">
-                    {t("wishlist")}
+                    Wishlist
                   </span>
                 </Link>
 
@@ -185,7 +438,7 @@ const Navbar = () => {
                     )}
                   </div>
                   <span className="text-sm font-medium hidden xl:inline ml-1">
-                    {t("cart")}
+                    Cart
                   </span>
                   <FiChevronDown
                     size={12}
@@ -210,7 +463,9 @@ const Navbar = () => {
                       </span>
                       <FiChevronDown
                         size={12}
-                        className={`text-gray-400 transition-transform ${showUserMenu ? "rotate-180" : ""}`}
+                        className={`text-gray-400 transition-transform ${
+                          showUserMenu ? "rotate-180" : ""
+                        }`}
                       />
                     </button>
 
@@ -228,17 +483,17 @@ const Navbar = () => {
                           {
                             href: "/dashboard",
                             icon: FiGrid,
-                            label: t("dashboard"),
+                            label: "Dashboard",
                           },
                           {
                             href: "/dashboard/orders",
                             icon: FiPackage,
-                            label: t("myOrders"),
+                            label: "My Orders",
                           },
                           {
                             href: "/dashboard/wishlist",
                             icon: FiHeart,
-                            label: t("wishlist"),
+                            label: "Wishlist",
                           },
                         ].map((item) => (
                           <Link
@@ -260,7 +515,7 @@ const Navbar = () => {
                             className="flex items-center gap-2.5 w-full px-4 py-2 text-sm text-red-500 hover:bg-red-50 transition-colors"
                           >
                             <FiLogOut size={15} />
-                            {t("signOut")}
+                            Sign Out
                           </button>
                         </div>
                       </div>
@@ -272,8 +527,7 @@ const Navbar = () => {
                       href="/login"
                       className="flex items-center gap-1.5 px-2.5 py-1.5 text-gray-300 hover:text-white rounded-md transition-colors text-sm font-medium"
                     >
-                      <FiUser size={18} />
-                      <span className="hidden xl:inline">{t("signIn")}</span>
+                      <span className="hidden xl:inline">Sign In</span>
                     </Link>
                   </div>
                 )}
@@ -282,23 +536,23 @@ const Navbar = () => {
           </div>
         </div>
 
-        {/* ── Row 2: Nav Links + Location + Language ── */}
+        {/* Row 2: Nav Links + Currency + Custom Language Switcher */}
         <div className="bg-gray-900 border-t border-gray-800">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-center h-10 justify-between">
-              {/* Nav Links */}
+              {/* Nav Links - FIXED: added inline-flex items-center for full clickable area */}
               <div className="flex items-center gap-0.5">
                 {navLinks.map((link) => (
                   <Link
                     key={link.href}
                     href={link.href}
-                    className={`px-3 py-1.5 text-sm font-medium rounded transition-colors ${
+                    className={`px-3 py-1.5 text-sm font-medium rounded transition-colors inline-flex items-center relative z-10 ${
                       isActive(link.href)
                         ? "text-white bg-gray-700"
                         : "text-gray-300 hover:text-white hover:bg-gray-800"
                     }`}
                   >
-                    {t(link.name.toLowerCase())}
+                    {link.name}
                   </Link>
                 ))}
 
@@ -307,62 +561,74 @@ const Navbar = () => {
                 {categoryLinks.slice(0, 6).map((cat) => (
                   <Link
                     key={cat}
-                    href={`/search?q=&category=${encodeURIComponent(cat)}`}
-                    className="px-2.5 py-1.5 text-sm text-gray-400 hover:text-white transition-colors"
+                    href={`/products?category=${encodeURIComponent(cat)}`}
+                    className="px-2.5 py-1.5 text-sm text-gray-400 hover:text-white transition-colors inline-flex items-center relative z-10"
                   >
                     {cat}
                   </Link>
                 ))}
               </div>
 
-              {/* Right: Language */}
+              {/* Right: Currency + Custom Language Switcher */}
               <div className="flex items-center gap-3">
-                {/* Language Switcher */}
-                <div className="relative" ref={langMenuRef}>
+                {/* Currency Switcher */}
+                <div className="relative" ref={currencyMenuRef}>
                   <button
-                    onClick={() => setShowLangMenu(!showLangMenu)}
+                    onClick={() => setShowCurrencyMenu(!showCurrencyMenu)}
                     className="flex items-center gap-1.5 px-2 py-1 text-gray-300 hover:text-white rounded transition-colors text-sm"
                   >
-                    <span className="text-base">{currentLang.flag}</span>
-                    <span className="font-medium">{currentLang.name}</span>
+                    <span className="text-base">{currentCurrency?.flag}</span>
+                    <span className="font-medium">{currentCurrency?.code}</span>
                     <FiChevronDown
                       size={12}
-                      className={`text-gray-500 transition-transform ${showLangMenu ? "rotate-180" : ""}`}
+                      className={`text-gray-500 transition-transform ${
+                        showCurrencyMenu ? "rotate-180" : ""
+                      }`}
                     />
                   </button>
 
-                  {showLangMenu && (
-                    <div className="absolute top-full right-0 mt-2 w-44 bg-white rounded-lg shadow-xl border border-gray-200 py-1 z-50">
-                      {languages.map((lang) => (
+                  {showCurrencyMenu && (
+                    <div className="absolute top-full right-0 mt-2 w-52 bg-white rounded-lg shadow-xl border border-gray-200 py-1 z-50 max-h-72 overflow-y-auto">
+                      {currencies.map((curr) => (
                         <button
-                          key={lang.code}
+                          key={curr.code}
                           onClick={() => {
-                            setLanguage(lang.code);
-                            setShowLangMenu(false);
+                            setCurrency(curr.code);
+                            setShowCurrencyMenu(false);
                           }}
                           className={`flex items-center gap-2.5 w-full px-3 py-2 text-sm transition-colors ${
-                            language === lang.code
+                            currency === curr.code
                               ? "bg-gray-100 text-black font-semibold"
                               : "text-gray-600 hover:bg-gray-50 hover:text-black"
                           }`}
                         >
-                          <span className="text-base">{lang.flag}</span>
-                          <span>{lang.name}</span>
-                          {language === lang.code && (
-                            <span className="ml-auto text-black">✓</span>
+                          <span className="text-base">{curr.flag}</span>
+                          <div className="flex-1 text-left">
+                            <div className="font-medium">{curr.code}</div>
+                            <div className="text-xs text-gray-400">
+                              {curr.name}
+                            </div>
+                          </div>
+                          {currency === curr.code && (
+                            <span className="text-black">✓</span>
                           )}
                         </button>
                       ))}
                     </div>
                   )}
                 </div>
+
+                <div className="w-px h-4 bg-gray-700" />
+
+                {/* Custom Language Switcher */}
+                <CustomLanguageSwitcher />
               </div>
             </div>
           </div>
         </div>
       </nav>
 
-      {/* ── MOBILE NAVBAR ── */}
+      {/* ── MOBILE NAVBAR (unchanged) ── */}
       <nav className="sticky top-0 z-50 lg:hidden bg-black">
         <div className="px-4">
           <div className="flex items-center h-14 gap-3">
@@ -384,7 +650,7 @@ const Navbar = () => {
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder={t("search")}
+                placeholder="Search"
                 className="flex-1 h-8 px-3 text-sm bg-gray-800 text-white border border-gray-700 rounded-l-lg outline-none placeholder:text-gray-500 focus:border-gray-500"
               />
               <button
@@ -394,6 +660,140 @@ const Navbar = () => {
                 <FiSearch size={14} />
               </button>
             </form>
+
+            {/* Notification */}
+            <div className="relative" ref={notifRef}>
+              <button
+                onClick={() => setShowNotifications(!showNotifications)}
+                className="relative text-gray-300"
+              >
+                <FiBell size={20} />
+                {unreadCount > 0 && (
+                  <span className="absolute -top-1.5 -right-1.5 min-w-3.5 h-3.5 px-0.5 bg-red-500 text-white text-[8px] font-bold rounded-full flex items-center justify-center animate-pulse">
+                    {unreadCount > 9 ? "9+" : unreadCount}
+                  </span>
+                )}
+              </button>
+
+              {/* Mobile Notification Dropdown */}
+              {showNotifications && (
+                <div className="fixed inset-x-0 top-14 mx-3 bg-white rounded-2xl shadow-2xl border border-gray-200/80 z-50 overflow-hidden max-h-[70vh] flex flex-col">
+                  {/* Header */}
+                  <div className="flex items-center justify-between px-4 py-3 bg-linear-to-r from-gray-50 to-white border-b border-gray-100 shrink-0">
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-sm font-bold text-gray-900">
+                        Notifications
+                      </h3>
+                      {unreadCount > 0 && (
+                        <span className="min-w-5 h-5 px-1.5 bg-black text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+                          {unreadCount}
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-3">
+                      {unreadCount > 0 && (
+                        <button
+                          onClick={markAllAsRead}
+                          className="text-xs font-medium text-gray-500 hover:text-black transition-colors"
+                        >
+                          Mark all read
+                        </button>
+                      )}
+                      <button
+                        onClick={() => setShowNotifications(false)}
+                        className="p-1 text-gray-400 hover:text-black"
+                      >
+                        <FiX size={16} />
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* List */}
+                  <div className="overflow-y-auto divide-y divide-gray-100 flex-1">
+                    {notifications.length > 0 ? (
+                      notifications.map((n) => {
+                        const cfg = NOTIF_CONFIG[n.type] || DEFAULT_NOTIF;
+                        const Icon = cfg.icon;
+
+                        return (
+                          <div
+                            key={n._id}
+                            className={`group relative flex items-start gap-3 px-4 py-3 transition-all cursor-pointer ${
+                              !n.read ? "bg-blue-50/40" : ""
+                            }`}
+                            onClick={() => markAsRead(n._id)}
+                          >
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                deleteNotification(n._id);
+                              }}
+                              className="absolute top-2.5 right-3 p-1 text-gray-300 hover:text-red-500"
+                            >
+                              <FiTrash2 size={13} />
+                            </button>
+
+                            <div
+                              className={`mt-0.5 w-8 h-8 rounded-lg ${cfg.bg} ${cfg.iconColor} flex items-center justify-center shrink-0`}
+                            >
+                              <Icon size={14} />
+                            </div>
+
+                            <div className="flex-1 min-w-0 pr-6">
+                              <div className="flex items-center gap-1.5">
+                                <p
+                                  className={`text-[13px] leading-snug ${!n.read ? "font-semibold text-gray-900" : "text-gray-600"}`}
+                                >
+                                  {n.title || n.text}
+                                </p>
+                                {!n.read && (
+                                  <span className="w-1.5 h-1.5 rounded-full bg-blue-500 shrink-0" />
+                                )}
+                              </div>
+                              {n.message && (
+                                <p className="text-xs text-gray-500 mt-0.5 line-clamp-2">
+                                  {n.message}
+                                </p>
+                              )}
+                              <span className="text-[10px] text-gray-400 mt-1 block">
+                                {timeAgo(n.createdAt)}
+                              </span>
+                            </div>
+                          </div>
+                        );
+                      })
+                    ) : (
+                      <div className="px-4 py-10 text-center">
+                        <div className="w-12 h-12 mx-auto mb-2 rounded-xl bg-gray-100 flex items-center justify-center">
+                          <FiBell size={20} className="text-gray-300" />
+                        </div>
+                        {user ? (
+                          <p className="text-sm text-gray-400">
+                            No notifications yet
+                          </p>
+                        ) : (
+                          <>
+                            <p className="text-sm text-gray-400">
+                              Sign in to see notifications
+                            </p>
+                            <Link
+                              href="/login"
+                              onClick={() => {
+                                setShowNotifications(false);
+                                setIsOpen(false);
+                              }}
+                              className="inline-block mt-2 text-xs font-medium text-black bg-gray-100 hover:bg-gray-200 px-4 py-1.5 rounded-full transition-colors"
+                            >
+                              Sign In
+                            </Link>
+                          </>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
 
             {/* Cart */}
             <Link href="/cart" className="relative text-gray-300">
@@ -416,7 +816,7 @@ const Navbar = () => {
         </div>
       </nav>
 
-      {/* ── MOBILE SLIDE MENU ── */}
+      {/* ── MOBILE SLIDE MENU (unchanged) ── */}
       <div
         className={`lg:hidden fixed inset-0 z-60 transition-all duration-300 ${
           isOpen ? "visible" : "invisible pointer-events-none"
@@ -472,7 +872,7 @@ const Navbar = () => {
                       }`}
                     >
                       <Icon size={16} />
-                      {t(link.name.toLowerCase())}
+                      {link.name}
                     </Link>
                   );
                 })}
@@ -481,13 +881,13 @@ const Navbar = () => {
               {/* Categories */}
               <div className="px-3 py-2 border-t border-gray-800">
                 <p className="px-3 mb-2 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">
-                  {t("categories")}
+                  Categories
                 </p>
                 <div className="space-y-0.5">
-                  {categoryLinks.map((cat) => (
+                  {categoryLinks.slice(0, 12).map((cat) => (
                     <Link
                       key={cat}
-                      href={`/search?q=&category=${encodeURIComponent(cat)}`}
+                      href={`/products?category=${encodeURIComponent(cat)}`}
                       onClick={() => setIsOpen(false)}
                       className="block px-3 py-2 text-sm text-gray-400 hover:text-white hover:bg-gray-800/60 rounded-lg transition-colors"
                     >
@@ -504,20 +904,16 @@ const Navbar = () => {
                   </p>
                   <div className="space-y-0.5">
                     {[
-                      {
-                        href: "/dashboard",
-                        icon: FiGrid,
-                        label: t("dashboard"),
-                      },
+                      { href: "/dashboard", icon: FiGrid, label: "Dashboard" },
                       {
                         href: "/dashboard/orders",
                         icon: FiPackage,
-                        label: t("myOrders"),
+                        label: "My Orders",
                       },
                       {
                         href: "/dashboard/wishlist",
                         icon: FiHeart,
-                        label: t("wishlist"),
+                        label: "Wishlist",
                       },
                     ].map((item) => (
                       <Link
@@ -534,26 +930,36 @@ const Navbar = () => {
                 </div>
               )}
 
-              {/* Language Switcher - Mobile */}
+              {/* Currency Switcher - Mobile */}
               <div className="px-3 py-3 border-t border-gray-800">
                 <p className="px-3 mb-2 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">
-                  {t("language")}
+                  Currency
                 </p>
                 <div className="grid grid-cols-2 gap-1.5">
-                  {languages.map((lang) => (
+                  {currencies.map((curr) => (
                     <button
-                      key={lang.code}
-                      onClick={() => setLanguage(lang.code)}
+                      key={curr.code}
+                      onClick={() => setCurrency(curr.code)}
                       className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors ${
-                        language === lang.code
+                        currency === curr.code
                           ? "bg-white text-black font-semibold"
                           : "text-gray-400 hover:bg-gray-800/60 hover:text-white"
                       }`}
                     >
-                      <span>{lang.flag}</span>
-                      <span className="truncate">{lang.name}</span>
+                      <span>{curr.flag}</span>
+                      <span className="truncate">{curr.code}</span>
                     </button>
                   ))}
+                </div>
+              </div>
+
+              {/* Custom Language Switcher - Mobile */}
+              <div className="px-3 py-3 border-t border-gray-800">
+                <p className="px-3 mb-2 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">
+                  Language
+                </p>
+                <div className="space-y-1">
+                  <CustomLanguageSwitcher />
                 </div>
               </div>
             </div>
@@ -571,7 +977,7 @@ const Navbar = () => {
                         {user.name}
                       </p>
                       <p className="text-xs text-gray-500 capitalize">
-                        {user.role || t("customer")}
+                        {user.role || "Customer"}
                       </p>
                     </div>
                   </div>
@@ -583,7 +989,7 @@ const Navbar = () => {
                     className="flex items-center justify-center gap-2 w-full py-2 text-sm font-medium text-red-400 bg-red-500/10 hover:bg-red-500/20 rounded-lg transition-colors"
                   >
                     <FiLogOut size={15} />
-                    {t("signOut")}
+                    Sign Out
                   </button>
                 </div>
               ) : (
@@ -593,14 +999,14 @@ const Navbar = () => {
                     onClick={() => setIsOpen(false)}
                     className="block w-full text-center py-2 text-sm font-medium text-white bg-gray-800 rounded-lg hover:bg-gray-700 transition-colors"
                   >
-                    {t("signIn")}
+                    Sign In
                   </Link>
                   <Link
                     href="/register"
                     onClick={() => setIsOpen(false)}
                     className="block w-full text-center py-2 text-sm font-semibold text-black bg-white rounded-lg hover:bg-gray-200 transition-colors"
                   >
-                    {t("register")}
+                    Register
                   </Link>
                 </div>
               )}
