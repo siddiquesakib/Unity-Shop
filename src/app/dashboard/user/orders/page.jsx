@@ -22,17 +22,17 @@ const API_BASE =
 const getStatusColor = (status) => {
   switch (status) {
     case "New":
-      return "bg-purple-500/10 text-purple-400 border-purple-500/20";
+      return "bg-purple-50 text-purple-600 border-purple-200";
     case "Processing":
-      return "bg-amber-500/10 text-amber-400 border-amber-500/20";
+      return "bg-amber-50 text-amber-600 border-amber-200";
     case "Shipped":
-      return "bg-blue-500/10 text-blue-400 border-blue-500/20";
+      return "bg-blue-50 text-blue-600 border-blue-200";
     case "Delivered":
-      return "bg-emerald-500/10 text-emerald-400 border-emerald-500/20";
+      return "bg-emerald-50 text-emerald-600 border-emerald-200";
     case "Cancelled":
-      return "bg-red-500/10 text-red-400 border-red-500/20";
+      return "bg-red-50 text-red-600 border-red-200";
     default:
-      return "bg-slate-500/10 text-slate-400 border-slate-500/20";
+      return "bg-gray-50 text-gray-600 border-gray-200";
   }
 };
 
@@ -109,17 +109,17 @@ export default function UserOrdersPage() {
     <div className="space-y-6">
       <div className="flex items-end justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white">My Orders</h1>
-          <p className="text-slate-400">Track and manage all your purchases.</p>
+          <h1 className="text-2xl font-bold text-gray-900">My Orders</h1>
+          <p className="text-gray-500">Track and manage all your purchases.</p>
         </div>
         <div className="flex items-center gap-4 text-sm">
-          <div className="px-4 py-2 bg-slate-900 border border-slate-800 rounded-xl">
-            <span className="text-slate-400">Total Orders: </span>
-            <span className="text-white font-bold">{orders.length}</span>
+          <div className="px-4 py-2 bg-white border border-gray-200 rounded-xl">
+            <span className="text-gray-500">Total Orders: </span>
+            <span className="text-gray-900 font-bold">{orders.length}</span>
           </div>
-          <div className="px-4 py-2 bg-slate-900 border border-slate-800 rounded-xl">
-            <span className="text-slate-400">Total Spent: </span>
-            <span className="text-emerald-400 font-bold">
+          <div className="px-4 py-2 bg-white border border-gray-200 rounded-xl">
+            <span className="text-gray-500">Total Spent: </span>
+            <span className="text-emerald-600 font-bold">
               ${totalSpent.toFixed(2)}
             </span>
           </div>
@@ -130,32 +130,32 @@ export default function UserOrdersPage() {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-slate-900 border border-slate-800 rounded-2xl p-6"
+        className="bg-white border border-gray-200 rounded-2xl p-6"
       >
         <div className="flex flex-col md:flex-row items-start md:items-center gap-4">
           <div className="relative flex-1 w-full">
             <Search
               size={16}
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500"
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
             />
             <input
               type="text"
               placeholder="Search by product, seller, or transaction ID..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-9 pr-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-indigo-500"
+              className="w-full pl-9 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-gray-400"
             />
           </div>
           <div className="flex items-center gap-2 flex-wrap">
-            <Filter size={16} className="text-slate-500" />
+            <Filter size={16} className="text-gray-400" />
             {statuses.map((status) => (
               <button
                 key={status}
                 onClick={() => setStatusFilter(status)}
                 className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
                   statusFilter === status
-                    ? "bg-indigo-600 text-white"
-                    : "bg-slate-800 text-slate-400 hover:text-white"
+                    ? "bg-black text-white"
+                    : "bg-gray-100 text-gray-500 hover:text-gray-900"
                 }`}
               >
                 {status}
@@ -170,26 +170,26 @@ export default function UserOrdersPage() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
-        className="bg-slate-900 border border-slate-800 rounded-2xl p-6"
+        className="bg-white border border-gray-200 rounded-2xl p-6"
       >
         {loading ? (
           <div className="space-y-3">
             {[...Array(5)].map((_, i) => (
               <div
                 key={i}
-                className="h-14 bg-slate-800/50 rounded-xl animate-pulse"
+                className="h-14 bg-gray-100 rounded-xl animate-pulse"
               />
             ))}
           </div>
         ) : filteredOrders.length === 0 ? (
           <div className="text-center py-16">
-            <Package size={48} className="mx-auto text-slate-700 mb-4" />
-            <p className="text-slate-400 text-lg mb-2">
+            <Package size={48} className="mx-auto text-gray-300 mb-4" />
+            <p className="text-gray-500 text-lg mb-2">
               {orders.length === 0
                 ? "No orders yet"
                 : "No orders match your filters"}
             </p>
-            <p className="text-slate-500 text-sm">
+            <p className="text-gray-400 text-sm">
               {orders.length === 0
                 ? "Your purchase history will appear here."
                 : "Try adjusting your search or filter criteria."}
@@ -199,38 +199,38 @@ export default function UserOrdersPage() {
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="text-left border-b border-slate-800">
-                  <th className="pb-4 pl-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                <tr className="text-left border-b border-gray-200">
+                  <th className="pb-4 pl-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">
                     Order
                   </th>
-                  <th className="pb-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                  <th className="pb-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">
                     Product
                   </th>
-                  <th className="pb-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                  <th className="pb-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">
                     Seller
                   </th>
-                  <th className="pb-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                  <th className="pb-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">
                     Amount
                   </th>
-                  <th className="pb-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                  <th className="pb-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">
                     Date
                   </th>
-                  <th className="pb-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                  <th className="pb-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">
                     Status
                   </th>
-                  <th className="pb-4 text-xs font-semibold text-slate-500 uppercase tracking-wider text-right pr-4">
+                  <th className="pb-4 text-xs font-semibold text-gray-500 uppercase tracking-wider text-right pr-4">
                     Actions
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800/50">
+              <tbody className="divide-y divide-gray-100">
                 {filteredOrders.map((order) => (
                   <tr
                     key={order._id}
-                    className="group hover:bg-slate-800/30 transition-colors"
+                    className="group hover:bg-gray-50 transition-colors"
                   >
                     <td className="py-4 pl-4">
-                      <span className="text-sm font-mono text-indigo-400">
+                      <span className="text-sm font-mono text-gray-900">
                         #
                         {(order.transitionId || order._id)
                           .slice(-8)
@@ -238,17 +238,17 @@ export default function UserOrdersPage() {
                       </span>
                     </td>
                     <td className="py-4">
-                      <span className="text-sm text-slate-300 truncate max-w-[180px] block">
+                      <span className="text-sm text-gray-700 truncate max-w-[180px] block">
                         {order.productName || "N/A"}
                       </span>
                     </td>
-                    <td className="py-4 text-sm text-slate-400">
+                    <td className="py-4 text-sm text-gray-500">
                       {order.sellerName || "N/A"}
                     </td>
-                    <td className="py-4 text-sm font-semibold text-emerald-400">
+                    <td className="py-4 text-sm font-semibold text-emerald-600">
                       ${Number(order.amountPaid || 0).toFixed(2)}
                     </td>
-                    <td className="py-4 text-sm text-slate-400">
+                    <td className="py-4 text-sm text-gray-500">
                       {order.createdAt
                         ? new Date(order.createdAt).toLocaleDateString(
                             "en-US",
@@ -275,14 +275,14 @@ export default function UserOrdersPage() {
                         <button
                           onClick={() => setSelectedOrder(order)}
                           title="View Details"
-                          className="p-2 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white transition-colors"
+                          className="p-2 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-900 transition-colors"
                         >
                           <Eye size={16} />
                         </button>
                         <button
                           onClick={() => downloadOrderInvoice(order)}
                           title="Download Invoice"
-                          className="p-2 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-indigo-400 transition-colors"
+                          className="p-2 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-900 transition-colors"
                         >
                           <Download size={16} />
                         </button>
@@ -306,26 +306,28 @@ export default function UserOrdersPage() {
           <motion.div
             initial={{ opacity: 0, scale: 0.9, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            className="relative bg-slate-900 border border-slate-700 rounded-2xl p-8 max-w-lg w-[90%] shadow-2xl"
+            className="relative bg-white border border-gray-200 rounded-2xl p-8 max-w-lg w-[90%] shadow-2xl"
           >
             <button
               onClick={() => setSelectedOrder(null)}
-              className="absolute top-4 right-4 text-slate-500 hover:text-white"
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-900"
             >
               <XCircle size={20} />
             </button>
-            <h3 className="text-lg font-bold text-white mb-6">Order Details</h3>
+            <h3 className="text-lg font-bold text-gray-900 mb-6">
+              Order Details
+            </h3>
             <button
               onClick={() => downloadOrderInvoice(selectedOrder)}
-              className="mb-4 w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium transition-colors"
+              className="mb-4 w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-black hover:bg-gray-800 text-white text-sm font-medium transition-colors"
             >
               <Download size={16} />
               Download Invoice PDF
             </button>
             <div className="space-y-4">
               <div className="flex justify-between">
-                <span className="text-slate-400">Order ID</span>
-                <span className="text-white font-mono text-sm">
+                <span className="text-gray-500">Order ID</span>
+                <span className="text-gray-900 font-mono text-sm">
                   #
                   {(selectedOrder.transitionId || selectedOrder._id)
                     .slice(-8)
@@ -334,42 +336,42 @@ export default function UserOrdersPage() {
               </div>
               {selectedOrder.transitionId && (
                 <div className="flex justify-between">
-                  <span className="text-slate-400">Transaction ID</span>
-                  <span className="text-white font-mono text-xs">
+                  <span className="text-gray-500">Transaction ID</span>
+                  <span className="text-gray-900 font-mono text-xs">
                     {selectedOrder.transitionId}
                   </span>
                 </div>
               )}
-              <hr className="border-slate-800" />
+              <hr className="border-gray-200" />
               <div className="flex justify-between">
-                <span className="text-slate-400">Product</span>
-                <span className="text-white">
+                <span className="text-gray-500">Product</span>
+                <span className="text-gray-900">
                   {selectedOrder.productName || "N/A"}
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-400">Seller</span>
-                <span className="text-white">
+                <span className="text-gray-500">Seller</span>
+                <span className="text-gray-900">
                   {selectedOrder.sellerName || "N/A"}
                 </span>
               </div>
-              <hr className="border-slate-800" />
+              <hr className="border-gray-200" />
               <div className="flex justify-between">
-                <span className="text-slate-400">Amount Paid</span>
-                <span className="text-emerald-400 font-bold">
+                <span className="text-gray-500">Amount Paid</span>
+                <span className="text-emerald-600 font-bold">
                   ${Number(selectedOrder.amountPaid || 0).toFixed(2)}
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-400">Date</span>
-                <span className="text-white">
+                <span className="text-gray-500">Date</span>
+                <span className="text-gray-900">
                   {selectedOrder.createdAt
                     ? new Date(selectedOrder.createdAt).toLocaleString()
                     : "N/A"}
                 </span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-slate-400">Status</span>
+                <span className="text-gray-500">Status</span>
                 <span
                   className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(
                     selectedOrder.status || "New",

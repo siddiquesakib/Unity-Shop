@@ -9,6 +9,7 @@ import {
 } from "react";
 import toast from "react-hot-toast";
 import { useNotifications } from "@/contexts/NotificationContext";
+import { useAuth } from "@/contexts/AuthContext";
 
 const CartContext = createContext(null);
 
@@ -18,18 +19,67 @@ export function CartProvider({ children }) {
   const [checkoutPromo, setCheckoutPromo] = useState(null); // { code, discount, description } | null
   const [hydrated, setHydrated] = useState(false);
   const { createNotification } = useNotifications() || {};
-
-  // Load cart from localStorage on mount
+  const { user } = useAuth();
 
   useEffect(() => {
+    // Initial local load
     try {
-      const saved = localStorage.getItem("unityshop_cart");
-      if (saved) setCartGroups(JSON.parse(saved));
-    } catch {
-      // ignore parse errors
+      if (typeof window !== "undefined") {
+        const saved = localStorage.getItem("unityshop_cart");
+        if (saved) {
+          setCartGroups(JSON.parse(saved));
+        }
+      }
+    } catch (e) {
+      console.error("Failed to load cart from local storage", e);
     }
     setHydrated(true);
   }, []);
+
+  // Backend sync when user logs in
+  useEffect(() => {
+    if (user?._id) {
+      fetch(`${process.env.NEXT_PUBLIC_API_URL}/cart/${user._id}`)
+        .then((res) => res.json())
+        .then((data) => {
+          if (Array.isArray(data)) {
+            // Group the flat items by seller
+            const groups = {};
+            data.forEach((item) => {
+              const sellerId = item.sellerId || "general";
+              if (!groups[sellerId]) {
+                groups[sellerId] = {
+                  id: `group-${sellerId}`,
+                  seller: {
+                    id: sellerId,
+                    name: item.sellerName || "UnityShop Seller",
+                    email: item.sellerEmail || "",
+                    verified: item.sellerVerified || false,
+                  },
+                  items: [],
+                };
+              }
+              groups[sellerId].items.push({
+                id: `${item.productId}-${sellerId}`,
+                productId: item.productId,
+                name: item.name,
+                image: item.image,
+                price: item.price,
+                quantity: item.quantity,
+                stock: item.stock,
+                moq: item.moq,
+                maxQuantity: item.stock || 9999,
+                variant: item.category || "—",
+                sellerName: item.sellerName,
+                sellerEmail: item.sellerEmail,
+              });
+            });
+            setCartGroups(Object.values(groups));
+          }
+        })
+        .catch((err) => console.error("Failed to sync cart:", err));
+    }
+  }, [user, hydrated]);
 
   // Persist cart to localStorage on every change
   useEffect(() => {
@@ -45,6 +95,7 @@ export function CartProvider({ children }) {
       const sellerName = product.sellerName || "UnityShop Seller";
       const moq = product.moq || 1;
 
+      // Optimistic update
       setCartGroups((prev) => {
         const groups = prev.map((g) => ({ ...g, items: [...g.items] }));
         const groupIdx = groups.findIndex((g) => g.seller.id === sellerId);
@@ -97,7 +148,21 @@ export function CartProvider({ children }) {
         return groups;
       });
 
+      // Sync with backend
+      if (user?._id) {
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/cart/add`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            userId: user._id,
+            productId: product._id || product.id,
+            quantity,
+          }),
+        }).catch((err) => console.error("Failed to add to cart backend:", err));
+      }
+
       toast.success("Added to cart!");
+
       if (createNotification) {
         createNotification({
           type: "cart_add",
@@ -106,37 +171,102 @@ export function CartProvider({ children }) {
         });
       }
     },
-    [createNotification],
+    [createNotification, user],
   );
 
   // ─── Remove Item ─────────────────────────────────────────────────────────────
-  const removeItem = useCallback((itemId) => {
-    setCartGroups((prev) =>
-      prev
-        .map((group) => ({
-          ...group,
-          items: group.items.filter((item) => item.id !== itemId),
-        }))
-        .filter((group) => group.items.length > 0),
-    );
-  }, []);
+  const removeItem = useCallback(
+    (itemId) => {
+      // Find item to get productId for backend call
+      let productIdToRemove = null;
+      if (user?._id) {
+        for (const group of cartGroups) {
+          const item = group.items.find((i) => i.id === itemId);
+          if (item) {
+            productIdToRemove = item.productId;
+            break;
+          }
+        }
+      }
+
+      setCartGroups((prev) =>
+        prev
+          .map((group) => ({
+            ...group,
+            items: group.items.filter((item) => item.id !== itemId),
+          }))
+          .filter((group) => group.items.length > 0),
+      );
+
+      // Sync with backend
+      if (user?._id && productIdToRemove) {
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/cart/remove`, {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            userId: user._id,
+            productId: productIdToRemove,
+          }),
+        }).catch((err) =>
+          console.error("Failed to remove item from backend:", err),
+        );
+      }
+    },
+    [cartGroups, user],
+  );
 
   // ─── Update Quantity ──────────────────────────────────────────────────────────
-  const updateQuantity = useCallback((itemId, newQty) => {
-    setCartGroups((prev) =>
-      prev.map((group) => ({
-        ...group,
-        items: group.items.map((item) => {
-          if (item.id !== itemId) return item;
-          const clamped = Math.min(
-            Math.max(newQty, item.moq),
-            item.maxQuantity,
-          );
-          return { ...item, quantity: clamped };
-        }),
-      })),
-    );
-  }, []);
+  const updateQuantity = useCallback(
+    (itemId, newQty) => {
+      let productIdToUpdate = null;
+      let finalQuantity = newQty;
+
+      // Find item to calculate clamped quantity and get ID
+      if (user?._id) {
+        for (const group of cartGroups) {
+          const item = group.items.find((i) => i.id === itemId);
+          if (item) {
+            productIdToUpdate = item.productId;
+            finalQuantity = Math.min(
+              Math.max(newQty, item.moq),
+              item.maxQuantity,
+            );
+            break;
+          }
+        }
+      }
+
+      setCartGroups((prev) =>
+        prev.map((group) => ({
+          ...group,
+          items: group.items.map((item) => {
+            if (item.id !== itemId) return item;
+            const clamped = Math.min(
+              Math.max(newQty, item.moq),
+              item.maxQuantity,
+            );
+            return { ...item, quantity: clamped };
+          }),
+        })),
+      );
+
+      // Sync with backend using the correct clamped quantity
+      if (user?._id && productIdToUpdate) {
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/cart/update`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            userId: user._id,
+            productId: productIdToUpdate,
+            quantity: finalQuantity,
+          }),
+        }).catch((err) =>
+          console.error("Failed to update quantity on backend:", err),
+        );
+      }
+    },
+    [cartGroups, user],
+  );
 
   // ─── Prepare Checkout ─────────────────────────────────────────────────────────
   // Called by the cart page with only the SELECTED groups/items before navigating to /checkout

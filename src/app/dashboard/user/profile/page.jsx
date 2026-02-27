@@ -142,8 +142,8 @@ export default function ProfilePage() {
     return (
       <div className="flex items-center justify-center h-[60vh]">
         <div className="flex flex-col items-center gap-4">
-          <div className="w-12 h-12 border-4 border-indigo-500/30 border-t-indigo-500 rounded-full animate-spin"></div>
-          <p className="text-slate-400">Loading profile...</p>
+          <div className="w-12 h-12 border-4 border-gray-200 border-t-gray-900 rounded-full animate-spin"></div>
+          <p className="text-gray-400">Loading profile...</p>
         </div>
       </div>
     );
@@ -154,8 +154,8 @@ export default function ProfilePage() {
       {/* Page Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white">My Profile</h1>
-          <p className="text-slate-400 text-sm mt-1">
+          <h1 className="text-2xl font-bold text-gray-900">My Profile</h1>
+          <p className="text-gray-500 text-sm mt-1">
             Manage your personal information
           </p>
         </div>
@@ -164,7 +164,7 @@ export default function ProfilePage() {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => setEditing(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl transition-colors"
+            className="flex items-center gap-2 px-4 py-2 bg-black hover:bg-gray-800 text-white rounded-xl transition-colors"
           >
             <Edit2 size={16} />
             Edit Profile
@@ -175,7 +175,7 @@ export default function ProfilePage() {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={handleCancel}
-              className="flex items-center gap-2 px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-xl transition-colors"
+              className="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl transition-colors"
             >
               <X size={16} />
               Cancel
@@ -201,8 +201,8 @@ export default function ProfilePage() {
           animate={{ opacity: 1, y: 0 }}
           className={`p-4 rounded-xl text-sm font-medium ${
             message.type === "success"
-              ? "bg-green-500/10 border border-green-500/30 text-green-400"
-              : "bg-red-500/10 border border-red-500/30 text-red-400"
+              ? "bg-emerald-50 border border-emerald-200 text-emerald-600"
+              : "bg-red-50 border border-red-200 text-red-500"
           }`}
         >
           {message.text}
@@ -213,13 +213,13 @@ export default function ProfilePage() {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden"
+        className="bg-white border border-gray-200 rounded-2xl overflow-hidden"
       >
         {/* Cover / Avatar Section */}
-        <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500 h-32 relative">
+        <div className="bg-gradient-to-r from-gray-800 via-gray-700 to-gray-900 h-32 relative">
           <div className="absolute -bottom-12 left-8">
-            <div className="w-24 h-24 rounded-2xl bg-gradient-to-tr from-indigo-500 to-purple-500 p-1 shadow-xl">
-              <div className="w-full h-full rounded-2xl bg-slate-950 flex items-center justify-center overflow-hidden">
+            <div className="w-24 h-24 rounded-2xl bg-gradient-to-tr from-gray-700 to-gray-900 p-1 shadow-xl">
+              <div className="w-full h-full rounded-2xl bg-white flex items-center justify-center overflow-hidden">
                 {profile?.image ? (
                   <Image
                     src={profile.image}
@@ -229,7 +229,7 @@ export default function ProfilePage() {
                     className="w-full h-full object-cover rounded-2xl"
                   />
                 ) : (
-                  <User size={40} className="text-slate-400" />
+                  <User size={40} className="text-gray-300" />
                 )}
               </div>
             </div>
@@ -239,14 +239,14 @@ export default function ProfilePage() {
         {/* Name & Role */}
         <div className="pt-16 px-8 pb-6">
           <div className="flex items-center gap-3 mb-1">
-            <h2 className="text-2xl font-bold text-white">
+            <h2 className="text-2xl font-bold text-gray-900">
               {profile?.name || "User"}
             </h2>
-            <span className="px-3 py-1 bg-indigo-500/10 text-indigo-400 text-xs font-semibold rounded-full border border-indigo-500/20 capitalize">
+            <span className="px-3 py-1 bg-gray-100 text-gray-600 text-xs font-semibold rounded-full border border-gray-200 capitalize">
               {profile?.role || "User"}
             </span>
           </div>
-          <p className="text-slate-400 text-sm">{profile?.email}</p>
+          <p className="text-gray-500 text-sm">{profile?.email}</p>
         </div>
       </motion.div>
 
@@ -257,17 +257,17 @@ export default function ProfilePage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="bg-slate-900 border border-slate-800 rounded-2xl p-6"
+          className="bg-white border border-gray-200 rounded-2xl p-6"
         >
-          <h3 className="text-lg font-bold text-white mb-5 flex items-center gap-2">
-            <User size={20} className="text-indigo-400" />
+          <h3 className="text-lg font-bold text-gray-900 mb-5 flex items-center gap-2">
+            <User size={20} className="text-gray-500" />
             Personal Information
           </h3>
 
           <div className="space-y-5">
             {/* Name */}
             <div>
-              <label className="text-slate-400 text-xs font-medium uppercase tracking-wide mb-1.5 block">
+              <label className="text-gray-400 text-xs font-medium uppercase tracking-wide mb-1.5 block">
                 Full Name
               </label>
               {editing ? (
@@ -277,10 +277,10 @@ export default function ProfilePage() {
                   onChange={(e) =>
                     setFormData({ ...formData, name: e.target.value })
                   }
-                  className="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-4 py-2.5 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors"
+                  className="w-full bg-gray-50 border border-gray-200 text-gray-900 rounded-xl px-4 py-2.5 focus:outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-300 transition-colors"
                 />
               ) : (
-                <p className="text-white font-medium">
+                <p className="text-gray-900 font-medium">
                   {profile?.name || "Not set"}
                 </p>
               )}
@@ -288,18 +288,18 @@ export default function ProfilePage() {
 
             {/* Email (read-only) */}
             <div>
-              <label className="text-slate-400 text-xs font-medium uppercase tracking-wide mb-1.5 block">
+              <label className="text-gray-400 text-xs font-medium uppercase tracking-wide mb-1.5 block">
                 Email Address
               </label>
               <div className="flex items-center gap-2">
-                <Mail size={16} className="text-slate-500" />
-                <p className="text-white font-medium">{profile?.email}</p>
+                <Mail size={16} className="text-gray-400" />
+                <p className="text-gray-900 font-medium">{profile?.email}</p>
               </div>
             </div>
 
             {/* Phone */}
             <div>
-              <label className="text-slate-400 text-xs font-medium uppercase tracking-wide mb-1.5 block">
+              <label className="text-gray-400 text-xs font-medium uppercase tracking-wide mb-1.5 block">
                 Phone Number
               </label>
               {editing ? (
@@ -310,12 +310,12 @@ export default function ProfilePage() {
                     setFormData({ ...formData, phone: e.target.value })
                   }
                   placeholder="Enter your phone number"
-                  className="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-4 py-2.5 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors placeholder-slate-500"
+                  className="w-full bg-gray-50 border border-gray-200 text-gray-900 rounded-xl px-4 py-2.5 focus:outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-300 transition-colors placeholder-gray-400"
                 />
               ) : (
                 <div className="flex items-center gap-2">
-                  <Phone size={16} className="text-slate-500" />
-                  <p className="text-white font-medium">
+                  <Phone size={16} className="text-gray-400" />
+                  <p className="text-gray-900 font-medium">
                     {profile?.phone || "Not set"}
                   </p>
                 </div>
@@ -329,17 +329,17 @@ export default function ProfilePage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="bg-slate-900 border border-slate-800 rounded-2xl p-6"
+          className="bg-white border border-gray-200 rounded-2xl p-6"
         >
-          <h3 className="text-lg font-bold text-white mb-5 flex items-center gap-2">
-            <MapPin size={20} className="text-indigo-400" />
+          <h3 className="text-lg font-bold text-gray-900 mb-5 flex items-center gap-2">
+            <MapPin size={20} className="text-gray-500" />
             Address & Details
           </h3>
 
           <div className="space-y-5">
             {/* Address */}
             <div>
-              <label className="text-slate-400 text-xs font-medium uppercase tracking-wide mb-1.5 block">
+              <label className="text-gray-400 text-xs font-medium uppercase tracking-wide mb-1.5 block">
                 Address
               </label>
               {editing ? (
@@ -350,12 +350,12 @@ export default function ProfilePage() {
                     setFormData({ ...formData, address: e.target.value })
                   }
                   placeholder="Enter your address"
-                  className="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-4 py-2.5 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors placeholder-slate-500"
+                  className="w-full bg-gray-50 border border-gray-200 text-gray-900 rounded-xl px-4 py-2.5 focus:outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-300 transition-colors placeholder-gray-400"
                 />
               ) : (
                 <div className="flex items-center gap-2">
-                  <MapPin size={16} className="text-slate-500" />
-                  <p className="text-white font-medium">
+                  <MapPin size={16} className="text-gray-400" />
+                  <p className="text-gray-900 font-medium">
                     {profile?.address || "Not set"}
                   </p>
                 </div>
@@ -364,7 +364,7 @@ export default function ProfilePage() {
 
             {/* Image URL */}
             <div>
-              <label className="text-slate-400 text-xs font-medium uppercase tracking-wide mb-1.5 block">
+              <label className="text-gray-400 text-xs font-medium uppercase tracking-wide mb-1.5 block">
                 Profile Image URL
               </label>
               {editing ? (
@@ -375,12 +375,12 @@ export default function ProfilePage() {
                     setFormData({ ...formData, image: e.target.value })
                   }
                   placeholder="https://example.com/photo.jpg"
-                  className="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-4 py-2.5 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors placeholder-slate-500"
+                  className="w-full bg-gray-50 border border-gray-200 text-gray-900 rounded-xl px-4 py-2.5 focus:outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-300 transition-colors placeholder-gray-400"
                 />
               ) : (
                 <div className="flex items-center gap-2">
-                  <Camera size={16} className="text-slate-500" />
-                  <p className="text-white font-medium truncate">
+                  <Camera size={16} className="text-gray-400" />
+                  <p className="text-gray-900 font-medium truncate">
                     {profile?.image || "No image set"}
                   </p>
                 </div>
@@ -389,7 +389,7 @@ export default function ProfilePage() {
 
             {/* Bio */}
             <div>
-              <label className="text-slate-400 text-xs font-medium uppercase tracking-wide mb-1.5 block">
+              <label className="text-gray-400 text-xs font-medium uppercase tracking-wide mb-1.5 block">
                 Bio
               </label>
               {editing ? (
@@ -400,12 +400,12 @@ export default function ProfilePage() {
                   }
                   placeholder="Tell something about yourself..."
                   rows={3}
-                  className="w-full bg-slate-800 border border-slate-700 text-white rounded-xl px-4 py-2.5 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors placeholder-slate-500 resize-none"
+                  className="w-full bg-gray-50 border border-gray-200 text-gray-900 rounded-xl px-4 py-2.5 focus:outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-300 transition-colors placeholder-gray-400 resize-none"
                 />
               ) : (
                 <div className="flex items-start gap-2">
-                  <FileText size={16} className="text-slate-500 mt-0.5" />
-                  <p className="text-white font-medium">
+                  <FileText size={16} className="text-gray-400 mt-0.5" />
+                  <p className="text-gray-900 font-medium">
                     {profile?.bio || "No bio added yet"}
                   </p>
                 </div>
@@ -420,48 +420,48 @@ export default function ProfilePage() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3 }}
-        className="bg-slate-900 border border-slate-800 rounded-2xl p-6"
+        className="bg-white border border-gray-200 rounded-2xl p-6"
       >
-        <h3 className="text-lg font-bold text-white mb-5 flex items-center gap-2">
-          <Shield size={20} className="text-indigo-400" />
+        <h3 className="text-lg font-bold text-gray-900 mb-5 flex items-center gap-2">
+          <Shield size={20} className="text-gray-500" />
           Account Information
         </h3>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
           <div>
-            <p className="text-slate-400 text-xs font-medium uppercase tracking-wide mb-1">
+            <p className="text-gray-400 text-xs font-medium uppercase tracking-wide mb-1">
               Role
             </p>
-            <p className="text-white font-semibold capitalize">
+            <p className="text-gray-900 font-semibold capitalize">
               {profile?.role || "User"}
             </p>
           </div>
           <div>
-            <p className="text-slate-400 text-xs font-medium uppercase tracking-wide mb-1">
+            <p className="text-gray-400 text-xs font-medium uppercase tracking-wide mb-1">
               Provider
             </p>
-            <p className="text-white font-semibold capitalize">
+            <p className="text-gray-900 font-semibold capitalize">
               {profile?.provider || "Email"}
             </p>
           </div>
           <div>
-            <p className="text-slate-400 text-xs font-medium uppercase tracking-wide mb-1">
+            <p className="text-gray-400 text-xs font-medium uppercase tracking-wide mb-1">
               Member Since
             </p>
             <div className="flex items-center gap-1.5">
-              <Calendar size={14} className="text-slate-500" />
-              <p className="text-white font-semibold">
+              <Calendar size={14} className="text-gray-400" />
+              <p className="text-gray-900 font-semibold">
                 {formatDate(profile?.createdAt)}
               </p>
             </div>
           </div>
           <div>
-            <p className="text-slate-400 text-xs font-medium uppercase tracking-wide mb-1">
+            <p className="text-gray-400 text-xs font-medium uppercase tracking-wide mb-1">
               Last Updated
             </p>
             <div className="flex items-center gap-1.5">
-              <Calendar size={14} className="text-slate-500" />
-              <p className="text-white font-semibold">
+              <Calendar size={14} className="text-gray-400" />
+              <p className="text-gray-900 font-semibold">
                 {formatDate(profile?.updatedAt)}
               </p>
             </div>
