@@ -74,7 +74,7 @@ export default function SellerStats() {
             <div
               className={`w-12 h-12 rounded-xl bg-gradient-to-br ${stat.color} flex items-center justify-center shadow-lg`}
             >
-              <stat.icon size={24} className="text-gray-900" />
+              <stat.icon size={24} className="text-white" />
             </div>
           </div>
           <div>

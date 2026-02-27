@@ -79,7 +79,7 @@ export default function ProductsTable() {
           </div>
           <Link
             href="/dashboard/seller/add-product"
-            className="flex items-center gap-2 bg-black hover:bg-gray-800 text-gray-900 px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+            className="flex items-center gap-2 bg-black hover:bg-gray-800 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
           >
             <Plus size={16} />
             <span className="hidden sm:inline">Add Product</span>
@@ -106,7 +106,7 @@ export default function ProductsTable() {
           {products.length === 0 && (
             <Link
               href="/dashboard/seller/add-product"
-              className="px-6 py-2.5 bg-black text-gray-900 rounded-xl hover:bg-gray-800 transition font-medium inline-block"
+              className="px-6 py-2.5 bg-black text-white rounded-xl hover:bg-gray-800 transition font-medium inline-block"
             >
               Add Your First Product
             </Link>

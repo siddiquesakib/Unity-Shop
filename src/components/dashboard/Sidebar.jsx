@@ -62,6 +62,7 @@ export default function Sidebar() {
       icon: PlusCircle,
     },
     { name: "Orders", href: "/dashboard/seller/orders", icon: ListOrdered },
+    { name: "Profile", href: "/dashboard/seller/profile", icon: Users },
   ];
 
   const adminLinks = [
@@ -75,6 +76,7 @@ export default function Sidebar() {
       icon: Settings2,
     },
     { name: "Health Logs", href: "/dashboard/admin/health", icon: Activity },
+    { name: "Profile", href: "/dashboard/admin/profile", icon: Users },
   ];
 
   const managerLinks = [
@@ -100,6 +102,7 @@ export default function Sidebar() {
       href: "/dashboard/manager/stats",
       icon: BarChart3,
     },
+    { name: "Profile", href: "/dashboard/manager/profile", icon: Users },
   ];
 
   const currentLinks =
