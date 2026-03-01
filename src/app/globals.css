@@ -252,3 +252,42 @@ body {
   top: 0px !important;
 }
 
+/* ═══ MOBILE OPTIMIZATION ═══ */
+
+/* Prevent horizontal scroll globally */
+html, body {
+  overflow-x: hidden !important;
+  max-width: 100vw;
+}
+
+/* Minimum touch target 44x44 */
+@media (max-width: 1023px) {
+  button, a, [role="button"], input[type="checkbox"], input[type="radio"], select {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  /* Exceptions for inline text links & icon-only items that handle their own sizing */
+  .touch-target-auto, nav a, .no-min-touch {
+    min-height: unset;
+    min-width: unset;
+  }
+}
+
+/* Simplified animations for low-end/reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Low-end device hint — matchMedia("(max-resolution: 1dppx)") or slow connection */
+@media (max-width: 767px) {
+  .animate-drift, .animate-float, .animate-shimmer,
+  [class*="animate-[drift"], [class*="animate-[spin"],
+  [class*="animate-[shimmer"], [class*="animate-[float"] {
+    animation: none !important;
+  }
+}
+
