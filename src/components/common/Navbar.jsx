@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter, usePathname } from "next/navigation";
@@ -34,6 +34,8 @@ import {
   FiTruck,
   FiTag,
   FiTrash2,
+  FiMic,
+  FiLayers,
 } from "react-icons/fi";
 import CustomLanguageSwitcher from "@/components/CustomLanguageSwitcher";
 
@@ -52,60 +54,60 @@ function timeAgo(date) {
   return d.toLocaleDateString();
 }
 
-// ─── Notification style config ──────────────────────────────────────────────
+// ─── Notification config ────────────────────────────────────────────────────
 const NOTIF_CONFIG = {
   cart_add: {
     icon: FiShoppingCart,
-    bg: "bg-blue-50",
-    iconColor: "text-blue-600",
+    bg: "bg-gray-100",
+    iconColor: "text-gray-700",
     label: "Cart",
   },
   payment_success: {
     icon: FiCreditCard,
-    bg: "bg-green-50",
-    iconColor: "text-green-600",
+    bg: "bg-gray-100",
+    iconColor: "text-gray-700",
     label: "Payment",
   },
   order_confirmed: {
     icon: FiCheckCircle,
-    bg: "bg-emerald-50",
-    iconColor: "text-emerald-600",
+    bg: "bg-gray-100",
+    iconColor: "text-gray-700",
     label: "Order",
   },
   order_status: {
     icon: FiTruck,
-    bg: "bg-indigo-50",
-    iconColor: "text-indigo-600",
+    bg: "bg-gray-100",
+    iconColor: "text-gray-700",
     label: "Order",
   },
   product_approved: {
     icon: FiCheckCircle,
-    bg: "bg-green-50",
-    iconColor: "text-green-600",
+    bg: "bg-gray-100",
+    iconColor: "text-gray-700",
     label: "Product",
   },
   product_rejected: {
     icon: FiX,
-    bg: "bg-red-50",
-    iconColor: "text-red-500",
+    bg: "bg-gray-100",
+    iconColor: "text-gray-500",
     label: "Product",
   },
   seller_approved: {
     icon: FiStar,
-    bg: "bg-amber-50",
-    iconColor: "text-amber-600",
+    bg: "bg-gray-100",
+    iconColor: "text-gray-700",
     label: "Seller",
   },
   seller_rejected: {
     icon: FiX,
-    bg: "bg-red-50",
-    iconColor: "text-red-500",
+    bg: "bg-gray-100",
+    iconColor: "text-gray-500",
     label: "Seller",
   },
   coupon: {
     icon: FiTag,
-    bg: "bg-purple-50",
-    iconColor: "text-purple-600",
+    bg: "bg-gray-100",
+    iconColor: "text-gray-700",
     label: "Promo",
   },
 };
@@ -148,14 +150,78 @@ const categoryLinks = [
   "Automotive",
 ];
 
+const categoryChips = [
+  {
+    label: "ইলেকট্রনিক্স",
+    labelEn: "Electronics",
+    value: "Electronics",
+    icon: "💻",
+  },
+  { label: "ফ্যাশন", labelEn: "Fashion", value: "Fashion", icon: "👗" },
+  {
+    label: "হোম",
+    labelEn: "Home & Living",
+    value: "Home & Living",
+    icon: "🏠",
+  },
+  { label: "বিউটি", labelEn: "Beauty", value: "Beauty", icon: "💄" },
+  { label: "গ্রোসারি", labelEn: "Grocery", value: "Grocery", icon: "🛒" },
+  { label: "বেবি", labelEn: "Toys & Baby", value: "Toys & Baby", icon: "🧸" },
+  { label: "স্পোর্টস", labelEn: "Sports", value: "Sports", icon: "⚽" },
+  { label: "মোবাইল", labelEn: "Mobiles", value: "Mobiles", icon: "📱" },
+  { label: "ওয়াচ", labelEn: "Watches", value: "Watches", icon: "⌚" },
+  { label: "গেমিং", labelEn: "Gaming", value: "Gaming", icon: "🎮" },
+  { label: "বুকস", labelEn: "Books", value: "Books", icon: "📚" },
+  { label: "অটো", labelEn: "Automotive", value: "Automotive", icon: "🚗" },
+];
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+
+// ─── Autocomplete Search Hook ───────────────────────────────────────────────
+function useAutocomplete(query) {
+  const [results, setResults] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!query || query.trim().length < 2) {
+      setResults([]);
+      return;
+    }
+    const timer = setTimeout(async () => {
+      setLoading(true);
+      try {
+        const res = await fetch(
+          `${API_URL}/products/search?q=${encodeURIComponent(query.trim())}&limit=6`,
+        );
+        if (res.ok) {
+          const data = await res.json();
+          setResults(data.products || []);
+        }
+      } catch {
+        setResults([]);
+      } finally {
+        setLoading(false);
+      }
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [query]);
+
+  return { results, loading };
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// NAVBAR
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchCategory, setSearchCategory] = useState("all");
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showCurrencyMenu, setShowCurrencyMenu] = useState(false);
-  const [showLangMenu, setShowLangMenu] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
+  const [showMobileSearch, setShowMobileSearch] = useState(false);
+  const [showAutocomplete, setShowAutocomplete] = useState(false);
+  const [isListening, setIsListening] = useState(false);
 
   const { user, logout } = useAuth();
   const { totalUniqueItems: totalItems } = useCart();
@@ -169,36 +235,29 @@ const Navbar = () => {
     deleteNotification,
   } = useNotifications() || {};
 
-  // Debug
-  useEffect(() => {
-    console.log("Navbar notifications updated:", notifications);
-  }, [notifications]);
+  const { results: autocompleteResults, loading: autocompleteLoading } =
+    useAutocomplete(showAutocomplete ? searchQuery : "");
 
   const router = useRouter();
-
   const pathname = usePathname();
 
   const userMenuRef = useRef(null);
   const currencyMenuRef = useRef(null);
+  const notifRef = useRef(null);
+  const searchRef = useRef(null);
+  const mobileSearchRef = useRef(null);
 
   useClickOutside(userMenuRef, () => setShowUserMenu(false));
   useClickOutside(currencyMenuRef, () => setShowCurrencyMenu(false));
-  const langMenuRef = useRef(null);
-  const notifRef = useRef(null);
-
-  useClickOutside(userMenuRef, () => setShowUserMenu(false));
-  useClickOutside(langMenuRef, () => setShowLangMenu(false));
   useClickOutside(notifRef, () => setShowNotifications(false));
-
-  const currentLang =
-    languages.find((l) => l.code === language) || languages[0];
+  useClickOutside(searchRef, () => setShowAutocomplete(false));
 
   useEffect(() => {
-    document.body.style.overflow = isOpen ? "hidden" : "";
+    document.body.style.overflow = isOpen || showMobileSearch ? "hidden" : "";
     return () => {
       document.body.style.overflow = "";
     };
-  }, [isOpen]);
+  }, [isOpen, showMobileSearch]);
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -211,21 +270,69 @@ const Navbar = () => {
         `/products?q=${encodeURIComponent(searchQuery.trim())}${catParam}`,
       );
       setIsOpen(false);
+      setShowMobileSearch(false);
+      setShowAutocomplete(false);
     }
   };
+
+  // Voice search
+  const startVoiceSearch = useCallback(() => {
+    if (
+      !("webkitSpeechRecognition" in window) &&
+      !("SpeechRecognition" in window)
+    )
+      return;
+    const SpeechRecognition =
+      window.SpeechRecognition || window.webkitSpeechRecognition;
+    const recognition = new SpeechRecognition();
+    recognition.lang = "bn-BD";
+    recognition.interimResults = false;
+    recognition.onstart = () => setIsListening(true);
+    recognition.onresult = (e) => {
+      const transcript = e.results[0][0].transcript;
+      setSearchQuery(transcript);
+      setShowAutocomplete(true);
+    };
+    recognition.onerror = () => setIsListening(false);
+    recognition.onend = () => setIsListening(false);
+    recognition.start();
+  }, []);
 
   const isActive = (href) => {
     if (href === "/") return pathname === "/";
     return pathname.startsWith(href);
   };
 
+  const formatPrice = (price) => {
+    return `৳${price?.toLocaleString() || 0}`;
+  };
+
+  const getSafeImage = (product) => {
+    const img = Array.isArray(product.image) ? product.image[0] : product.image;
+    if (
+      img &&
+      typeof img === "string" &&
+      img.trim() &&
+      !img.startsWith("data:")
+    ) {
+      try {
+        new URL(img);
+        return img;
+      } catch {
+        return null;
+      }
+    }
+    return null;
+  };
+
+  // ─── DESKTOP ──────────────────────────────────────────────────────────────
   return (
     <>
       <nav className="sticky top-0 z-50 hidden lg:block">
-        {/* Row 1: Logo + Search + Actions */}
+        {/* ═══ Row 1: Logo + Search + Actions ═══ */}
         <div className="bg-black">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex items-center h-14 gap-4">
+            <div className="flex items-center h-16 gap-6">
               {/* Logo */}
               <Link href="/" className="shrink-0">
                 <Image
@@ -238,57 +345,147 @@ const Navbar = () => {
                 />
               </Link>
 
-              {/* Search Bar */}
-              <form onSubmit={handleSearch} className="flex-1 max-w-2xl flex">
-                <select
-                  value={searchCategory}
-                  onChange={(e) => setSearchCategory(e.target.value)}
-                  className="h-9 px-3 text-xs font-medium bg-gray-200 text-gray-800 border-0 rounded-l-lg outline-none cursor-pointer"
-                >
-                  <option value="all">All Categories</option>
-                  {categoryLinks.map((cat) => (
-                    <option key={cat} value={cat}>
-                      {cat}
-                    </option>
-                  ))}
-                </select>
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search products..."
-                  className="flex-1 h-9 px-4 text-sm bg-white text-gray-900 border-0 outline-none placeholder:text-gray-400"
-                />
-                <button
-                  type="submit"
-                  className="h-9 px-4 bg-white text-black rounded-r-lg border-l border-gray-200 hover:bg-gray-100 transition-colors"
-                >
-                  <FiSearch size={16} />
-                </button>
-              </form>
+              {/* ── Search Bar (prominent, centered) ── */}
+              <div className="flex-1 max-w-2xl relative" ref={searchRef}>
+                <form onSubmit={handleSearch} className="flex">
+                  <select
+                    value={searchCategory}
+                    onChange={(e) => setSearchCategory(e.target.value)}
+                    className="h-10 px-3 text-xs font-medium bg-gray-100 text-gray-700 border-0 rounded-l-xl outline-none cursor-pointer hover:bg-gray-200 transition-colors"
+                  >
+                    <option value="all">All</option>
+                    {categoryLinks.map((cat) => (
+                      <option key={cat} value={cat}>
+                        {cat}
+                      </option>
+                    ))}
+                  </select>
+                  <div className="relative flex-1">
+                    <input
+                      type="text"
+                      value={searchQuery}
+                      onChange={(e) => {
+                        setSearchQuery(e.target.value);
+                        setShowAutocomplete(true);
+                      }}
+                      onFocus={() => setShowAutocomplete(true)}
+                      placeholder="কি খুঁজছেন? ফোন, জামা, ব্যাগ..."
+                      className="w-full h-10 px-4 text-sm bg-white text-gray-900 border-0 outline-none placeholder:text-gray-400"
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={startVoiceSearch}
+                    className={`h-10 px-3 bg-white border-l border-gray-200 transition-colors ${isListening ? "text-red-500 animate-pulse" : "text-gray-400 hover:text-gray-700"}`}
+                    title="Voice search"
+                  >
+                    <FiMic size={16} />
+                  </button>
+                  <button
+                    type="submit"
+                    className="h-10 px-5 bg-black hover:bg-gray-800 text-white font-semibold rounded-r-xl transition-colors"
+                  >
+                    <FiSearch size={18} />
+                  </button>
+                </form>
 
-              {/* Right Actions */}
+                {/* ── Autocomplete Dropdown ── */}
+                {showAutocomplete && searchQuery.trim().length >= 2 && (
+                  <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-xl shadow-2xl border border-gray-200 z-50 overflow-hidden">
+                    {autocompleteLoading ? (
+                      <div className="px-4 py-6 text-center">
+                        <div className="w-5 h-5 border-2 border-gray-200 border-t-gray-600 rounded-full animate-spin mx-auto" />
+                      </div>
+                    ) : autocompleteResults.length > 0 ? (
+                      <>
+                        {autocompleteResults.map((product) => {
+                          const img = getSafeImage(product);
+                          return (
+                            <Link
+                              key={product._id}
+                              href={`/products/${product._id}`}
+                              onClick={() => {
+                                setShowAutocomplete(false);
+                                setSearchQuery("");
+                              }}
+                              className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 transition-colors"
+                            >
+                              <div className="w-10 h-10 rounded-lg bg-gray-100 overflow-hidden shrink-0 flex items-center justify-center">
+                                {img ? (
+                                  <Image
+                                    src={img}
+                                    alt=""
+                                    width={40}
+                                    height={40}
+                                    className="object-cover w-full h-full"
+                                  />
+                                ) : (
+                                  <FiShoppingBag
+                                    size={16}
+                                    className="text-gray-300"
+                                  />
+                                )}
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm text-gray-800 truncate font-medium">
+                                  {product.name}
+                                </p>
+                                <p className="text-xs text-gray-400">
+                                  {product.category}
+                                </p>
+                              </div>
+                              <span className="text-sm font-bold text-black shrink-0">
+                                {formatPrice(product.price)}
+                              </span>
+                            </Link>
+                          );
+                        })}
+                        <Link
+                          href={`/products?q=${encodeURIComponent(searchQuery.trim())}`}
+                          onClick={() => {
+                            setShowAutocomplete(false);
+                          }}
+                          className="block px-4 py-2.5 text-center text-sm font-medium text-gray-900 hover:bg-gray-100 border-t border-gray-100 transition-colors"
+                        >
+                          সব রেজাল্ট দেখুন →
+                        </Link>
+                      </>
+                    ) : (
+                      <div className="px-4 py-6 text-center text-sm text-gray-400">
+                        &quot;{searchQuery}&quot; এর কোনো ফলাফল নেই
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* ── Right Actions ── */}
               <div className="flex items-center gap-1">
+                {/* Language */}
+                <CustomLanguageSwitcher />
+
+                <div className="w-px h-5 bg-gray-700 mx-1" />
+
                 {/* Notifications */}
                 <div className="relative" ref={notifRef}>
                   <button
                     onClick={() => setShowNotifications(!showNotifications)}
-                    className="flex items-center gap-1.5 px-2.5 py-1.5 text-gray-300 hover:text-white rounded-md transition-colors relative"
+                    className="flex items-center gap-1.5 px-2 py-1.5 text-gray-300 hover:text-white rounded-md transition-colors relative"
                   >
                     <div className="relative">
-                      <FiBell size={18} />
+                      <FiBell size={20} />
                       {unreadCount > 0 && (
-                        <span className="absolute -top-1.5 -right-1.5 min-w-4 h-4 px-1 bg-red-600 text-white text-[9px] font-bold rounded-full flex items-center justify-center border border-white">
+                        <span className="absolute -top-1.5 -right-1.5 min-w-4.5 h-4.5 px-1 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center ring-2 ring-black">
                           {unreadCount > 99 ? "99+" : unreadCount}
                         </span>
                       )}
                     </div>
                   </button>
 
+                  {/* Notification Dropdown */}
                   {showNotifications && (
                     <div className="absolute top-full right-0 mt-2 w-96 bg-white rounded-2xl shadow-2xl border border-gray-200/80 z-50 overflow-hidden">
-                      {/* Header */}
-                      <div className="flex items-center justify-between px-5 py-3.5 bg-linear-to-r from-gray-50 to-white border-b border-gray-100">
+                      <div className="flex items-center justify-between px-5 py-3.5 border-b border-gray-100">
                         <div className="flex items-center gap-2">
                           <h3 className="text-sm font-bold text-gray-900">
                             Notifications
@@ -308,25 +505,17 @@ const Navbar = () => {
                           </button>
                         )}
                       </div>
-
-                      {/* Notification List */}
                       <div className="max-h-105 overflow-y-auto divide-y divide-gray-100">
                         {notifications.length > 0 ? (
                           notifications.map((n) => {
                             const cfg = NOTIF_CONFIG[n.type] || DEFAULT_NOTIF;
                             const Icon = cfg.icon;
-
                             return (
                               <div
                                 key={n._id}
-                                className={`group relative flex items-start gap-3 px-5 py-3.5 transition-all cursor-pointer ${
-                                  !n.read
-                                    ? "bg-blue-50/40 hover:bg-blue-50/70"
-                                    : "hover:bg-gray-50"
-                                }`}
+                                className={`group relative flex items-start gap-3 px-5 py-3.5 transition-all cursor-pointer ${!n.read ? "bg-blue-50/40 hover:bg-blue-50/70" : "hover:bg-gray-50"}`}
                                 onClick={() => markAsRead(n._id)}
                               >
-                                {/* Delete button */}
                                 <button
                                   onClick={(e) => {
                                     e.stopPropagation();
@@ -337,15 +526,11 @@ const Navbar = () => {
                                 >
                                   <FiTrash2 size={13} />
                                 </button>
-
-                                {/* Icon */}
                                 <div
                                   className={`mt-0.5 w-9 h-9 rounded-xl ${cfg.bg} ${cfg.iconColor} flex items-center justify-center shrink-0`}
                                 >
                                   <Icon size={16} />
                                 </div>
-
-                                {/* Content */}
                                 <div className="flex-1 min-w-0 pr-6">
                                   <div className="flex items-center gap-2">
                                     <p
@@ -358,7 +543,7 @@ const Navbar = () => {
                                     )}
                                   </div>
                                   {n.message && (
-                                    <p className="text-xs text-gray-500 mt-0.5 line-clamp-2 leading-relaxed">
+                                    <p className="text-xs text-gray-500 mt-0.5 line-clamp-2">
                                       {n.message}
                                     </p>
                                   )}
@@ -413,12 +598,12 @@ const Navbar = () => {
                   )}
                 </div>
 
-                {/* Favorites */}
+                {/* Wishlist */}
                 <Link
                   href="/dashboard/wishlist"
-                  className="flex items-center gap-1.5 px-2.5 py-1.5 text-gray-300 hover:text-white rounded-md transition-colors relative"
+                  className="flex items-center gap-1.5 px-2 py-1.5 text-gray-300 hover:text-white rounded-md transition-colors relative"
                 >
-                  <FiHeart size={18} />
+                  <FiHeart size={20} />
                   <span className="text-sm font-medium hidden xl:inline">
                     Wishlist
                   </span>
@@ -427,12 +612,12 @@ const Navbar = () => {
                 {/* Cart */}
                 <Link
                   href="/cart"
-                  className="flex items-center gap-1.5 px-2.5 py-1.5 text-gray-300 hover:text-white rounded-md transition-colors relative"
+                  className="flex items-center gap-1.5 px-2 py-1.5 text-gray-300 hover:text-white rounded-md transition-colors relative"
                 >
                   <div className="relative">
-                    <FiShoppingCart size={18} />
+                    <FiShoppingCart size={20} />
                     {totalItems > 0 && (
-                      <span className="absolute -top-2 -right-2.5 min-w-4 h-4 px-1 bg-white text-black text-[9px] font-bold rounded-full flex items-center justify-center">
+                      <span className="absolute -top-2 -right-2.5 min-w-4.5 h-4.5 px-1 bg-white text-black text-[9px] font-bold rounded-full flex items-center justify-center ring-2 ring-black">
                         {totalItems > 99 ? "99+" : totalItems}
                       </span>
                     )}
@@ -440,39 +625,38 @@ const Navbar = () => {
                   <span className="text-sm font-medium hidden xl:inline ml-1">
                     Cart
                   </span>
-                  <FiChevronDown
-                    size={12}
-                    className="hidden xl:block text-gray-400"
-                  />
                 </Link>
 
-                <div className="w-px h-6 bg-gray-700 mx-1" />
+                <div className="w-px h-5 bg-gray-700 mx-1" />
 
-                {/* My Account */}
+                {/* Account */}
                 {user ? (
                   <div className="relative" ref={userMenuRef}>
                     <button
                       onClick={() => setShowUserMenu(!showUserMenu)}
-                      className="flex items-center gap-2 px-2.5 py-1.5 text-gray-300 hover:text-white rounded-md transition-colors"
+                      className="flex items-center gap-2 px-2 py-1.5 text-gray-300 hover:text-white rounded-md transition-colors"
                     >
-                      <div className="w-7 h-7 rounded-full bg-gray-700 flex items-center justify-center text-white text-xs font-bold ring-2 ring-gray-500">
+                      <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center text-black text-xs font-bold ring-2 ring-gray-600">
                         {user.name?.charAt(0)?.toUpperCase() || "U"}
                       </div>
-                      <span className="hidden xl:block text-sm font-medium max-w-20 truncate">
-                        {user.name?.split(" ")[0]}
-                      </span>
+                      <div className="hidden xl:block text-left">
+                        <p className="text-[10px] text-gray-400 leading-none">
+                          Welcome
+                        </p>
+                        <p className="text-sm font-semibold text-white max-w-20 truncate leading-tight">
+                          {user.name?.split(" ")[0]}
+                        </p>
+                      </div>
                       <FiChevronDown
                         size={12}
-                        className={`text-gray-400 transition-transform ${
-                          showUserMenu ? "rotate-180" : ""
-                        }`}
+                        className={`text-gray-400 transition-transform ${showUserMenu ? "rotate-180" : ""}`}
                       />
                     </button>
 
                     {showUserMenu && (
-                      <div className="absolute top-full right-0 mt-2 w-52 bg-white rounded-lg shadow-xl border border-gray-200 py-1 z-50">
-                        <div className="px-4 py-2.5 border-b border-gray-100">
-                          <p className="text-sm font-semibold text-gray-900 truncate">
+                      <div className="absolute top-full right-0 mt-2 w-56 bg-white rounded-xl shadow-2xl border border-gray-200 py-1 z-50">
+                        <div className="px-4 py-3 border-b border-gray-100">
+                          <p className="text-sm font-bold text-gray-900 truncate">
                             {user.name}
                           </p>
                           <p className="text-xs text-gray-500 truncate">
@@ -500,7 +684,7 @@ const Navbar = () => {
                             key={item.href}
                             href={item.href}
                             onClick={() => setShowUserMenu(false)}
-                            className="flex items-center gap-2.5 px-4 py-2 text-sm text-gray-600 hover:bg-gray-50 hover:text-black transition-colors"
+                            className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-600 hover:bg-gray-50 hover:text-black transition-colors"
                           >
                             <item.icon size={15} className="text-gray-400" />
                             {item.label}
@@ -512,7 +696,7 @@ const Navbar = () => {
                               logout();
                               setShowUserMenu(false);
                             }}
-                            className="flex items-center gap-2.5 w-full px-4 py-2 text-sm text-red-500 hover:bg-red-50 transition-colors"
+                            className="flex items-center gap-2.5 w-full px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 transition-colors"
                           >
                             <FiLogOut size={15} />
                             Sign Out
@@ -522,31 +706,30 @@ const Navbar = () => {
                     )}
                   </div>
                 ) : (
-                  <div className="flex items-center gap-1">
-                    <Link
-                      href="/login"
-                      className="flex items-center gap-1.5 px-2.5 py-1.5 text-gray-300 hover:text-white rounded-md transition-colors text-sm font-medium"
-                    >
-                      <span className="hidden xl:inline">Sign In</span>
-                    </Link>
-                  </div>
+                  <Link
+                    href="/login"
+                    className="flex items-center gap-2 px-3 py-1.5 bg-white hover:bg-gray-200 text-black font-semibold text-sm rounded-lg transition-colors"
+                  >
+                    <FiUser size={16} />
+                    <span>Sign In</span>
+                  </Link>
                 )}
               </div>
             </div>
           </div>
         </div>
 
-        {/* Row 2: Nav Links + Currency + Custom Language Switcher */}
+        {/* ═══ Row 2: Nav Links + Category Chips ═══ */}
         <div className="bg-gray-900 border-t border-gray-800">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-center h-10 justify-between">
-              {/* Nav Links - FIXED: added inline-flex items-center for full clickable area */}
+              {/* Nav Links */}
               <div className="flex items-center gap-0.5">
                 {navLinks.map((link) => (
                   <Link
                     key={link.href}
                     href={link.href}
-                    className={`px-3 py-1.5 text-sm font-medium rounded transition-colors inline-flex items-center relative z-10 ${
+                    className={`px-3 py-1.5 text-sm font-medium rounded transition-colors inline-flex items-center ${
                       isActive(link.href)
                         ? "text-white bg-gray-700"
                         : "text-gray-300 hover:text-white hover:bg-gray-800"
@@ -556,22 +739,25 @@ const Navbar = () => {
                   </Link>
                 ))}
 
-                {/* Category quick links */}
                 <div className="w-px h-4 bg-gray-700 mx-1.5" />
-                {categoryLinks.slice(0, 6).map((cat) => (
-                  <Link
-                    key={cat}
-                    href={`/products?category=${encodeURIComponent(cat)}`}
-                    className="px-2.5 py-1.5 text-sm text-gray-400 hover:text-white transition-colors inline-flex items-center relative z-10"
-                  >
-                    {cat}
-                  </Link>
-                ))}
+
+                {/* Category Chips */}
+                <div className="flex items-center gap-1 overflow-x-auto scrollbar-hide">
+                  {categoryChips.slice(0, 8).map((cat) => (
+                    <Link
+                      key={cat.value}
+                      href={`/products?category=${encodeURIComponent(cat.value)}`}
+                      className="px-2.5 py-1 text-xs text-gray-400 hover:text-white hover:bg-gray-800 rounded-full transition-colors whitespace-nowrap inline-flex items-center gap-1"
+                    >
+                      <span className="text-[11px]">{cat.icon}</span>
+                      {cat.labelEn}
+                    </Link>
+                  ))}
+                </div>
               </div>
 
-              {/* Right: Currency + Custom Language Switcher */}
+              {/* Right: Currency */}
               <div className="flex items-center gap-3">
-                {/* Currency Switcher */}
                 <div className="relative" ref={currencyMenuRef}>
                   <button
                     onClick={() => setShowCurrencyMenu(!showCurrencyMenu)}
@@ -581,9 +767,7 @@ const Navbar = () => {
                     <span className="font-medium">{currentCurrency?.code}</span>
                     <FiChevronDown
                       size={12}
-                      className={`text-gray-500 transition-transform ${
-                        showCurrencyMenu ? "rotate-180" : ""
-                      }`}
+                      className={`text-gray-500 transition-transform ${showCurrencyMenu ? "rotate-180" : ""}`}
                     />
                   </button>
 
@@ -596,11 +780,7 @@ const Navbar = () => {
                             setCurrency(curr.code);
                             setShowCurrencyMenu(false);
                           }}
-                          className={`flex items-center gap-2.5 w-full px-3 py-2 text-sm transition-colors ${
-                            currency === curr.code
-                              ? "bg-gray-100 text-black font-semibold"
-                              : "text-gray-600 hover:bg-gray-50 hover:text-black"
-                          }`}
+                          className={`flex items-center gap-2.5 w-full px-3 py-2 text-sm transition-colors ${currency === curr.code ? "bg-gray-100 text-black font-semibold" : "text-gray-600 hover:bg-gray-50"}`}
                         >
                           <span className="text-base">{curr.flag}</span>
                           <div className="flex-1 text-left">
@@ -617,105 +797,213 @@ const Navbar = () => {
                     </div>
                   )}
                 </div>
-
-                <div className="w-px h-4 bg-gray-700" />
-
-                {/* Custom Language Switcher */}
-                <CustomLanguageSwitcher />
               </div>
             </div>
           </div>
         </div>
       </nav>
 
-      {/* ── MOBILE NAVBAR (unchanged) ── */}
-      {/* ── MOBILE NAVBAR ── */}
+      {/* ══════════════════════════════════════════════════════════════════════ */}
+      {/* ── MOBILE NAVBAR ────────────────────────────────────────────────── */}
+      {/* ══════════════════════════════════════════════════════════════════════ */}
       <nav className="sticky top-0 z-50 lg:hidden bg-black">
-        <div className="px-2 sm:px-4">
-          <div className="flex items-center h-14 gap-2 sm:gap-3">
+        <div className="px-3 sm:px-4">
+          <div className="flex items-center h-14 gap-3">
+            {/* Hamburger */}
+            <button
+              onClick={() => setIsOpen(true)}
+              className="text-gray-300 hover:text-white transition-colors shrink-0 p-1"
+            >
+              <FiMenu size={22} />
+            </button>
+
             {/* Logo */}
             <Link href="/" className="shrink-0">
               <Image
                 src="/unityshop.png"
                 alt="UnityShop"
-                width={90} // Slightly smaller for very narrow screens
-                height={25}
-                className="object-contain brightness-0 invert w-auto h-6 sm:h-7"
+                width={100}
+                height={28}
+                className="object-contain brightness-0 invert h-6 sm:h-7 w-auto"
                 priority
               />
             </Link>
 
-            {/* Search - with min width to avoid disappearing */}
-            <form onSubmit={handleSearch} className="flex-1 flex min-w-0">
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search"
-                className="w-full h-8 px-2 text-sm bg-gray-800 text-white border border-gray-700 rounded-l-lg outline-none placeholder:text-gray-500 focus:border-gray-500 min-w-[80px] sm:min-w-[120px]"
-              />
-              <button
-                type="submit"
-                className="h-8 px-2 sm:px-3 bg-gray-200 text-black rounded-r-lg hover:bg-white transition-colors shrink-0"
-              >
-                <FiSearch size={14} className="sm:size-4" />
-              </button>
-            </form>
+            {/* Spacer */}
+            <div className="flex-1" />
+
+            {/* Search (opens fullscreen) */}
+            <button
+              onClick={() => setShowMobileSearch(true)}
+              className="text-gray-300 hover:text-white p-1.5"
+            >
+              <FiSearch size={20} />
+            </button>
 
             {/* Notification */}
             <div className="relative shrink-0" ref={notifRef}>
               <button
                 onClick={() => setShowNotifications(!showNotifications)}
-                className="relative text-gray-300 p-1"
+                className="relative text-gray-300 p-1.5"
               >
-                <FiBell size={18} className="sm:size-5" />
+                <FiBell size={20} />
                 {unreadCount > 0 && (
-                  <span className="absolute -top-1 -right-1 min-w-3.5 h-3.5 px-0.5 bg-red-500 text-white text-[8px] font-bold rounded-full flex items-center justify-center">
+                  <span className="absolute -top-0.5 -right-0.5 min-w-4 h-4 px-0.5 bg-red-500 text-white text-[8px] font-bold rounded-full flex items-center justify-center">
                     {unreadCount > 9 ? "9+" : unreadCount}
                   </span>
                 )}
               </button>
-              {/* ... rest of notification dropdown (unchanged) ... */}
             </div>
 
             {/* Cart */}
-            <Link href="/cart" className="relative text-gray-300 shrink-0 p-1">
-              <FiShoppingCart size={18} className="sm:size-5" />
+            <Link
+              href="/cart"
+              className="relative text-gray-300 shrink-0 p-1.5"
+            >
+              <FiShoppingCart size={20} />
               {totalItems > 0 && (
-                <span className="absolute -top-1 -right-1 min-w-4 h-4 px-1 bg-white text-black text-[9px] font-bold rounded-full flex items-center justify-center">
+                <span className="absolute -top-0.5 -right-0.5 min-w-4 h-4 px-1 bg-white text-black text-[9px] font-bold rounded-full flex items-center justify-center">
                   {totalItems > 99 ? "99+" : totalItems}
                 </span>
               )}
             </Link>
-
-            {/* Menu Toggle */}
-            <button
-              onClick={() => setIsOpen(!isOpen)}
-              className="text-gray-300 hover:text-white transition-colors shrink-0 p-1"
-            >
-              <FiMenu size={20} className="sm:size-6" />
-            </button>
           </div>
         </div>
       </nav>
 
-      {/* ── MOBILE SLIDE MENU (unchanged) ── */}
+      {/* ── Mobile Fullscreen Search ── */}
+      {showMobileSearch && (
+        <div className="fixed inset-0 z-100 bg-white lg:hidden flex flex-col">
+          <div className="flex items-center gap-2 px-3 h-14 border-b border-gray-200">
+            <button
+              onClick={() => setShowMobileSearch(false)}
+              className="p-2 text-gray-500"
+            >
+              <FiX size={22} />
+            </button>
+            <form onSubmit={handleSearch} className="flex-1 flex">
+              <input
+                ref={mobileSearchRef}
+                type="text"
+                value={searchQuery}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  setShowAutocomplete(true);
+                }}
+                placeholder="কি খুঁজছেন? ফোন, জামা, ব্যাগ..."
+                className="flex-1 h-10 px-3 text-base text-gray-900 bg-gray-100 rounded-l-xl outline-none placeholder:text-gray-400"
+                autoFocus
+              />
+              <button
+                type="button"
+                onClick={startVoiceSearch}
+                className={`h-10 px-3 bg-gray-100 border-l border-gray-200 ${isListening ? "text-red-500 animate-pulse" : "text-gray-400"}`}
+              >
+                <FiMic size={18} />
+              </button>
+              <button
+                type="submit"
+                className="h-10 px-4 bg-black text-white rounded-r-xl font-semibold"
+              >
+                <FiSearch size={18} />
+              </button>
+            </form>
+          </div>
+
+          {/* Mobile autocomplete results */}
+          <div className="flex-1 overflow-y-auto">
+            {autocompleteLoading && searchQuery.trim().length >= 2 ? (
+              <div className="py-12 text-center">
+                <div className="w-6 h-6 border-2 border-gray-200 border-t-gray-600 rounded-full animate-spin mx-auto" />
+              </div>
+            ) : searchQuery.trim().length >= 2 &&
+              autocompleteResults.length > 0 ? (
+              <div className="divide-y divide-gray-100">
+                {autocompleteResults.map((product) => {
+                  const img = getSafeImage(product);
+                  return (
+                    <Link
+                      key={product._id}
+                      href={`/products/${product._id}`}
+                      onClick={() => {
+                        setShowMobileSearch(false);
+                        setSearchQuery("");
+                      }}
+                      className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50"
+                    >
+                      <div className="w-12 h-12 rounded-lg bg-gray-100 overflow-hidden shrink-0 flex items-center justify-center">
+                        {img ? (
+                          <Image
+                            src={img}
+                            alt=""
+                            width={48}
+                            height={48}
+                            className="object-cover w-full h-full"
+                          />
+                        ) : (
+                          <FiShoppingBag size={18} className="text-gray-300" />
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm text-gray-800 font-medium truncate">
+                          {product.name}
+                        </p>
+                        <p className="text-xs text-gray-400">
+                          {product.category}
+                        </p>
+                      </div>
+                      <span className="text-sm font-bold text-black">
+                        {formatPrice(product.price)}
+                      </span>
+                    </Link>
+                  );
+                })}
+                <Link
+                  href={`/products?q=${encodeURIComponent(searchQuery.trim())}`}
+                  onClick={() => setShowMobileSearch(false)}
+                  className="block px-4 py-3 text-center text-sm font-medium text-gray-900"
+                >
+                  সব রেজাল্ট দেখুন →
+                </Link>
+              </div>
+            ) : searchQuery.trim().length >= 2 ? (
+              <div className="py-12 text-center text-sm text-gray-400">
+                কোনো ফলাফল নেই
+              </div>
+            ) : (
+              <div className="px-4 py-6">
+                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">
+                  Popular Categories
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {categoryChips.map((cat) => (
+                    <Link
+                      key={cat.value}
+                      href={`/products?category=${encodeURIComponent(cat.value)}`}
+                      onClick={() => setShowMobileSearch(false)}
+                      className="inline-flex items-center gap-1.5 px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded-full text-sm text-gray-700 transition-colors"
+                    >
+                      <span>{cat.icon}</span>
+                      {cat.label}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ── Mobile Slide Menu ── */}
       <div
-        className={`lg:hidden fixed inset-0 z-60 transition-all duration-300 ${
-          isOpen ? "visible" : "invisible pointer-events-none"
-        }`}
+        className={`lg:hidden fixed inset-0 z-70 transition-all duration-300 ${isOpen ? "visible" : "invisible pointer-events-none"}`}
       >
         <div
-          className={`absolute inset-0 bg-black/50 transition-opacity duration-300 ${
-            isOpen ? "opacity-100" : "opacity-0"
-          }`}
+          className={`absolute inset-0 bg-black/50 transition-opacity duration-300 ${isOpen ? "opacity-100" : "opacity-0"}`}
           onClick={() => setIsOpen(false)}
         />
-
         <div
-          className={`absolute top-0 right-0 bottom-0 w-72 bg-gray-950 shadow-xl transform transition-transform duration-300 ease-out ${
-            isOpen ? "translate-x-0" : "translate-x-full"
-          }`}
+          className={`absolute top-0 right-0 bottom-0 w-70 bg-gray-950 shadow-xl transform transition-transform duration-300 ease-out ${isOpen ? "translate-x-0" : "translate-x-full"}`}
         >
           <div className="flex flex-col h-full">
             {/* Header */}
@@ -748,11 +1036,7 @@ const Navbar = () => {
                       key={link.href}
                       href={link.href}
                       onClick={() => setIsOpen(false)}
-                      className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                        active
-                          ? "bg-gray-800 text-white"
-                          : "text-gray-400 hover:bg-gray-800/60 hover:text-white"
-                      }`}
+                      className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${active ? "bg-gray-800 text-white" : "text-gray-400 hover:bg-gray-800/60 hover:text-white"}`}
                     >
                       <Icon size={16} />
                       {link.name}
@@ -813,7 +1097,7 @@ const Navbar = () => {
                 </div>
               )}
 
-              {/* Currency Switcher - Mobile */}
+              {/* Currency */}
               <div className="px-3 py-3 border-t border-gray-800">
                 <p className="px-3 mb-2 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">
                   Currency
@@ -823,11 +1107,7 @@ const Navbar = () => {
                     <button
                       key={curr.code}
                       onClick={() => setCurrency(curr.code)}
-                      className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors ${
-                        currency === curr.code
-                          ? "bg-white text-black font-semibold"
-                          : "text-gray-400 hover:bg-gray-800/60 hover:text-white"
-                      }`}
+                      className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors ${currency === curr.code ? "bg-white text-black font-semibold" : "text-gray-400 hover:bg-gray-800/60 hover:text-white"}`}
                     >
                       <span>{curr.flag}</span>
                       <span className="truncate">{curr.code}</span>
@@ -836,23 +1116,21 @@ const Navbar = () => {
                 </div>
               </div>
 
-              {/* Custom Language Switcher - Mobile */}
+              {/* Language */}
               <div className="px-3 py-3 border-t border-gray-800">
                 <p className="px-3 mb-2 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">
                   Language
                 </p>
-                <div className="space-y-1">
-                  <CustomLanguageSwitcher />
-                </div>
+                <CustomLanguageSwitcher />
               </div>
             </div>
 
-            {/* Bottom: User / Auth */}
+            {/* Bottom: Auth */}
             <div className="p-4 border-t border-gray-800">
               {user ? (
                 <div className="space-y-3">
                   <div className="flex items-center gap-2.5">
-                    <div className="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center text-white text-sm font-bold ring-2 ring-gray-600">
+                    <div className="w-9 h-9 rounded-full bg-white flex items-center justify-center text-black text-sm font-bold ring-2 ring-gray-600">
                       {user.name?.charAt(0)?.toUpperCase() || "U"}
                     </div>
                     <div className="flex-1 min-w-0">
@@ -880,14 +1158,14 @@ const Navbar = () => {
                   <Link
                     href="/login"
                     onClick={() => setIsOpen(false)}
-                    className="block w-full text-center py-2 text-sm font-medium text-white bg-gray-800 rounded-lg hover:bg-gray-700 transition-colors"
+                    className="block w-full text-center py-2.5 text-sm font-semibold text-white bg-black rounded-lg hover:bg-gray-800 transition-colors"
                   >
                     Sign In
                   </Link>
                   <Link
                     href="/register"
                     onClick={() => setIsOpen(false)}
-                    className="block w-full text-center py-2 text-sm font-semibold text-black bg-white rounded-lg hover:bg-gray-200 transition-colors"
+                    className="block w-full text-center py-2.5 text-sm font-medium text-gray-300 bg-gray-800 rounded-lg hover:bg-gray-700 transition-colors"
                   >
                     Register
                   </Link>
@@ -897,6 +1175,60 @@ const Navbar = () => {
           </div>
         </div>
       </div>
+
+      {/* ══════════════════════════════════════════════════════════════════════ */}
+      {/* ── MOBILE BOTTOM NAV ────────────────────────────────────────────── */}
+      {/* ══════════════════════════════════════════════════════════════════════ */}
+      <div className="fixed bottom-0 left-0 right-0 z-50 lg:hidden bg-white border-t border-gray-200 safe-area-bottom">
+        <div className="flex items-center justify-around h-14">
+          {[
+            { href: "/", icon: FiHome, label: "Home" },
+            {
+              href: "/products",
+              icon: FiLayers,
+              label: "Categories",
+              action: null,
+            },
+            {
+              href: "/cart",
+              icon: FiShoppingCart,
+              label: "Cart",
+              badge: totalItems,
+            },
+            {
+              href: user ? "/dashboard" : "/login",
+              icon: FiUser,
+              label: user ? "Account" : "Login",
+            },
+          ].map((item) => {
+            const active = isActive(item.href);
+            return (
+              <Link
+                key={item.label}
+                href={item.href}
+                className={`flex flex-col items-center justify-center gap-0.5 w-16 py-1.5 transition-colors ${active ? "text-black" : "text-gray-400"}`}
+              >
+                <div className="relative">
+                  <item.icon size={20} strokeWidth={active ? 2.5 : 1.8} />
+                  {item.badge > 0 && (
+                    <span className="absolute -top-1.5 -right-2.5 min-w-4 h-4 px-1 bg-black text-white text-[9px] font-bold rounded-full flex items-center justify-center">
+                      {item.badge > 99 ? "99+" : item.badge}
+                    </span>
+                  )}
+                </div>
+                <span
+                  className={`text-[10px] ${active ? "font-bold" : "font-medium"}`}
+                >
+                  {item.label}
+                </span>
+              </Link>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Bottom nav spacer for mobile */}
+      <div className="h-14 lg:hidden" />
     </>
   );
 };
