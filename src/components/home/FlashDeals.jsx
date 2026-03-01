@@ -65,7 +65,7 @@ const FlashDeals = () => {
   if (!loading && products.length === 0) return null;
 
   return (
-    <section className="py-12 sm:py-16 bg-white">
+    <section className="py-12 sm:py-16 bg-[#f7f6f3]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
@@ -78,7 +78,7 @@ const FlashDeals = () => {
                 Flash Deals
               </h2>
             </div>
-            <p className="text-xs sm:text-sm text-gray-500">
+            <p className="text-sm sm:text-sm text-gray-500">
               Limited time offers — grab them before they&apos;re gone!
             </p>
           </div>
@@ -87,10 +87,10 @@ const FlashDeals = () => {
           <div className="flex items-center justify-between w-full sm:w-auto gap-3">
             {/* Countdown */}
             <div className="flex items-center gap-1 sm:gap-1.5 flex-wrap sm:flex-nowrap">
-              <span className="text-xs text-gray-500 font-medium hidden xs:inline">
+              <span className="text-sm text-gray-500 font-medium hidden xs:inline">
                 Ends in
               </span>
-              <span className="text-xs text-gray-500 font-medium xs:hidden">
+              <span className="text-sm text-gray-500 font-medium xs:hidden">
                 Ends:
               </span>
               {[
@@ -99,29 +99,29 @@ const FlashDeals = () => {
                 { val: pad(timeLeft.seconds), label: "s" },
               ].map((t, i) => (
                 <div key={i} className="flex items-center gap-1">
-                  <div className="bg-black text-white text-xs sm:text-sm font-mono font-bold px-1.5 sm:px-2 py-1 rounded-md min-w-7 sm:min-w-8 text-center">
+                  <div className="bg-black text-white text-sm font-mono font-bold px-2 py-1 rounded-md min-w-8 text-center">
                     {t.val}
                   </div>
                   {i < 2 && (
-                    <span className="text-gray-400 font-bold text-xs">:</span>
+                    <span className="text-gray-400 font-bold text-sm">:</span>
                   )}
                 </div>
               ))}
             </div>
 
-            {/* Scroll arrows (hidden on mobile) */}
+            {/* Scroll arrows */}
             <div className="hidden sm:flex items-center gap-1.5 shrink-0">
               <button
                 onClick={() => scroll("left")}
-                className="p-1.5 rounded-full border border-gray-300 hover:bg-black hover:text-white hover:border-black transition-all"
+                className="p-2.5 rounded-full border border-gray-300 hover:bg-black hover:text-white hover:border-black transition-all"
               >
-                <FiChevronLeft className="w-4 h-4" />
+                <FiChevronLeft className="w-5 h-5" />
               </button>
               <button
                 onClick={() => scroll("right")}
-                className="p-1.5 rounded-full border border-gray-300 hover:bg-black hover:text-white hover:border-black transition-all"
+                className="p-2.5 rounded-full border border-gray-300 hover:bg-black hover:text-white hover:border-black transition-all"
               >
-                <FiChevronRight className="w-4 h-4" />
+                <FiChevronRight className="w-5 h-5" />
               </button>
             </div>
           </div>
@@ -151,7 +151,7 @@ const FlashDeals = () => {
             {products.map((product) => (
               <div
                 key={product._id || product.id}
-                className="shrink-0 w-36 xs:w-40 sm:w-48 snap-start"
+                className="shrink-0 w-40 xs:w-44 sm:w-48 snap-start"
               >
                 <ProductCard product={product} />
               </div>
@@ -164,7 +164,7 @@ const FlashDeals = () => {
           <div className="text-center mt-8">
             <Link
               href="/products"
-              className="inline-flex items-center gap-2 px-6 py-2.5 text-sm font-bold text-black border-2 border-black rounded-full hover:bg-black hover:text-white transition-all duration-300"
+              className="inline-flex items-center gap-2 px-6 py-3 text-base sm:text-sm font-bold text-black border-2 border-black rounded-full hover:bg-black hover:text-white transition-all duration-200"
             >
               View All Deals <FiArrowRight className="w-3.5 h-3.5" />
             </Link>

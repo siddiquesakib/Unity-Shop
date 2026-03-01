@@ -7,7 +7,7 @@ export default function PaymentCancel() {
   const router = useRouter();
 
   return (
-    <div className="min-h-screen bg-white flex items-center justify-center p-6">
+    <div className="min-h-screen bg-[#f7f6f3] flex items-center justify-center p-6">
       <div className="w-full max-w-md">
         <div className="bg-white rounded-3xl shadow-2xl shadow-black/10 border border-gray-100 overflow-hidden">
           {/* Banner */}

@@ -104,7 +104,7 @@ const Footer = () => {
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="your@email.com"
                   suppressHydrationWarning
-                  className="w-full bg-white/[0.06] border border-white/10 rounded-full px-5 py-3 pr-12 text-sm text-white placeholder-white/25 focus:outline-none focus:border-white/30 transition-colors"
+                  className="w-full bg-white/[0.06] border border-white/10 rounded-full px-5 py-3 pr-12 text-[16px] sm:text-sm text-white placeholder-white/25 focus:outline-none focus:border-white/30 transition-colors"
                 />
                 <button
                   type="submit"
@@ -133,7 +133,7 @@ const Footer = () => {
                     <li key={link.href}>
                       <Link
                         href={link.href}
-                        className="text-sm text-white/50 hover:text-white transition-colors duration-200"
+                        className="text-base sm:text-sm text-white/50 hover:text-white transition-colors duration-200 inline-block py-1"
                       >
                         {link.label}
                       </Link>
@@ -153,8 +153,8 @@ const Footer = () => {
                 aria-label={label}
                 className="group flex items-center gap-2.5 text-white/30 hover:text-white transition-colors duration-200"
               >
-                <span className="flex h-8 w-8 items-center justify-center rounded-lg border border-white/10 group-hover:border-white/30 transition-colors duration-200">
-                  <Icon size={13} />
+                <span className="flex h-10 w-10 items-center justify-center rounded-lg border border-white/10 group-hover:border-white/30 transition-colors duration-200">
+                  <Icon size={16} />
                 </span>
               </a>
             ))}

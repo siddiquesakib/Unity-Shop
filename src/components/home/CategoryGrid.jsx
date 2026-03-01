@@ -1,93 +1,131 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useState, useEffect, useRef } from "react";
-import {
-  FiMonitor,
-  FiShoppingBag,
-  FiHome,
-  FiHeart,
-  FiActivity,
-  FiGift,
-  FiTruck,
-  FiBriefcase,
-  FiSun,
-  FiBookOpen,
-  FiGrid,
-  FiChevronLeft,
-  FiChevronRight,
-  FiSmartphone,
-  FiHeadphones,
-  FiWatch,
-  FiCamera,
-  FiCpu,
-  FiDroplet,
-  FiFeather,
-  FiTool,
-  FiBox,
-  FiCoffee,
-} from "react-icons/fi";
+import { FiArrowRight } from "react-icons/fi";
 
-// Map category IDs to icons
-const categoryMeta = {
-  electronics: { icon: FiMonitor },
-  fashion: { icon: FiShoppingBag },
-  living: { icon: FiHome },
-  kitchen: { icon: FiCoffee },
-  bedroom: { icon: FiGift },
-  lighting: { icon: FiSun },
-  stationery: { icon: FiBriefcase },
-  outdoor: { icon: FiActivity },
-  office: { icon: FiBriefcase },
-  mobile: { icon: FiSmartphone },
-  audio: { icon: FiHeadphones },
-  watches: { icon: FiWatch },
-  cameras: { icon: FiCamera },
-  gaming: { icon: FiCpu },
-  beauty: { icon: FiDroplet },
-  sports: { icon: FiActivity },
-  books: { icon: FiBookOpen },
-  toys: { icon: FiBox },
-  tools: { icon: FiTool },
-  grocery: { icon: FiFeather },
-  automotive: { icon: FiTruck },
-  health: { icon: FiHeart },
-};
-
-// All categories to always display
-const allCategories = [
-  { id: "electronics", label: "Electronics" },
-  { id: "fashion", label: "Fashion" },
-  { id: "living", label: "Home & Living" },
-  { id: "kitchen", label: "Kitchen" },
-  { id: "bedroom", label: "Bedroom" },
-  { id: "office", label: "Office" },
-  { id: "mobile", label: "Mobiles" },
-  { id: "watches", label: "Watches" },
-  { id: "audio", label: "Audio" },
-  { id: "cameras", label: "Cameras" },
-  { id: "gaming", label: "Gaming" },
-  { id: "lighting", label: "Lighting" },
-  { id: "beauty", label: "Beauty" },
-  { id: "health", label: "Health" },
-  { id: "sports", label: "Sports" },
-  { id: "outdoor", label: "Outdoor" },
-  { id: "books", label: "Books" },
-  { id: "stationery", label: "Stationery" },
-  { id: "toys", label: "Toys & Baby" },
-  { id: "grocery", label: "Grocery" },
-  { id: "tools", label: "Tools" },
-  { id: "automotive", label: "Automotive" },
+/* ━━━━━ Category Data ━━━━━ */
+const categories = [
+  {
+    id: "Fashion",
+    label: "Fashion",
+    image:
+      "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=600&h=700&fit=crop&q=80",
+  },
+  {
+    id: "Electronics",
+    label: "Electronics",
+    image:
+      "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600&h=700&fit=crop&q=80",
+  },
+  {
+    id: "Home & Living",
+    label: "Home & Kitchen",
+    image:
+      "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=600&h=700&fit=crop&q=80",
+  },
+  {
+    id: "Beauty",
+    label: "Beauty",
+    image:
+      "https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=600&h=700&fit=crop&q=80",
+  },
+  {
+    id: "Watches",
+    label: "Accessories",
+    image:
+      "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&h=700&fit=crop&q=80",
+  },
+  {
+    id: "Toys & Baby",
+    label: "Gifts",
+    image:
+      "https://images.unsplash.com/photo-1549465220-1a8b9238f7e1?w=600&h=700&fit=crop&q=80",
+  },
+  {
+    id: "Mobiles",
+    label: "Mobiles",
+    image:
+      "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=600&h=700&fit=crop&q=80",
+  },
+  {
+    id: "Gaming",
+    label: "Gaming",
+    image:
+      "https://images.unsplash.com/photo-1612287230202-1ff1d85d1bdf?w=600&h=700&fit=crop&q=80",
+  },
+  {
+    id: "Sports",
+    label: "Sports",
+    image:
+      "https://images.unsplash.com/photo-1461896836934-bd45ba8fcf9b?w=600&h=700&fit=crop&q=80",
+  },
+  {
+    id: "Books",
+    label: "Books",
+    image:
+      "https://images.unsplash.com/photo-1512820790803-83ca734da794?w=600&h=700&fit=crop&q=80",
+  },
+  {
+    id: "Grocery",
+    label: "Grocery",
+    image:
+      "https://images.unsplash.com/photo-1542838132-92c53300491e?w=600&h=700&fit=crop&q=80",
+  },
+  {
+    id: "Health",
+    label: "Health",
+    image:
+      "https://images.unsplash.com/photo-1505751172876-fa1923c5c528?w=600&h=700&fit=crop&q=80",
+  },
 ];
 
-const defaultMeta = { icon: FiGrid };
+/* ━━━━━ Single Category Card ━━━━━ */
+const CategoryCard = ({ cat, count }) => (
+  <Link
+    href={`/products?category=${encodeURIComponent(cat.id)}`}
+    className="group relative rounded-2xl overflow-hidden bg-gray-100 aspect-[4/5] block"
+  >
+    {/* Image */}
+    <Image
+      src={cat.image}
+      alt={cat.label}
+      fill
+      sizes="(max-width: 640px) 40vw, (max-width: 1024px) 20vw, 16vw"
+      className="object-cover transition-transform duration-700 ease-out group-hover:scale-110"
+    />
 
+    {/* Gradient overlay — always visible, stronger at bottom */}
+    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+
+    {/* Hover tint */}
+    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />
+
+    {/* Label at bottom */}
+    <div className="absolute bottom-0 left-0 right-0 p-3 sm:p-4">
+      <h3 className="text-sm sm:text-base font-bold text-white drop-shadow-sm leading-tight">
+        {cat.label}
+      </h3>
+      {count > 0 && (
+        <p className="text-[11px] text-white/70 mt-0.5 font-medium">
+          {count}+ items
+        </p>
+      )}
+    </div>
+
+    {/* Arrow icon — appears on hover */}
+    <div className="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/0 group-hover:bg-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-1 group-hover:translate-y-0">
+      <FiArrowRight className="w-4 h-4 text-black" />
+    </div>
+  </Link>
+);
+
+/* ━━━━━ Main Component ━━━━━ */
 const CategoryGrid = () => {
   const [categoryCounts, setCategoryCounts] = useState({});
   const [loading, setLoading] = useState(true);
   const scrollRef = useRef(null);
-  const [canScrollLeft, setCanScrollLeft] = useState(false);
-  const [canScrollRight, setCanScrollRight] = useState(false);
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -112,169 +150,93 @@ const CategoryGrid = () => {
     fetchCategories();
   }, []);
 
-  const checkScroll = () => {
-    const el = scrollRef.current;
-    if (!el) return;
-    setCanScrollLeft(el.scrollLeft > 0);
-    setCanScrollRight(el.scrollLeft < el.scrollWidth - el.clientWidth - 1);
-  };
-
-  useEffect(() => {
-    checkScroll();
-    const el = scrollRef.current;
-    if (el) {
-      el.addEventListener("scroll", checkScroll);
-      window.addEventListener("resize", checkScroll);
-    }
-    return () => {
-      if (el) el.removeEventListener("scroll", checkScroll);
-      window.removeEventListener("resize", checkScroll);
-    };
-  }, [categoryCounts]);
-
-  const scroll = (direction) => {
-    const el = scrollRef.current;
-    if (!el) return;
-    const amount = 300;
-    el.scrollBy({
-      left: direction === "left" ? -amount : amount,
-      behavior: "smooth",
-    });
-  };
-
   return (
-    <section className="py-12 sm:py-16 bg-linear-to-b from-gray-50/80 to-white">
+    <section className="py-10 sm:py-14 bg-[#f7f6f3]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Section Header */}
+        {/* ── Section Header ── */}
         <div className="flex items-end justify-between mb-8 sm:mb-10">
           <div>
-            <div className="flex items-center gap-2 mb-2">
-              <span className="inline-block w-8 h-1 rounded-full bg-black"></span>
-              <span className="text-xs font-semibold uppercase tracking-widest text-gray-600">
-                Categories
-              </span>
-            </div>
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-black">
+            <h2 className="text-xl sm:text-2xl lg:text-3xl font-extrabold text-black tracking-tight">
               Shop by Category
             </h2>
-            <p className="text-sm text-gray-500 mt-1 max-w-md">
-              Explore products across our curated collections
+            <p className="text-sm text-gray-400 mt-1">
+              Discover our curated collections
             </p>
           </div>
-
-          {/* Scroll Arrows (hidden on mobile) */}
-          <div className="hidden sm:flex items-center gap-2">
-            <button
-              onClick={() => scroll("left")}
-              disabled={!canScrollLeft}
-              className="p-2 rounded-full border border-gray-300 bg-white shadow-sm hover:bg-black hover:text-white hover:border-black disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-200"
-            >
-              <FiChevronLeft className="w-5 h-5" />
-            </button>
-            <button
-              onClick={() => scroll("right")}
-              disabled={!canScrollRight}
-              className="p-2 rounded-full border border-gray-300 bg-white shadow-sm hover:bg-black hover:text-white hover:border-black disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-200"
-            >
-              <FiChevronRight className="w-5 h-5" />
-            </button>
-          </div>
+          <Link
+            href="/products"
+            className="hidden sm:inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-gray-600 hover:text-black bg-gray-100 hover:bg-gray-200 rounded-full transition-all duration-200"
+          >
+            View All <FiArrowRight size={14} />
+          </Link>
         </div>
 
-        {/* Loading Skeleton */}
+        {/* ── Loading Skeleton ── */}
         {loading ? (
-          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-11 gap-2 sm:gap-3">
-            {[...Array(22)].map((_, i) => (
-              <div
-                key={i}
-                className="bg-white rounded-xl p-2 sm:p-3 animate-pulse border border-gray-100"
-              >
-                <div className="flex flex-col items-center space-y-2">
-                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-gray-200" />
-                  <div className="h-3 bg-gray-200 rounded-full w-12 sm:w-14" />
-                  <div className="h-2.5 bg-gray-100 rounded-full w-8 sm:w-10" />
-                </div>
+          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3 sm:gap-4">
+            {[...Array(6)].map((_, i) => (
+              <div key={i} className="animate-pulse">
+                <div className="aspect-[4/5] rounded-2xl bg-gray-100" />
               </div>
             ))}
           </div>
         ) : (
-          <div className="relative">
-            {canScrollLeft && (
-              <div className="absolute left-0 top-0 bottom-0 w-12 bg-linear-to-r from-gray-50/80 to-transparent z-10 pointer-events-none sm:hidden" />
-            )}
-            {canScrollRight && (
-              <div className="absolute right-0 top-0 bottom-0 w-12 bg-linear-to-l from-gray-50/80 to-transparent z-10 pointer-events-none sm:hidden" />
-            )}
+          <>
+            {/* ── Desktop Grid (2 rows of 6) ── */}
+            <div className="hidden sm:grid sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3 lg:gap-4">
+              {categories.map((cat) => (
+                <CategoryCard
+                  key={cat.id}
+                  cat={cat}
+                  count={categoryCounts[cat.id] || 0}
+                />
+              ))}
+            </div>
 
-            <div
-              ref={scrollRef}
-              className="flex sm:grid sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-11 gap-2 sm:gap-3 overflow-x-auto sm:overflow-visible scrollbar-hide pb-2 sm:pb-0 -mx-4 px-4 sm:mx-0 sm:px-0 snap-x snap-mandatory sm:snap-none"
-            >
-              {allCategories.map((cat, index) => {
-                const meta = categoryMeta[cat.id] || defaultMeta;
-                const Icon = meta.icon;
-                const count = categoryCounts[cat.id] || 0;
-                return (
+            {/* ── Mobile Horizontal Scroll ── */}
+            <div className="sm:hidden relative -mx-4">
+              {/* Fade edges */}
+              <div className="absolute left-0 top-0 bottom-0 w-4 bg-gradient-to-r from-white to-transparent z-10 pointer-events-none" />
+              <div className="absolute right-0 top-0 bottom-0 w-4 bg-gradient-to-l from-white to-transparent z-10 pointer-events-none" />
+
+              <div
+                ref={scrollRef}
+                className="flex gap-3 overflow-x-auto scrollbar-hide px-4 pb-2 snap-x snap-mandatory"
+              >
+                {categories.map((cat) => (
                   <Link
                     key={cat.id}
                     href={`/products?category=${encodeURIComponent(cat.id)}`}
-                    className="group relative shrink-0 w-24 xs:w-28 sm:w-auto snap-start"
-                    style={{ animationDelay: `${index * 30}ms` }}
+                    className="group relative shrink-0 w-32 aspect-[4/5] rounded-2xl overflow-hidden bg-gray-100 snap-start"
                   >
-                    <div className="relative bg-white rounded-xl p-2 sm:p-3 border border-gray-200 hover:border-black hover:shadow-lg hover:shadow-gray-200/50 transition-all duration-300 ease-out overflow-hidden h-full">
-                      <div className="relative flex flex-col items-center text-center space-y-1.5">
-                        {/* Icon Container */}
-                        <div
-                          className={`relative w-8 h-8 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center ring-1 transition-all duration-300 ease-out ${
-                            count > 0
-                              ? "bg-gray-100 ring-gray-200 group-hover:ring-2 group-hover:ring-black group-hover:bg-black group-hover:scale-110"
-                              : "bg-gray-50 ring-gray-100 group-hover:ring-gray-300 group-hover:scale-105"
-                          }`}
-                        >
-                          <Icon
-                            className={`w-3.5 h-3.5 sm:w-4.5 sm:h-4.5 transition-all duration-300 ${
-                              count > 0
-                                ? "text-gray-700 group-hover:text-white"
-                                : "text-gray-300 group-hover:text-gray-500"
-                            }`}
-                          />
-                        </div>
-
-                        {/* Label */}
-                        <h3
-                          className={`text-[10px] xs:text-[11px] sm:text-xs font-semibold transition-colors duration-200 leading-tight ${
-                            count > 0
-                              ? "text-gray-800 group-hover:text-black"
-                              : "text-gray-400 group-hover:text-gray-600"
-                          }`}
-                        >
-                          {cat.label}
-                        </h3>
-
-                        {/* Product count – hidden on very small screens if zero */}
-                        <span
-                          className={`text-[8px] xs:text-[10px] font-medium transition-colors duration-200 ${
-                            count > 0
-                              ? "text-gray-400 group-hover:text-black"
-                              : "text-gray-300"
-                          } ${count === 0 && "hidden xs:inline"}`}
-                        >
-                          {count > 0
-                            ? `${count} ${count === 1 ? "item" : "items"}`
-                            : "0 items"}
-                        </span>
-                      </div>
-
-                      {/* Bottom accent line on hover */}
-                      {count > 0 && (
-                        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 h-0.5 w-0 group-hover:w-8 bg-black transition-all duration-300 rounded-full" />
-                      )}
+                    <Image
+                      src={cat.image}
+                      alt={cat.label}
+                      fill
+                      sizes="128px"
+                      className="object-cover"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+                    <div className="absolute bottom-0 left-0 right-0 p-3">
+                      <h3 className="text-sm font-bold text-white drop-shadow-sm leading-tight">
+                        {cat.label}
+                      </h3>
                     </div>
                   </Link>
-                );
-              })}
+                ))}
+              </div>
             </div>
-          </div>
+
+            {/* Mobile "see all" link */}
+            <div className="sm:hidden mt-5 text-center">
+              <Link
+                href="/products"
+                className="inline-flex items-center gap-1.5 px-5 py-2.5 text-sm font-bold text-black bg-gray-100 hover:bg-gray-200 rounded-full transition-colors"
+              >
+                View All Categories <FiArrowRight size={14} />
+              </Link>
+            </div>
+          </>
         )}
       </div>
     </section>

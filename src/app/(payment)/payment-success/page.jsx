@@ -79,7 +79,7 @@ function SuccessContent() {
 
 function SuccessView({ order }) {
   return (
-    <div className="min-h-screen bg-white flex items-center justify-center p-6">
+    <div className="min-h-screen bg-[#f7f6f3] flex items-center justify-center p-6">
       <div className="w-full max-w-md">
         {/* Card */}
         <div className="bg-white rounded-3xl shadow-2xl shadow-black/10 border border-gray-100 overflow-hidden">
@@ -164,7 +164,7 @@ function SuccessView({ order }) {
 
 function AlreadyView() {
   return (
-    <div className="min-h-screen bg-white flex items-center justify-center p-6">
+    <div className="min-h-screen bg-[#f7f6f3] flex items-center justify-center p-6">
       <div className="w-full max-w-md bg-white rounded-3xl shadow-2xl shadow-black/10 border border-gray-100 p-10 text-center">
         <div className="w-16 h-16 mx-auto mb-5 rounded-full bg-gray-100 flex items-center justify-center">
           <span className="text-xl font-black text-black">i</span>
@@ -188,7 +188,7 @@ function AlreadyView() {
 
 function ErrorView({ message }) {
   return (
-    <div className="min-h-screen bg-white flex items-center justify-center p-6">
+    <div className="min-h-screen bg-[#f7f6f3] flex items-center justify-center p-6">
       <div className="w-full max-w-md bg-white rounded-3xl shadow-2xl shadow-black/10 border border-gray-100 p-10 text-center">
         <div className="w-16 h-16 mx-auto mb-5 rounded-full bg-gray-100 flex items-center justify-center text-gray-500">
           <svg
@@ -223,7 +223,7 @@ function ErrorView({ message }) {
 
 function FullPageSpinner() {
   return (
-    <div className="min-h-screen bg-white flex flex-col items-center justify-center gap-4">
+    <div className="min-h-screen bg-[#f7f6f3] flex flex-col items-center justify-center gap-4">
       <div className="w-14 h-14 rounded-full border-4 border-gray-200 border-t-black animate-spin" />
       <p className="text-gray-400 text-sm font-medium">
         Confirming your payment…
