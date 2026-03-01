@@ -15,6 +15,7 @@ const CartContext = createContext(null);
 
 export function CartProvider({ children }) {
   const [cartGroups, setCartGroups] = useState([]);
+  const [savedItems, setSavedItems] = useState([]); // saved-for-later flat array
   const [checkoutGroups, setCheckoutGroups] = useState([]);
   const [checkoutPromo, setCheckoutPromo] = useState(null); // { code, discount, description } | null
   const [hydrated, setHydrated] = useState(false);
@@ -28,6 +29,10 @@ export function CartProvider({ children }) {
         const saved = localStorage.getItem("unityshop_cart");
         if (saved) {
           setCartGroups(JSON.parse(saved));
+        }
+        const savedLater = localStorage.getItem("unityshop_saved");
+        if (savedLater) {
+          setSavedItems(JSON.parse(savedLater));
         }
       }
     } catch (e) {
@@ -81,12 +86,70 @@ export function CartProvider({ children }) {
     }
   }, [user, hydrated]);
 
-  // Persist cart to localStorage on every change
+  // Persist cart + saved to localStorage on every change
   useEffect(() => {
     if (hydrated) {
       localStorage.setItem("unityshop_cart", JSON.stringify(cartGroups));
     }
   }, [cartGroups, hydrated]);
+
+  useEffect(() => {
+    if (hydrated) {
+      localStorage.setItem("unityshop_saved", JSON.stringify(savedItems));
+    }
+  }, [savedItems, hydrated]);
+
+  // ─── Save for Later ────────────────────────────────────────────────────────
+  const moveToSaved = useCallback((itemId) => {
+    let found = null;
+    setCartGroups((prev) => {
+      const next = prev.map((g) => {
+        const item = g.items.find((i) => i.id === itemId);
+        if (item) found = { ...item };
+        return { ...g, items: g.items.filter((i) => i.id !== itemId) };
+      }).filter((g) => g.items.length > 0);
+      return next;
+    });
+    if (found) {
+      setSavedItems((prev) => {
+        if (prev.some((i) => i.id === found.id)) return prev;
+        return [...prev, found];
+      });
+      toast.success("Saved for later");
+    }
+  }, []);
+
+  const moveToCart = useCallback((itemId) => {
+    let found = null;
+    setSavedItems((prev) => {
+      found = prev.find((i) => i.id === itemId);
+      return prev.filter((i) => i.id !== itemId);
+    });
+    // Re-add via addToCart-like logic
+    if (found) {
+      setCartGroups((prev) => {
+        const sellerId = found.sellerName || "general";
+        const groups = prev.map((g) => ({ ...g, items: [...g.items] }));
+        const gIdx = groups.findIndex((g) => g.seller.id === sellerId);
+        if (gIdx !== -1) {
+          const eIdx = groups[gIdx].items.findIndex((i) => i.productId === found.productId);
+          if (eIdx !== -1) {
+            groups[gIdx].items[eIdx] = { ...groups[gIdx].items[eIdx], quantity: groups[gIdx].items[eIdx].quantity + found.quantity };
+          } else {
+            groups[gIdx].items.push(found);
+          }
+        } else {
+          groups.push({ id: `group-${sellerId}`, seller: { id: sellerId, name: found.sellerName || "UnityShop Seller", email: found.sellerEmail || "", verified: false }, items: [found] });
+        }
+        return groups;
+      });
+      toast.success("Moved back to cart");
+    }
+  }, []);
+
+  const removeSavedItem = useCallback((itemId) => {
+    setSavedItems((prev) => prev.filter((i) => i.id !== itemId));
+  }, []);
 
   // ─── Add to Cart ─────────────────────────────────────────────────────────────
   const addToCart = useCallback(
@@ -310,6 +373,7 @@ export function CartProvider({ children }) {
     <CartContext.Provider
       value={{
         cartGroups,
+        savedItems,
         checkoutGroups,
         checkoutPromo,
         addToCart,
@@ -318,6 +382,9 @@ export function CartProvider({ children }) {
         prepareCheckout,
         clearCheckoutItems,
         clearCart,
+        moveToSaved,
+        moveToCart,
+        removeSavedItem,
         totalUniqueItems,
         hydrated,
       }}
