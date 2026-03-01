@@ -76,6 +76,7 @@ export default function Sidebar() {
       icon: Settings2,
     },
     { name: "Health Logs", href: "/dashboard/admin/health", icon: Activity },
+    { name: "Promo Code", href: "/dashboard/admin/promo", icon: Megaphone },
     { name: "Profile", href: "/dashboard/admin/profile", icon: Users },
   ];
 
