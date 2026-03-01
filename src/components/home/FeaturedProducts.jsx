@@ -54,7 +54,7 @@ const FeaturedProducts = ({
   };
 
   return (
-    <section className="py-16 sm:py-20 bg-white">
+    <section className="py-16 sm:py-20 bg-[#f7f6f3]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="text-center mb-10">
@@ -65,12 +65,12 @@ const FeaturedProducts = ({
         </div>
 
         {/* Filter Tabs — centered, minimal */}
-        <div className="flex items-center justify-center gap-3 sm:gap-4 mb-10">
+        <div className="flex items-center justify-center gap-2 sm:gap-4 mb-10">
           {filters.map((f) => (
             <button
               key={f.id}
               onClick={() => handleFilterChange(f.id)}
-              className={`relative px-5 py-2 text-sm font-medium transition-all duration-300 ${
+              className={`relative px-4 sm:px-5 py-3 text-base sm:text-sm font-medium transition-all duration-200 ${
                 activeFilter === f.id
                   ? "text-black"
                   : "text-gray-400 hover:text-gray-600"
