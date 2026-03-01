@@ -1,65 +1,74 @@
-// components/cart/PromoCodeInput.jsx
-"use client";
+'use client';
 
-import { useState } from "react";
-import { FiTag, FiX, FiCheck, FiAlertCircle } from "react-icons/fi";
-import { applyPromoCode } from "./promoCodes";
-// import { applyPromoCode } from '@/lib/promoCodes';
+import { useState } from 'react';
+import { FiTag, FiX, FiCheck, FiAlertCircle, FiLoader } from 'react-icons/fi';
+
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
 /**
- * PromoCodeInput — reusable promo code field
+ * PromoCodeInput — calls real backend POST /promo/validate
  *
  * Props:
  *   subtotal   (number)   — current cart subtotal, used for minOrder checks
  *   onApply    (fn)       — called with { code, discount, description } when valid
  *   onRemove   (fn)       — called when the applied code is cleared
- *
- * Usage:
- *   <PromoCodeInput
- *     subtotal={subtotal}
- *     onApply={({ code, discount, description }) => { ... }}
- *     onRemove={() => { ... }}
- *   />
  */
-
 export default function PromoCodeInput({ subtotal = 0, onApply, onRemove }) {
-  const [inputValue, setInputValue] = useState("");
+  const [inputValue, setInputValue] = useState('');
   const [appliedCode, setAppliedCode] = useState(null); // { code, discount, description }
-  const [error, setError] = useState("");
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const [shake, setShake] = useState(false);
 
   // ── Apply ──────────────────────────────────────────────────────────────────
-  const handleApply = () => {
-    if (!inputValue.trim()) {
+  const handleApply = async () => {
+    const code = inputValue.trim().toUpperCase();
+
+    if (!code) {
       triggerShake();
-      setError("Please enter a promo code.");
+      setError('Please enter a promo code.');
       return;
     }
 
-    const result = applyPromoCode(inputValue, subtotal);
+    setLoading(true);
+    setError('');
 
-    if (!result.valid) {
+    try {
+      const res = await fetch(`${API_BASE}/promo/validate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code, subtotal }),
+      });
+
+      const data = await res.json();
+
+      if (!data.valid) {
+        triggerShake();
+        setError(data.error || 'Invalid promo code.');
+        return;
+      }
+
+      const applied = {
+        code: data.code,
+        discount: data.discount,
+        description: data.description,
+      };
+
+      setAppliedCode(applied);
+      setInputValue('');
+      onApply?.(applied);
+    } catch (err) {
       triggerShake();
-      setError(result.error);
-      return;
+      setError('Could not connect to server. Please try again.');
+    } finally {
+      setLoading(false);
     }
-
-    const applied = {
-      code: inputValue.trim().toUpperCase(),
-      discount: result.discount,
-      description: result.promo.description,
-    };
-
-    setAppliedCode(applied);
-    setError("");
-    setInputValue("");
-    onApply?.(applied);
   };
 
   // ── Remove ─────────────────────────────────────────────────────────────────
   const handleRemove = () => {
     setAppliedCode(null);
-    setError("");
+    setError('');
     onRemove?.();
   };
 
@@ -70,8 +79,8 @@ export default function PromoCodeInput({ subtotal = 0, onApply, onRemove }) {
   };
 
   // ── Keyboard enter ─────────────────────────────────────────────────────────
-  const handleKeyDown = (e) => {
-    if (e.key === "Enter") handleApply();
+  const handleKeyDown = e => {
+    if (e.key === 'Enter') handleApply();
   };
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -91,7 +100,7 @@ export default function PromoCodeInput({ subtotal = 0, onApply, onRemove }) {
                 {appliedCode.code}
               </p>
               <p className="text-xs text-emerald-600">
-                {appliedCode.description} — saving{" "}
+                {appliedCode.description} — saving{' '}
                 <span className="font-bold">
                   ${appliedCode.discount.toFixed(2)}
                 </span>
@@ -110,7 +119,7 @@ export default function PromoCodeInput({ subtotal = 0, onApply, onRemove }) {
         /* ── Input state ── */
         <div
           className={`flex transition-all duration-150 ${
-            shake ? "animate-[shake_0.4s_ease-in-out]" : ""
+            shake ? 'animate-[shake_0.4s_ease-in-out]' : ''
           }`}
         >
           <div className="relative flex-1">
@@ -121,24 +130,34 @@ export default function PromoCodeInput({ subtotal = 0, onApply, onRemove }) {
             <input
               type="text"
               value={inputValue}
-              onChange={(e) => {
+              onChange={e => {
                 setInputValue(e.target.value.toUpperCase());
-                if (error) setError("");
+                if (error) setError('');
               }}
               onKeyDown={handleKeyDown}
               placeholder="Enter code (e.g. UNITY10)"
-              className={`w-full pl-9 pr-3 py-2.5 text-sm border rounded-l-xl focus:outline-none focus:ring-2 transition ${
-                error
-                  ? "border-red-300 focus:ring-red-200 text-black"
-                  : "border-gray-200 focus:ring-gray-300 focus:border-black text-gray-800"
-              }`}
+              disabled={loading}
+              className={`w-full pl-9 pr-3 py-2.5 text-sm border rounded-l-xl focus:outline-none focus:ring-2 transition
+                disabled:opacity-60 disabled:cursor-not-allowed
+                ${
+                  error
+                    ? 'border-red-300 focus:ring-red-200 text-black'
+                    : 'border-gray-200 focus:ring-gray-300 focus:border-black text-gray-800'
+                }`}
             />
           </div>
           <button
             onClick={handleApply}
-            className="px-5 py-2.5 bg-black hover:bg-gray-800 active:scale-95 text-white text-sm font-bold rounded-r-xl transition-all whitespace-nowrap"
+            disabled={loading || !inputValue.trim()}
+            className="px-5 py-2.5 bg-black hover:bg-gray-800 active:scale-95 text-white text-sm font-bold
+              rounded-r-xl transition-all whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed
+              flex items-center gap-2"
           >
-            Apply
+            {loading ? (
+              <FiLoader size={15} className="animate-spin" />
+            ) : (
+              'Apply'
+            )}
           </button>
         </div>
       )}
