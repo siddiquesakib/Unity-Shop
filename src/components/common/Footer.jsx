@@ -144,8 +144,8 @@ const Footer = () => {
             ))}
           </div>
 
-          {/* socials stacked vertically */}
-          <div className="flex sm:flex-col gap-2 flex-wrap">
+          {/* socials side by side */}
+          <div className="flex flex-row items-center gap-2 flex-wrap">
             {socials.map(({ Icon, href, label }) => (
               <a
                 key={label}
@@ -156,7 +156,6 @@ const Footer = () => {
                 <span className="flex h-8 w-8 items-center justify-center rounded-lg border border-white/10 group-hover:border-white/30 transition-colors duration-200">
                   <Icon size={13} />
                 </span>
-                <span className="text-xs hidden sm:block">{label}</span>
               </a>
             ))}
           </div>

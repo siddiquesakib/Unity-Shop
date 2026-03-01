@@ -120,15 +120,15 @@ export default function AddProductPage() {
         <motion.div
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
-          className="w-20 h-20 rounded-full bg-emerald-500/20 border-2 border-emerald-400 flex items-center justify-center mb-6"
+          className="w-20 h-20 rounded-full bg-emerald-50 border-2 border-emerald-500 flex items-center justify-center mb-6"
         >
-          <CheckCircle2 size={40} className="text-emerald-400" />
+          <CheckCircle2 size={40} className="text-emerald-500" />
         </motion.div>
-        <h2 className="text-2xl font-bold text-white mb-2">
+        <h2 className="text-2xl font-bold text-gray-900 mb-2">
           Product Published!
         </h2>
-        <p className="text-slate-400">Your product is now live on UnityShop.</p>
-        <p className="text-slate-500 text-sm mt-2">
+        <p className="text-gray-500">Your product is now live on UnityShop.</p>
+        <p className="text-gray-400 text-sm mt-2">
           Redirecting to dashboard...
         </p>
       </div>
@@ -140,24 +140,24 @@ export default function AddProductPage() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-white tracking-tight">
+          <h1 className="text-3xl font-bold text-gray-900 tracking-tight">
             Add New Product
           </h1>
-          <p className="text-slate-400 mt-1">
+          <p className="text-gray-500 mt-1">
             Fill in the details below to list a new product on UnityShop.
           </p>
         </div>
         <div className="flex items-center gap-3">
           <button
             onClick={() => router.back()}
-            className="px-6 py-2.5 rounded-xl border border-slate-800 text-slate-300 hover:bg-slate-900 transition-all font-medium"
+            className="px-6 py-2.5 rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-50 transition-all font-medium"
           >
             Cancel
           </button>
           <button
             onClick={handleSubmit}
             disabled={isLoading}
-            className="px-6 py-2.5 rounded-xl bg-indigo-600 text-white hover:bg-indigo-500 shadow-lg shadow-indigo-500/20 transition-all font-bold flex items-center gap-2 disabled:opacity-50"
+            className="px-6 py-2.5 rounded-xl bg-black text-white hover:bg-gray-800 shadow-lg shadow-black/10 transition-all font-bold flex items-center gap-2 disabled:opacity-50"
           >
             {isLoading ? (
               <>
@@ -175,9 +175,9 @@ export default function AddProductPage() {
       </div>
 
       {error && (
-        <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/20 flex items-center gap-3">
-          <AlertCircle size={18} className="text-red-400" />
-          <p className="text-red-400 text-sm">{error}</p>
+        <div className="p-4 rounded-xl bg-red-50 border border-red-200 flex items-center gap-3">
+          <AlertCircle size={18} className="text-red-500" />
+          <p className="text-red-600 text-sm">{error}</p>
         </div>
       )}
 
@@ -185,20 +185,20 @@ export default function AddProductPage() {
         {/* Left Column */}
         <div className="lg:col-span-2 space-y-8">
           {/* Basic Information */}
-          <section className="p-8 rounded-2xl bg-slate-900/50 border border-slate-800/50 backdrop-blur-sm space-y-6">
-            <div className="flex items-center gap-3 border-b border-slate-800 pb-4">
-              <div className="p-2 rounded-lg bg-indigo-500/10 text-indigo-400">
+          <section className="p-8 rounded-2xl bg-white border border-gray-200 space-y-6">
+            <div className="flex items-center gap-3 border-b border-gray-200 pb-4">
+              <div className="p-2 rounded-lg bg-gray-100 text-gray-600">
                 <Info size={20} />
               </div>
-              <h2 className="text-xl font-bold text-white">
+              <h2 className="text-xl font-bold text-gray-900">
                 Basic Information
               </h2>
             </div>
 
             <div className="grid grid-cols-1 gap-6">
               <div className="space-y-2">
-                <label className="text-sm font-medium text-slate-300">
-                  Product Name <span className="text-red-400">*</span>
+                <label className="text-sm font-medium text-gray-700">
+                  Product Name <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
@@ -206,20 +206,20 @@ export default function AddProductPage() {
                   value={formData.name}
                   onChange={handleChange}
                   placeholder="e.g. Wireless Noise Cancelling Headphones"
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500 transition-all placeholder:text-slate-600"
+                  className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-300 focus:border-gray-400 transition-all placeholder:text-gray-400"
                 />
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-slate-300">
-                    Category <span className="text-red-400">*</span>
+                  <label className="text-sm font-medium text-gray-700">
+                    Category <span className="text-red-500">*</span>
                   </label>
                   <select
                     name="category"
                     value={formData.category}
                     onChange={handleChange}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500 transition-all appearance-none cursor-pointer"
+                    className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-300 focus:border-gray-400 transition-all appearance-none cursor-pointer"
                   >
                     <option value="">Select Category</option>
                     <option value="electronics">Electronics</option>
@@ -233,7 +233,7 @@ export default function AddProductPage() {
                   </select>
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-slate-300">
+                  <label className="text-sm font-medium text-gray-700">
                     Brand Name
                   </label>
                   <input
@@ -242,13 +242,13 @@ export default function AddProductPage() {
                     value={formData.brand}
                     onChange={handleChange}
                     placeholder="e.g. Sony, Apple"
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500 transition-all placeholder:text-slate-600"
+                    className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-300 focus:border-gray-400 transition-all placeholder:text-gray-400"
                   />
                 </div>
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium text-slate-300">
+                <label className="text-sm font-medium text-gray-700">
                   Product Description
                 </label>
                 <textarea
@@ -257,25 +257,25 @@ export default function AddProductPage() {
                   value={formData.description}
                   onChange={handleChange}
                   placeholder="Describe your product features, materials, and benefits..."
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500 transition-all placeholder:text-slate-600 resize-none"
+                  className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-300 focus:border-gray-400 transition-all placeholder:text-gray-400 resize-none"
                 />
               </div>
             </div>
           </section>
 
           {/* Product Image */}
-          <section className="p-8 rounded-2xl bg-slate-900/50 border border-slate-800/50 backdrop-blur-sm space-y-6">
-            <div className="flex items-center gap-3 border-b border-slate-800 pb-4">
-              <div className="p-2 rounded-lg bg-purple-500/10 text-purple-400">
+          <section className="p-8 rounded-2xl bg-white border border-gray-200 space-y-6">
+            <div className="flex items-center gap-3 border-b border-gray-200 pb-4">
+              <div className="p-2 rounded-lg bg-purple-50 text-purple-500">
                 <ImageIcon size={20} />
               </div>
-              <h2 className="text-xl font-bold text-white">Product Image</h2>
+              <h2 className="text-xl font-bold text-gray-900">Product Image</h2>
             </div>
 
             <div className="space-y-4">
               <div className="space-y-2">
-                <label className="text-sm font-medium text-slate-300">
-                  Image URL <span className="text-red-400">*</span>
+                <label className="text-sm font-medium text-gray-700">
+                  Image URL <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="url"
@@ -283,12 +283,12 @@ export default function AddProductPage() {
                   value={formData.image}
                   onChange={handleChange}
                   placeholder="https://example.com/product-image.jpg"
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-purple-500/40 focus:border-purple-500 transition-all placeholder:text-slate-600"
+                  className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-gray-900 focus:outline-none focus:ring-2 focus:ring-purple-200 focus:border-purple-400 transition-all placeholder:text-gray-400"
                 />
               </div>
 
               {formData.image && (
-                <div className="relative w-full max-w-sm aspect-square rounded-2xl overflow-hidden border-2 border-slate-800 bg-slate-950">
+                <div className="relative w-full max-w-sm aspect-square rounded-2xl overflow-hidden border-2 border-gray-200 bg-gray-50">
                   <img
                     src={formData.image}
                     alt="Preview"
@@ -300,7 +300,7 @@ export default function AddProductPage() {
                 </div>
               )}
 
-              <p className="text-xs text-slate-500 flex items-center gap-2">
+              <p className="text-xs text-gray-400 flex items-center gap-2">
                 <AlertCircle size={14} />
                 Paste a direct image URL. Recommended: 1200x1200px.
               </p>
@@ -311,20 +311,20 @@ export default function AddProductPage() {
         {/* Right Column */}
         <div className="space-y-8">
           {/* Pricing & Inventory */}
-          <section className="p-6 rounded-2xl bg-slate-900/50 border border-slate-800/50 backdrop-blur-sm space-y-6">
-            <div className="flex items-center gap-3 border-b border-slate-800 pb-4">
-              <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-400">
+          <section className="p-6 rounded-2xl bg-white border border-gray-200 space-y-6">
+            <div className="flex items-center gap-3 border-b border-gray-200 pb-4">
+              <div className="p-2 rounded-lg bg-emerald-50 text-emerald-500">
                 <DollarSign size={20} />
               </div>
-              <h2 className="text-lg font-bold text-white">
+              <h2 className="text-lg font-bold text-gray-900">
                 Pricing & Inventory
               </h2>
             </div>
 
             <div className="space-y-4">
               <div className="space-y-2">
-                <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                  Price ($) <span className="text-red-400">*</span>
+                <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                  Price ($) <span className="text-red-500">*</span>
                 </label>
                 <div className="relative">
                   <input
@@ -333,17 +333,17 @@ export default function AddProductPage() {
                     value={formData.price}
                     onChange={handleChange}
                     placeholder="0.00"
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-10 pr-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500 transition-all"
+                    className="w-full bg-gray-50 border border-gray-200 rounded-xl pl-10 pr-4 py-3 text-gray-900 focus:outline-none focus:ring-2 focus:ring-emerald-200 focus:border-emerald-400 transition-all"
                   />
                   <DollarSign
                     size={16}
-                    className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500"
+                    className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
                   />
                 </div>
               </div>
 
               <div className="space-y-2">
-                <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
                   Original Price ($)
                 </label>
                 <div className="relative">
@@ -353,17 +353,17 @@ export default function AddProductPage() {
                     value={formData.originalPrice}
                     onChange={handleChange}
                     placeholder="For sale items (optional)"
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-10 pr-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500 transition-all"
+                    className="w-full bg-gray-50 border border-gray-200 rounded-xl pl-10 pr-4 py-3 text-gray-900 focus:outline-none focus:ring-2 focus:ring-emerald-200 focus:border-emerald-400 transition-all"
                   />
                   <DollarSign
                     size={16}
-                    className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500"
+                    className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
                   />
                 </div>
               </div>
 
               <div className="space-y-2">
-                <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
                   Stock Quantity
                 </label>
                 <div className="relative">
@@ -373,11 +373,11 @@ export default function AddProductPage() {
                     value={formData.stock}
                     onChange={handleChange}
                     placeholder="e.g. 50"
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-10 pr-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500 transition-all"
+                    className="w-full bg-gray-50 border border-gray-200 rounded-xl pl-10 pr-4 py-3 text-gray-900 focus:outline-none focus:ring-2 focus:ring-emerald-200 focus:border-emerald-400 transition-all"
                   />
                   <Package
                     size={16}
-                    className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500"
+                    className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
                   />
                 </div>
               </div>
@@ -385,29 +385,29 @@ export default function AddProductPage() {
           </section>
 
           {/* Tags */}
-          <section className="p-6 rounded-2xl bg-slate-900/50 border border-slate-800/50 backdrop-blur-sm space-y-6">
-            <div className="flex items-center gap-3 border-b border-slate-800 pb-4">
-              <div className="p-2 rounded-lg bg-orange-500/10 text-orange-400">
+          <section className="p-6 rounded-2xl bg-white border border-gray-200 space-y-6">
+            <div className="flex items-center gap-3 border-b border-gray-200 pb-4">
+              <div className="p-2 rounded-lg bg-orange-50 text-orange-500">
                 <TagIcon size={20} />
               </div>
-              <h2 className="text-lg font-bold text-white">Tags</h2>
+              <h2 className="text-lg font-bold text-gray-900">Tags</h2>
             </div>
 
             <div className="space-y-4">
               <div className="space-y-2">
-                <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
                   Product Tags
                 </label>
                 <div className="flex flex-wrap gap-2 mb-3">
                   {tags.map((tag) => (
                     <span
                       key={tag}
-                      className="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-indigo-500/10 text-indigo-400 text-xs font-medium border border-indigo-500/20"
+                      className="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-gray-100 text-gray-700 text-xs font-medium border border-gray-200"
                     >
                       {tag}
                       <button
                         onClick={() => removeTag(tag)}
-                        className="hover:text-white"
+                        className="hover:text-red-500"
                       >
                         <X size={12} />
                       </button>
@@ -420,26 +420,26 @@ export default function AddProductPage() {
                   onChange={(e) => setInputValue(e.target.value)}
                   onKeyDown={addTag}
                   placeholder="Press Enter to add tag"
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-orange-500/40 focus:border-orange-500 transition-all placeholder:text-slate-600 text-sm"
+                  className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-gray-900 focus:outline-none focus:ring-2 focus:ring-orange-200 focus:border-orange-400 transition-all placeholder:text-gray-400 text-sm"
                 />
               </div>
             </div>
           </section>
 
           {/* Seller Info */}
-          <section className="p-6 rounded-2xl bg-slate-900/50 border border-slate-800/50 backdrop-blur-sm">
+          <section className="p-6 rounded-2xl bg-white border border-gray-200">
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-500 flex items-center justify-center text-white text-sm font-bold">
+              <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-gray-700 to-gray-900 flex items-center justify-center text-white text-sm font-bold">
                 {user?.name?.charAt(0)?.toUpperCase() || "S"}
               </div>
               <div>
-                <p className="text-sm font-medium text-white">
+                <p className="text-sm font-medium text-gray-900">
                   {user?.name || "Seller"}
                 </p>
-                <p className="text-xs text-slate-500">{user?.email || ""}</p>
+                <p className="text-xs text-gray-400">{user?.email || ""}</p>
               </div>
             </div>
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-gray-400">
               This product will be listed under your seller account.
             </p>
           </section>

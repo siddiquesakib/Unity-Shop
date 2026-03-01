@@ -1,7 +1,5 @@
 @import "tailwindcss";
 
-@plugin "tailwindcss-animate";
-
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
@@ -37,7 +35,6 @@
   --radius-md: calc(var(--radius) - 2px);
   --radius-sm: calc(var(--radius) - 4px);
 }
-
 
 :root {
   --background: 0 0% 100%;
@@ -254,3 +251,4 @@ iframe[src*="translate.google"],
 body {
   top: 0px !important;
 }
+

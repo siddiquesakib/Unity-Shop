@@ -59,8 +59,8 @@ export default function WishlistPage() {
     <div className="space-y-6">
       <div className="flex items-end justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white">My Wishlist</h1>
-          <p className="text-slate-400">
+          <h1 className="text-2xl font-bold text-gray-900">My Wishlist</h1>
+          <p className="text-gray-500">
             Products you've saved for later. {products.length} item
             {products.length !== 1 ? "s" : ""} saved.
           </p>
@@ -71,19 +71,19 @@ export default function WishlistPage() {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-slate-900 border border-slate-800 rounded-2xl p-6"
+        className="bg-white border border-gray-200 rounded-2xl p-6"
       >
         <div className="relative">
           <Search
             size={16}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500"
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
           />
           <input
             type="text"
             placeholder="Search your wishlist..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-9 pr-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-indigo-500"
+            className="w-full pl-9 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-gray-400"
           />
         </div>
       </motion.div>
@@ -99,19 +99,19 @@ export default function WishlistPage() {
             {[...Array(6)].map((_, i) => (
               <div
                 key={i}
-                className="h-64 bg-slate-900 border border-slate-800 rounded-2xl animate-pulse"
+                className="h-64 bg-gray-100 border border-gray-200 rounded-2xl animate-pulse"
               />
             ))}
           </div>
         ) : filteredProducts.length === 0 ? (
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 text-center py-16">
-            <Heart size={48} className="mx-auto text-slate-700 mb-4" />
-            <p className="text-slate-400 text-lg mb-2">
+          <div className="bg-white border border-gray-200 rounded-2xl p-6 text-center py-16">
+            <Heart size={48} className="mx-auto text-gray-300 mb-4" />
+            <p className="text-gray-500 text-lg mb-2">
               {products.length === 0
                 ? "Your wishlist is empty"
                 : "No items match your search"}
             </p>
-            <p className="text-slate-500 text-sm mb-6">
+            <p className="text-gray-400 text-sm mb-6">
               {products.length === 0
                 ? "Browse products and save your favorites by clicking the heart icon."
                 : "Try adjusting your search."}
@@ -119,7 +119,7 @@ export default function WishlistPage() {
             {products.length === 0 && (
               <Link
                 href="/products"
-                className="inline-flex items-center gap-2 px-6 py-2.5 bg-indigo-600 text-white rounded-xl hover:bg-indigo-500 transition font-medium"
+                className="inline-flex items-center gap-2 px-6 py-2.5 bg-black text-white rounded-xl hover:bg-gray-800 transition font-medium"
               >
                 Browse Products
               </Link>
@@ -134,10 +134,10 @@ export default function WishlistPage() {
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.9 }}
-                className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden group hover:border-slate-700 transition-all"
+                className="bg-white border border-gray-200 rounded-2xl overflow-hidden group hover:border-gray-300 transition-all shadow-sm"
               >
                 {/* Image */}
-                <div className="relative h-48 bg-slate-800 overflow-hidden">
+                <div className="relative h-48 bg-gray-100 overflow-hidden">
                   {product.image ? (
                     <img
                       src={product.image}
@@ -149,7 +149,7 @@ export default function WishlistPage() {
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">
-                      <div className="w-16 h-16 rounded-xl bg-slate-700" />
+                      <div className="w-16 h-16 rounded-xl bg-gray-200" />
                     </div>
                   )}
 
@@ -172,27 +172,27 @@ export default function WishlistPage() {
 
                 {/* Info */}
                 <div className="p-5">
-                  <p className="text-xs text-slate-500 capitalize mb-1">
+                  <p className="text-xs text-gray-500 capitalize mb-1">
                     {product.category}
                   </p>
-                  <h3 className="text-white font-semibold mb-2 truncate">
+                  <h3 className="text-gray-900 font-semibold mb-2 truncate">
                     {product.name}
                   </h3>
 
                   <div className="flex items-baseline gap-2 mb-3">
-                    <span className="text-xl font-bold text-indigo-400">
+                    <span className="text-xl font-bold text-gray-900">
                       ${Number(product.price).toFixed(2)}
                     </span>
                     {product.originalPrice &&
                       product.originalPrice > product.price && (
-                        <span className="text-sm text-slate-500 line-through">
+                        <span className="text-sm text-gray-400 line-through">
                           ${Number(product.originalPrice).toFixed(2)}
                         </span>
                       )}
                   </div>
 
                   {product.sellerName && (
-                    <p className="text-xs text-slate-500 mb-3">
+                    <p className="text-xs text-gray-500 mb-3">
                       Sold by: {product.sellerName}
                     </p>
                   )}
@@ -200,7 +200,7 @@ export default function WishlistPage() {
                   <div className="flex items-center gap-2">
                     <Link
                       href={`/products/${product._id}`}
-                      className="flex-1 text-center py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium rounded-xl transition-colors flex items-center justify-center gap-2"
+                      className="flex-1 text-center py-2.5 bg-black hover:bg-gray-800 text-white text-sm font-medium rounded-xl transition-colors flex items-center justify-center gap-2"
                     >
                       <ExternalLink size={14} />
                       View Product

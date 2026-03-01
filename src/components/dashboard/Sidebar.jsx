@@ -62,18 +62,21 @@ export default function Sidebar() {
       icon: PlusCircle,
     },
     { name: "Orders", href: "/dashboard/seller/orders", icon: ListOrdered },
+    { name: "Profile", href: "/dashboard/seller/profile", icon: Users },
   ];
 
   const adminLinks = [
     { name: "Overview", href: "/dashboard/admin", icon: ShieldCheck },
     { name: "Manage Users", href: "/dashboard/admin/users", icon: Users },
     { name: "Sellers Info", href: "/dashboard/admin/sellers", icon: UserCog },
+    { name: "Products", href: "/dashboard/admin/products", icon: Package },
     {
       name: "System Settings",
       href: "/dashboard/admin/settings",
       icon: Settings2,
     },
     { name: "Health Logs", href: "/dashboard/admin/health", icon: Activity },
+    { name: "Profile", href: "/dashboard/admin/profile", icon: Users },
   ];
 
   const managerLinks = [
@@ -83,6 +86,7 @@ export default function Sidebar() {
       href: "/dashboard/manager/sellers",
       icon: UserCog,
     },
+    { name: "Products", href: "/dashboard/manager/products", icon: Package },
     {
       name: "Fulfillment",
       href: "/dashboard/manager/fulfillment",
@@ -98,6 +102,7 @@ export default function Sidebar() {
       href: "/dashboard/manager/stats",
       icon: BarChart3,
     },
+    { name: "Profile", href: "/dashboard/manager/profile", icon: Users },
   ];
 
   const currentLinks =
