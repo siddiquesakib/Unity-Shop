@@ -32,14 +32,14 @@ const NewArrivals = () => {
   if (!loading && products.length === 0) return null;
 
   return (
-    <section className="py-12 sm:py-16 bg-gray-50">
+    <section className="py-12 sm:py-16 bg-[#f7f6f3]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="flex items-end justify-between mb-8">
           <div>
             <div className="flex items-center gap-2 mb-2">
               <span className="inline-block w-8 h-1 rounded-full bg-black" />
-              <span className="text-xs font-semibold uppercase tracking-widest text-gray-600">
+              <span className="text-sm font-semibold uppercase tracking-widest text-gray-600">
                 Just In
               </span>
             </div>
@@ -52,9 +52,9 @@ const NewArrivals = () => {
           </div>
           <Link
             href="/products"
-            className="hidden sm:inline-flex items-center gap-2 px-5 py-2 text-sm font-bold text-black border-2 border-black rounded-full hover:bg-black hover:text-white transition-all duration-300"
+            className="hidden sm:inline-flex items-center gap-2 px-5 py-3 text-sm font-bold text-black border-2 border-black rounded-full hover:bg-black hover:text-white transition-all duration-200"
           >
-            View All <FiArrowRight className="w-3.5 h-3.5" />
+            View All <FiArrowRight className="w-4 h-4" />
           </Link>
         </div>
 
@@ -83,9 +83,9 @@ const NewArrivals = () => {
         <div className="text-center mt-8 sm:hidden">
           <Link
             href="/products"
-            className="inline-flex items-center gap-2 px-6 py-2.5 text-sm font-bold text-black border-2 border-black rounded-full hover:bg-black hover:text-white transition-all duration-300"
+            className="inline-flex items-center gap-2 px-6 py-3 text-base font-bold text-black border-2 border-black rounded-full hover:bg-black hover:text-white transition-all duration-200"
           >
-            View All <FiArrowRight className="w-3.5 h-3.5" />
+            View All <FiArrowRight className="w-4 h-4" />
           </Link>
         </div>
       </div>
