@@ -28,7 +28,7 @@ const features = [
 
 const FeaturesStrip = () => {
   return (
-    <section className="py-6 sm:py-8 border-y border-gray-100 bg-white">
+    <section className="py-6 sm:py-8 border-y border-gray-200 bg-[#f7f6f3]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
           {features.map((f, i) => {
@@ -42,7 +42,7 @@ const FeaturesStrip = () => {
                   <h4 className="text-sm font-semibold text-black leading-tight">
                     {f.title}
                   </h4>
-                  <p className="text-[11px] sm:text-xs text-gray-400 mt-0.5">
+                  <p className="text-[13px] sm:text-xs text-gray-400 mt-0.5">
                     {f.desc}
                   </p>
                 </div>

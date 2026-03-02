@@ -49,7 +49,7 @@ const contactInfo = [
 
 const ContactPage = () => {
   return (
-    <div className="bg-white min-h-screen">
+    <div className="bg-[#f7f6f3] min-h-screen">
       {/* Hero */}
       <section className="relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-gray-50 via-white to-gray-100" />
@@ -91,7 +91,7 @@ const ContactPage = () => {
       </section>
 
       {/* Contact Info Strip */}
-      <section className="border-y border-gray-100 bg-white">
+      <section className="border-y border-gray-100 bg-[#f7f6f3]">
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
             {contactInfo.map((item, i) => {

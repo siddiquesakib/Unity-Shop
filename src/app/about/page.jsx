@@ -246,7 +246,7 @@ function TeamMemberCard({ member }) {
 /* ─── PAGE ───────────────────────────────────────────────── */
 const AboutPage = () => {
   return (
-    <div className="min-h-screen bg-white text-black">
+    <div className="min-h-screen bg-[#f7f6f3] text-black">
 
       {/* ── HERO ─────────────────────────────────────────── */}
       <section className="relative overflow-hidden">
@@ -292,7 +292,7 @@ const AboutPage = () => {
       </section>
 
       {/* ── STATS ────────────────────────────────────────── */}
-      <section className="border-y border-gray-100 bg-white">
+      <section className="border-y border-gray-100 bg-[#f7f6f3]">
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
             {stats.map((stat, i) => {
@@ -361,7 +361,7 @@ const AboutPage = () => {
       </section>
 
       {/* ── STORY ────────────────────────────────────────── */}
-      <section className="py-16 sm:py-24 bg-gray-50">
+      <section className="py-16 sm:py-24 bg-[#f7f6f3]">
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <div className="grid md:grid-cols-2 gap-12 items-center">
             <motion.div

@@ -24,7 +24,7 @@ export default async function ProductPage({ params }) {
 
   if (!product) {
     return (
-      <div className="min-h-screen bg-white pt-20 flex items-center justify-center">
+      <div className="min-h-screen bg-[#f7f6f3] pt-20 flex items-center justify-center">
         <div className="text-center">
           <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-gray-100 flex items-center justify-center">
             <svg
@@ -53,10 +53,30 @@ export default async function ProductPage({ params }) {
     );
   }
 
+  // Fetch related products for "Frequently Bought Together"
+  let relatedProducts = [];
+  try {
+    const category = product.category || "";
+    const relRes = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/products?category=${encodeURIComponent(category)}`,
+      { cache: "no-store" },
+    );
+    if (relRes.ok) {
+      const data = await relRes.json();
+      const items = Array.isArray(data) ? data : data.products || [];
+      relatedProducts = items.filter((p) => (p._id || p.id) !== id).slice(0, 3);
+    }
+  } catch {
+    /* silently ignore */
+  }
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
-        <ProductDetailClient product={product} />
+    <div className="min-h-screen bg-[#f7f6f3]">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <ProductDetailClient
+          product={product}
+          relatedProducts={relatedProducts}
+        />
       </div>
     </div>
   );

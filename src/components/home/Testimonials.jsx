@@ -55,7 +55,7 @@ const Testimonials = () => {
   if (!loading && testimonials.length === 0) return null;
 
   return (
-    <section className="py-12 sm:py-16 bg-white">
+    <section className="py-12 sm:py-16 bg-[#f7f6f3]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="text-center mb-10">
@@ -100,7 +100,7 @@ const Testimonials = () => {
               {getVisible().map((t, i) => (
                 <div
                   key={t._id || i}
-                  className="relative bg-gray-50 rounded-2xl p-6 border border-gray-100 hover:border-gray-200 hover:shadow-lg transition-all duration-300"
+                  className="relative bg-white rounded-2xl p-6 border border-gray-200 hover:border-gray-300 hover:shadow-lg transition-all duration-300"
                 >
                   {/* Quote mark */}
                   <FiMessageSquare className="absolute top-4 right-4 w-6 h-6 text-gray-200" />
