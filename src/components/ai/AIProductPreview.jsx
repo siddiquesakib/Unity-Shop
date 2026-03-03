@@ -1,5 +1,10 @@
-// src/components/ai/AIProductPreview.jsx
 "use client";
+// src/components/ai/AIProductPreview.jsx
+
+
+import { useAuth } from "@/hooks/useAuth";
+// src/components/ai/AIProductPreview.jsx
+
 
 import { useState, useRef } from "react";
 import Image from "next/image";
@@ -115,7 +120,7 @@ const AIProductPreview = ({ onImageGenerated, existingImages = [] }) => {
       // Call AI API
       const response = await fetch("/api/ai/enhance-product-image", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
         body: JSON.stringify({
           image: originalImage,
           style: selectedStyle,

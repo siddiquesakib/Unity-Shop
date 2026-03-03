@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useState, useEffect } from "react";
-import { AnimatePresence, motion } from "framer-motion";
-import { useAuth } from "@/hooks/useAuth";
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
+import { useAuth } from '@/hooks/useAuth';
 import {
   LayoutDashboard,
   ShoppingBag,
@@ -26,13 +26,15 @@ import {
   Store,
   ChevronRight,
   Home,
-} from "lucide-react";
+} from 'lucide-react';
 
 export default function Sidebar() {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const { user, logout, requestSeller } = useAuth();
+  const { user, logout } = useAuth();
   const role = user?.role || "user";
+  const { user, logout, requestSeller } = useAuth();
+  const role = user?.role || 'user';
   const [sellerLoading, setSellerLoading] = useState(false);
   const [showSellerModal, setShowSellerModal] = useState(false);
   const [requestSent, setRequestSent] = useState(false);
@@ -42,87 +44,93 @@ export default function Sidebar() {
     const handleResize = () => {
       if (window.innerWidth >= 1024) setMobileOpen(false);
     };
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   const userLinks = [
-    { name: "Overview", href: "/dashboard/user", icon: LayoutDashboard },
-    { name: "My Orders", href: "/dashboard/user/orders", icon: Package },
-    { name: "Wishlist", href: "/dashboard/user/wishlist", icon: Heart },
-    { name: "Profile", href: "/dashboard/user/profile", icon: Users },
+    { name: 'Overview', href: '/dashboard/user', icon: LayoutDashboard },
+    { name: 'My Orders', href: '/dashboard/user/orders', icon: Package },
+    { name: 'Wishlist', href: '/dashboard/user/wishlist', icon: Heart },
+    { name: 'Profile', href: '/dashboard/user/profile', icon: Users },
   ];
 
   const sellerLinks = [
-    { name: "Dashboard", href: "/dashboard/seller", icon: BarChart3 },
-    { name: "Products", href: "/dashboard/seller/products", icon: ShoppingBag },
+    { name: 'Dashboard', href: '/dashboard/seller', icon: BarChart3 },
+    { name: 'Products', href: '/dashboard/seller/products', icon: ShoppingBag },
     {
-      name: "Add Product",
-      href: "/dashboard/seller/add-product",
+      name: 'Add Product',
+      href: '/dashboard/seller/add-product',
       icon: PlusCircle,
     },
-    { name: "Orders", href: "/dashboard/seller/orders", icon: ListOrdered },
-    { name: "Profile", href: "/dashboard/seller/profile", icon: Users },
+    { name: 'Orders', href: '/dashboard/seller/orders', icon: ListOrdered },
+    { name: 'Profile', href: '/dashboard/seller/profile', icon: Users },
   ];
 
   const adminLinks = [
     { name: "Overview", href: "/dashboard/admin", icon: ShieldCheck },
     { name: "Manage Users", href: "/dashboard/admin/users", icon: Users },
-    { name: "Sellers Info", href: "/dashboard/admin/sellers", icon: UserCog },
+    { name: "Seller Requests", href: "/dashboard/admin/seller-requests", icon: UserCog },
     { name: "Products", href: "/dashboard/admin/products", icon: Package },
+
+    { name: 'Overview', href: '/dashboard/admin', icon: ShieldCheck },
+    { name: 'Manage Users', href: '/dashboard/admin/users', icon: Users },
+    { name: 'Sellers Info', href: '/dashboard/admin/sellers', icon: UserCog },
+    { name: 'Products', href: '/dashboard/admin/products', icon: Package },
+    { name: 'Orders', href: '/dashboard/admin/orders', icon: ListOrdered },
     {
-      name: "System Settings",
-      href: "/dashboard/admin/settings",
+      name: 'System Settings',
+      href: '/dashboard/admin/settings',
       icon: Settings2,
     },
-    { name: "Health Logs", href: "/dashboard/admin/health", icon: Activity },
-    { name: "Promo Code", href: "/dashboard/admin/promo", icon: Megaphone },
-    { name: "Profile", href: "/dashboard/admin/profile", icon: Users },
+    { name: 'Health Logs', href: '/dashboard/admin/health', icon: Activity },
+    { name: 'Promo Code', href: '/dashboard/admin/promo', icon: Megaphone },
+    { name: 'Profile', href: '/dashboard/admin/profile', icon: Users },
   ];
 
   const managerLinks = [
-    { name: "Overview", href: "/dashboard/manager", icon: LayoutDashboard },
+    { name: 'Overview', href: '/dashboard/manager', icon: LayoutDashboard },
     {
-      name: "Seller Requests",
-      href: "/dashboard/manager/sellers",
+      name: 'Seller Requests',
+      href: '/dashboard/manager/sellers',
       icon: UserCog,
     },
-    { name: "Products", href: "/dashboard/manager/products", icon: Package },
+    { name: 'Products', href: '/dashboard/manager/products', icon: Package },
     {
-      name: "Fulfillment",
-      href: "/dashboard/manager/fulfillment",
+      name: 'Fulfillment',
+      href: '/dashboard/manager/fulfillment',
       icon: Truck,
     },
     {
-      name: "Marketing",
-      href: "/dashboard/manager/marketing",
+      name: 'Marketing',
+      href: '/dashboard/manager/marketing',
       icon: Megaphone,
     },
     {
-      name: "Platform Stats",
-      href: "/dashboard/manager/stats",
+      name: 'Platform Stats',
+      href: '/dashboard/manager/stats',
       icon: BarChart3,
     },
-    { name: "Profile", href: "/dashboard/manager/profile", icon: Users },
+    { name: 'Profile', href: '/dashboard/manager/profile', icon: Users },
   ];
 
   const currentLinks =
-    role === "admin"
+    role === 'admin'
       ? adminLinks
-      : role === "seller"
+      : role === 'seller'
         ? sellerLinks
-        : role === "manager"
+        : role === 'manager'
           ? managerLinks
           : userLinks;
 
   const sectionLabel =
-    role === "admin"
-      ? "Admin Control"
-      : role === "seller"
-        ? "Seller Center"
-        : role === "manager"
-          ? "Management"
-          : "Customer";
+    role === 'admin'
+      ? 'Admin Control'
+      : role === 'seller'
+        ? 'Seller Center'
+        : role === 'manager'
+          ? 'Management'
+          : 'Customer';
 
   const sidebarContent = (
     <div className="flex flex-col h-full">
@@ -163,7 +171,7 @@ export default function Sidebar() {
             {sectionLabel}
           </h3>
           <div className="space-y-0.5">
-            {currentLinks.map((link) => {
+            {currentLinks.map(link => {
               const isActive = pathname === link.href;
               return (
                 <Link
@@ -172,10 +180,14 @@ export default function Sidebar() {
                   onClick={() => setMobileOpen(false)}
                 >
                   <div
+                    className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 group relative ${isActive
+                      ? "bg-black text-white"
+                      : "text-gray-500 hover:bg-gray-100 hover:text-gray-900"
+                      }`}
                     className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 group relative ${
                       isActive
-                        ? "bg-black text-white"
-                        : "text-gray-500 hover:bg-gray-100 hover:text-gray-900"
+                        ? 'bg-black text-white'
+                        : 'text-gray-500 hover:bg-gray-100 hover:text-gray-900'
                     }`}
                   >
                     {isActive && (
@@ -185,8 +197,8 @@ export default function Sidebar() {
                       size={18}
                       className={
                         isActive
-                          ? "text-white"
-                          : "text-gray-400 group-hover:text-gray-600"
+                          ? 'text-white'
+                          : 'text-gray-400 group-hover:text-gray-600'
                       }
                     />
                     <span className="text-sm font-medium">{link.name}</span>
@@ -204,10 +216,10 @@ export default function Sidebar() {
         </div>
 
         {/* Become Seller CTA — only for users */}
-        {role === "user" && (
+        {role === 'user' && (
           <div className="pt-2">
             <div className="h-px bg-gray-100 mb-4" />
-            {user?.sellerRequest === "pending" || requestSent ? (
+            {user?.sellerRequest === 'pending' || requestSent ? (
               <div className="flex items-center gap-3 px-3 py-3 bg-amber-50 border border-amber-200 text-amber-700 rounded-xl text-sm">
                 <Store size={18} />
                 <div>
@@ -218,33 +230,34 @@ export default function Sidebar() {
                 </div>
               </div>
             ) : (
-              <button
-                onClick={() => setShowSellerModal(true)}
+              <Link
+                href="/dashboard/user/become-seller"
                 className="w-full flex items-center gap-3 px-3 py-3 bg-gray-50 border border-gray-200 hover:border-gray-300 text-gray-600 hover:text-gray-900 rounded-xl transition-all duration-300 group"
               >
                 <div className="p-1.5 rounded-lg bg-gray-200 group-hover:bg-gray-300 transition-colors">
                   <Store size={16} />
                 </div>
                 <span className="text-sm font-medium">
-                  {user?.sellerRequest === "rejected"
-                    ? "Re-apply as Seller"
-                    : "Become a Seller"}
+                  {user?.sellerRequest === 'rejected'
+                    ? 'Re-apply as Seller'
+                    : 'Become a Seller'}
                 </span>
-              </button>
+              </Link>
             )}
           </div>
         )}
+
       </div>
 
       {/* User Info Footer */}
       <div className="px-4 py-4 border-t border-gray-200">
         <div className="flex items-center gap-3 px-2 mb-2">
           <div className="w-8 h-8 rounded-lg bg-black flex items-center justify-center text-white text-xs font-bold">
-            {user?.name?.charAt(0)?.toUpperCase() || "U"}
+            {user?.name?.charAt(0)?.toUpperCase() || 'U'}
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-semibold text-gray-900 truncate">
-              {user?.name || "User"}
+              {user?.name || 'User'}
             </p>
             <p className="text-[10px] text-gray-400 capitalize font-medium">
               {role}
@@ -293,10 +306,10 @@ export default function Sidebar() {
             />
             {/* Panel */}
             <motion.aside
-              initial={{ x: "-100%" }}
+              initial={{ x: '-100%' }}
               animate={{ x: 0 }}
-              exit={{ x: "-100%" }}
-              transition={{ type: "spring", damping: 30, stiffness: 300 }}
+              exit={{ x: '-100%' }}
+              transition={{ type: 'spring', damping: 30, stiffness: 300 }}
               className="lg:hidden fixed inset-y-0 left-0 z-70 w-72 bg-white shadow-2xl"
             >
               <button
@@ -337,7 +350,7 @@ export default function Sidebar() {
                 </h3>
                 <p className="text-gray-500 text-sm mb-6 leading-relaxed">
                   Your request will be reviewed by the admin team. Once
-                  approved, your account will be upgraded to{" "}
+                  approved, your account will be upgraded to{' '}
                   <strong className="text-gray-900">Seller</strong> and
                   you&apos;ll be able to manage products and orders.
                 </p>
@@ -358,13 +371,13 @@ export default function Sidebar() {
                         setRequestSent(true);
                         setShowSellerModal(false);
                       } else {
-                        alert(res.error || "Failed to submit request");
+                        alert(res.error || 'Failed to submit request');
                       }
                     }}
                     disabled={sellerLoading}
                     className="flex-1 px-4 py-2.5 bg-black hover:bg-gray-800 text-white rounded-xl font-medium text-sm transition-all disabled:opacity-50"
                   >
-                    {sellerLoading ? "Submitting..." : "Send Request"}
+                    {sellerLoading ? 'Submitting...' : 'Send Request'}
                   </button>
                 </div>
               </div>
@@ -375,3 +388,5 @@ export default function Sidebar() {
     </>
   );
 }
+
+
