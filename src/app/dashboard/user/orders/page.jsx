@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
-import { useAuth } from "@/hooks/useAuth";
-import { motion } from "framer-motion";
+import { useState, useEffect } from 'react';
+import { useAuth } from '@/hooks/useAuth';
+import { motion } from 'framer-motion';
 import {
   Search,
   Eye,
@@ -13,53 +13,61 @@ import {
   XCircle,
   Filter,
   Download,
-} from "lucide-react";
-import { downloadOrderInvoice } from "@/utils/generateInvoice";
+  MapPin,
+} from 'lucide-react';
+import { downloadOrderInvoice } from '@/utils/generateInvoice';
+import OrderTrackingModal from '@/components/dashboard/OrderTrackingModal';
 
 const API_BASE =
-  process.env.NEXT_PUBLIC_API_URL || "https://unity-shop-server.vercel.app";
+  process.env.NEXT_PUBLIC_API_URL || 'https://unity-shop-server.vercel.app';
 
-const getStatusColor = (status) => {
+const getStatusColor = status => {
   switch (status) {
-    case "New":
-      return "bg-purple-50 text-purple-600 border-purple-200";
-    case "Processing":
-      return "bg-amber-50 text-amber-600 border-amber-200";
-    case "Shipped":
-      return "bg-blue-50 text-blue-600 border-blue-200";
-    case "Delivered":
-      return "bg-emerald-50 text-emerald-600 border-emerald-200";
-    case "Cancelled":
-      return "bg-red-50 text-red-600 border-red-200";
+    case 'New':
+      return 'bg-purple-50 text-purple-600 border-purple-200';
+    case 'Processing':
+      return 'bg-amber-50 text-amber-600 border-amber-200';
+    case 'Shipped':
+      return 'bg-blue-50 text-blue-600 border-blue-200';
+    case 'Delivered':
+      return 'bg-emerald-50 text-emerald-600 border-emerald-200';
+    case 'Cancelled':
+      return 'bg-red-50 text-red-600 border-red-200';
     default:
-      return "bg-gray-50 text-gray-600 border-gray-200";
+      return 'bg-gray-50 text-gray-600 border-gray-200';
   }
 };
 
-const getStatusIcon = (status) => {
+const getStatusIcon = status => {
   switch (status) {
-    case "New":
+    case 'New':
       return <Clock size={14} />;
-    case "Processing":
+    case 'Processing':
       return <Package size={14} />;
-    case "Shipped":
+    case 'Shipped':
       return <Truck size={14} />;
-    case "Delivered":
+    case 'Delivered':
       return <CheckCircle size={14} />;
-    case "Cancelled":
+    case 'Cancelled':
       return <XCircle size={14} />;
     default:
       return <Clock size={14} />;
   }
 };
 
+// Orders that can still be tracked (not cancelled)
+const isTrackable = status => status !== 'Cancelled';
+
 export default function UserOrdersPage() {
   const { user } = useAuth();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState("All");
+  const [search, setSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState('All');
   const [selectedOrder, setSelectedOrder] = useState(null);
+
+  // Tracking modal state
+  const [trackingOrderId, setTrackingOrderId] = useState(null);
 
   useEffect(() => {
     const fetchOrders = async () => {
@@ -73,7 +81,7 @@ export default function UserOrdersPage() {
           setOrders(data);
         }
       } catch (err) {
-        console.error("Failed to fetch orders:", err);
+        console.error('Failed to fetch orders:', err);
       } finally {
         setLoading(false);
       }
@@ -82,21 +90,21 @@ export default function UserOrdersPage() {
   }, [user?.email]);
 
   const statuses = [
-    "All",
-    "New",
-    "Processing",
-    "Shipped",
-    "Delivered",
-    "Cancelled",
+    'All',
+    'New',
+    'Processing',
+    'Shipped',
+    'Delivered',
+    'Cancelled',
   ];
 
-  const filteredOrders = orders.filter((order) => {
+  const filteredOrders = orders.filter(order => {
     const matchesSearch =
-      (order.productName || "").toLowerCase().includes(search.toLowerCase()) ||
-      (order.sellerName || "").toLowerCase().includes(search.toLowerCase()) ||
-      (order.transitionId || "").toLowerCase().includes(search.toLowerCase());
+      (order.productName || '').toLowerCase().includes(search.toLowerCase()) ||
+      (order.sellerName || '').toLowerCase().includes(search.toLowerCase()) ||
+      (order.transitionId || '').toLowerCase().includes(search.toLowerCase());
     const matchesStatus =
-      statusFilter === "All" || (order.status || "New") === statusFilter;
+      statusFilter === 'All' || (order.status || 'New') === statusFilter;
     return matchesSearch && matchesStatus;
   });
 
@@ -142,20 +150,20 @@ export default function UserOrdersPage() {
               type="text"
               placeholder="Search by product, seller, or transaction ID..."
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={e => setSearch(e.target.value)}
               className="w-full pl-9 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-gray-400"
             />
           </div>
           <div className="flex items-center gap-2 flex-wrap">
             <Filter size={16} className="text-gray-400" />
-            {statuses.map((status) => (
+            {statuses.map(status => (
               <button
                 key={status}
                 onClick={() => setStatusFilter(status)}
                 className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
                   statusFilter === status
-                    ? "bg-black text-white"
-                    : "bg-gray-100 text-gray-500 hover:text-gray-900"
+                    ? 'bg-black text-white'
+                    : 'bg-gray-100 text-gray-500 hover:text-gray-900'
                 }`}
               >
                 {status}
@@ -186,13 +194,13 @@ export default function UserOrdersPage() {
             <Package size={48} className="mx-auto text-gray-300 mb-4" />
             <p className="text-gray-500 text-lg mb-2">
               {orders.length === 0
-                ? "No orders yet"
-                : "No orders match your filters"}
+                ? 'No orders yet'
+                : 'No orders match your filters'}
             </p>
             <p className="text-gray-400 text-sm">
               {orders.length === 0
-                ? "Your purchase history will appear here."
-                : "Try adjusting your search or filter criteria."}
+                ? 'Your purchase history will appear here.'
+                : 'Try adjusting your search or filter criteria.'}
             </p>
           </div>
         ) : (
@@ -224,7 +232,7 @@ export default function UserOrdersPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
-                {filteredOrders.map((order) => (
+                {filteredOrders.map(order => (
                   <tr
                     key={order._id}
                     className="group hover:bg-gray-50 transition-colors"
@@ -239,11 +247,11 @@ export default function UserOrdersPage() {
                     </td>
                     <td className="py-4">
                       <span className="text-sm text-gray-700 truncate max-w-[180px] block">
-                        {order.productName || "N/A"}
+                        {order.productName || 'N/A'}
                       </span>
                     </td>
                     <td className="py-4 text-sm text-gray-500">
-                      {order.sellerName || "N/A"}
+                      {order.sellerName || 'N/A'}
                     </td>
                     <td className="py-4 text-sm font-semibold text-emerald-600">
                       ${Number(order.amountPaid || 0).toFixed(2)}
@@ -251,27 +259,35 @@ export default function UserOrdersPage() {
                     <td className="py-4 text-sm text-gray-500">
                       {order.createdAt
                         ? new Date(order.createdAt).toLocaleDateString(
-                            "en-US",
+                            'en-US',
                             {
-                              month: "short",
-                              day: "numeric",
-                              year: "numeric",
+                              month: 'short',
+                              day: 'numeric',
+                              year: 'numeric',
                             },
                           )
-                        : "N/A"}
+                        : 'N/A'}
                     </td>
                     <td className="py-4">
                       <span
-                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${getStatusColor(
-                          order.status || "New",
-                        )}`}
+                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${getStatusColor(order.status || 'New')}`}
                       >
-                        {getStatusIcon(order.status || "New")}
-                        {order.status || "New"}
+                        {getStatusIcon(order.status || 'New')}
+                        {order.status || 'New'}
                       </span>
                     </td>
                     <td className="py-4 pr-4 text-right">
                       <div className="flex items-center justify-end gap-1">
+                        {/* ── Track Button (NEW) ── */}
+                        {isTrackable(order.status || 'New') && (
+                          <button
+                            onClick={() => setTrackingOrderId(order._id)}
+                            title="Track Order"
+                            className="p-2 rounded-lg hover:bg-blue-50 text-gray-400 hover:text-blue-600 transition-colors"
+                          >
+                            <MapPin size={16} />
+                          </button>
+                        )}
                         <button
                           onClick={() => setSelectedOrder(order)}
                           title="View Details"
@@ -296,7 +312,7 @@ export default function UserOrdersPage() {
         )}
       </motion.div>
 
-      {/* Order Detail Modal */}
+      {/* ── Order Detail Modal (existing) ── */}
       {selectedOrder && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div
@@ -346,13 +362,13 @@ export default function UserOrdersPage() {
               <div className="flex justify-between">
                 <span className="text-gray-500">Product</span>
                 <span className="text-gray-900">
-                  {selectedOrder.productName || "N/A"}
+                  {selectedOrder.productName || 'N/A'}
                 </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-500">Seller</span>
                 <span className="text-gray-900">
-                  {selectedOrder.sellerName || "N/A"}
+                  {selectedOrder.sellerName || 'N/A'}
                 </span>
               </div>
               <hr className="border-gray-200" />
@@ -367,23 +383,42 @@ export default function UserOrdersPage() {
                 <span className="text-gray-900">
                   {selectedOrder.createdAt
                     ? new Date(selectedOrder.createdAt).toLocaleString()
-                    : "N/A"}
+                    : 'N/A'}
                 </span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-gray-500">Status</span>
                 <span
-                  className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(
-                    selectedOrder.status || "New",
-                  )}`}
+                  className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(selectedOrder.status || 'New')}`}
                 >
-                  {getStatusIcon(selectedOrder.status || "New")}
-                  {selectedOrder.status || "New"}
+                  {getStatusIcon(selectedOrder.status || 'New')}
+                  {selectedOrder.status || 'New'}
                 </span>
               </div>
+              {/* Track button inside detail modal too */}
+              {isTrackable(selectedOrder.status || 'New') && (
+                <button
+                  onClick={() => {
+                    setSelectedOrder(null);
+                    setTrackingOrderId(selectedOrder._id);
+                  }}
+                  className="w-full mt-2 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-gray-200 hover:border-black text-sm font-medium transition-colors"
+                >
+                  <MapPin size={15} />
+                  Track This Order
+                </button>
+              )}
             </div>
           </motion.div>
         </div>
+      )}
+
+      {/* ── Order Tracking Modal (NEW) ── */}
+      {trackingOrderId && (
+        <OrderTrackingModal
+          orderId={trackingOrderId}
+          onClose={() => setTrackingOrderId(null)}
+        />
       )}
     </div>
   );
