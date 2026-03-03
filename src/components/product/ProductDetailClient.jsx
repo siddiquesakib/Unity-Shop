@@ -38,6 +38,7 @@ import {
 import { useCart } from "@/contexts/CartContext";
 import { useCurrency } from "@/contexts/CurrencyContext";
 import { useAuth } from "@/contexts/AuthContext";
+import AINegoBot from "@/components/ai/AINegoBot"; // 🚀 AI Negotiation Bot
 
 /* ──────────────────── Helpers ──────────────────── */
 const PLACEHOLDER = "https://via.placeholder.com/800x800?text=Product+Image";
@@ -934,6 +935,13 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
               <FiHeart size={16} className={wish ? "fill-current" : ""} />
             </button>
           </div>
+
+          {/* 🚀 AI NEGOTIATION BOT (only for logged-in buyers who are not the seller) */}
+          {user && user._id !== product.seller?._id && (
+            <div className="flex justify-center pt-2">
+              <AINegoBot product={product} sellerId={product.seller?._id} />
+            </div>
+          )}
 
           {/* Trust */}
           <div className="grid grid-cols-4 gap-2 pt-3 border-t border-gray-100">

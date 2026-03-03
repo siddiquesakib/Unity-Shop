@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { useAuth } from "@/hooks/useAuth";
+import AIProductPreview from "@/components/ai/AIProductPreview";
 import {
   Plus,
   X,
@@ -15,6 +16,7 @@ import {
   CheckCircle2,
   AlertCircle,
   Loader2,
+  Sparkles,
 } from "lucide-react";
 
 export default function AddProductPage() {
@@ -300,9 +302,26 @@ export default function AddProductPage() {
                 </div>
               )}
 
+              {/* AI Product Preview Button */}
+              <div className="flex items-center gap-3 pt-2">
+                <AIProductPreview
+                  onImageGenerated={(enhancedImageUrl) => {
+                    setFormData((prev) => ({
+                      ...prev,
+                      image: enhancedImageUrl,
+                    }));
+                  }}
+                />
+                <p className="text-xs text-gray-400 flex items-center gap-1">
+                  <Sparkles size={14} className="text-purple-500" />
+                  Enhance your product image with AI
+                </p>
+              </div>
+
               <p className="text-xs text-gray-400 flex items-center gap-2">
                 <AlertCircle size={14} />
-                Paste a direct image URL. Recommended: 1200x1200px.
+                Paste a direct image URL or use AI to enhance one. Recommended:
+                1200x1200px.
               </p>
             </div>
           </section>
