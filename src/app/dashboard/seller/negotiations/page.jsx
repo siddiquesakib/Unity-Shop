@@ -16,7 +16,7 @@ import {
 } from "react-icons/fi";
 
 export default function SellerNegotiationsPage() {
-  const { user } = useAuth();
+  const { user, token } = useAuth();
   const router = useRouter();
   const [negotiations, setNegotiations] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -33,13 +33,14 @@ export default function SellerNegotiationsPage() {
   const fetchNegotiations = async () => {
     try {
       setLoading(true);
-      // Replace with your actual API endpoint
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/negotiations?sellerId=${user._id}`,
-      );
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/negotiations/seller`, {
+        headers: {
+            "Authorization": `Bearer ${token}`
+        }
+      });
       if (!res.ok) throw new Error("Failed to fetch");
       const data = await res.json();
-      setNegotiations(data);
+      setNegotiations(data.negotiations || []);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -49,17 +50,20 @@ export default function SellerNegotiationsPage() {
 
   const handleAction = async (negoId, action) => {
     try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/negotiations/${negoId}`,
-        {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ status: action, sellerId: user._id }),
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/negotiations/${negoId}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
         },
+        body: JSON.stringify({ status: action }),
+      });
+      if (!res.ok) throw new Error("Failed to update status");
+      
+      // Update local state without full refetch
+      setNegotiations(prev => 
+        prev.map(n => n._id === negoId ? { ...n, status: action } : n)
       );
-      if (!res.ok) throw new Error("Failed to update");
-      // Refresh list
-      fetchNegotiations();
     } catch (err) {
       alert(err.message);
     }
@@ -115,7 +119,7 @@ export default function SellerNegotiationsPage() {
                     </div>
                     <div>
                       <h3 className="font-semibold text-gray-900">
-                        {nego.product?.name || "Product"}
+                        {nego.productDetails?.name || "Product"}
                       </h3>
                       <p className="text-xs text-gray-400 flex items-center gap-1">
                         <FiCalendar size={12} />
@@ -129,7 +133,7 @@ export default function SellerNegotiationsPage() {
                       <FiUser size={14} className="text-gray-400" />
                       <span className="text-gray-600">Buyer:</span>
                       <span className="font-medium text-gray-900">
-                        {nego.buyer?.name || "Unknown"}
+                        {nego.buyerDetails?.name || "Unknown"}
                       </span>
                     </div>
                     <div className="flex items-center gap-2 text-sm">

@@ -948,7 +948,7 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
           {/* 🚀 AI NEGOTIATION BOT (only for logged-in buyers who are not the seller) */}
           {user && user._id !== product.seller?._id && (
             <div className="flex justify-center pt-2">
-              <AINegoBot product={product} sellerId={product.seller?._id} />
+              <AINegoBot product={product} sellerId={product.sellerEmail} />
             </div>
           )}
 
