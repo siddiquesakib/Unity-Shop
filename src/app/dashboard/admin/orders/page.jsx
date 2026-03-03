@@ -15,7 +15,7 @@ import {
   RefreshCw,
   AlertCircle,
 } from 'lucide-react';
-import OrderTrackingModal from '@/components/dashboard/OrderTrackingModal';
+import OrderTrackingModal from '@/components/common/OrderTrackingModal';
 
 const API_BASE =
   process.env.NEXT_PUBLIC_API_URL || 'https://unity-shop-server.vercel.app';
