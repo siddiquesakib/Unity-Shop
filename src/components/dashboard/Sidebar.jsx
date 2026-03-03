@@ -31,6 +31,8 @@ import {
 export default function Sidebar() {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { user, logout } = useAuth();
+  const role = user?.role || "user";
   const { user, logout, requestSeller } = useAuth();
   const role = user?.role || 'user';
   const [sellerLoading, setSellerLoading] = useState(false);
@@ -66,6 +68,11 @@ export default function Sidebar() {
   ];
 
   const adminLinks = [
+    { name: "Overview", href: "/dashboard/admin", icon: ShieldCheck },
+    { name: "Manage Users", href: "/dashboard/admin/users", icon: Users },
+    { name: "Seller Requests", href: "/dashboard/admin/seller-requests", icon: UserCog },
+    { name: "Products", href: "/dashboard/admin/products", icon: Package },
+
     { name: 'Overview', href: '/dashboard/admin', icon: ShieldCheck },
     { name: 'Manage Users', href: '/dashboard/admin/users', icon: Users },
     { name: 'Sellers Info', href: '/dashboard/admin/sellers', icon: UserCog },
@@ -173,6 +180,10 @@ export default function Sidebar() {
                   onClick={() => setMobileOpen(false)}
                 >
                   <div
+                    className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 group relative ${isActive
+                      ? "bg-black text-white"
+                      : "text-gray-500 hover:bg-gray-100 hover:text-gray-900"
+                      }`}
                     className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 group relative ${
                       isActive
                         ? 'bg-black text-white'
@@ -219,8 +230,8 @@ export default function Sidebar() {
                 </div>
               </div>
             ) : (
-              <button
-                onClick={() => setShowSellerModal(true)}
+              <Link
+                href="/dashboard/user/become-seller"
                 className="w-full flex items-center gap-3 px-3 py-3 bg-gray-50 border border-gray-200 hover:border-gray-300 text-gray-600 hover:text-gray-900 rounded-xl transition-all duration-300 group"
               >
                 <div className="p-1.5 rounded-lg bg-gray-200 group-hover:bg-gray-300 transition-colors">
@@ -231,10 +242,11 @@ export default function Sidebar() {
                     ? 'Re-apply as Seller'
                     : 'Become a Seller'}
                 </span>
-              </button>
+              </Link>
             )}
           </div>
         )}
+
       </div>
 
       {/* User Info Footer */}
@@ -376,3 +388,5 @@ export default function Sidebar() {
     </>
   );
 }
+
+

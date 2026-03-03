@@ -96,15 +96,16 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // Request Seller — submits a request that needs admin/manager approval
-  const requestSeller = async () => {
+  // Request Seller — submits a request with full details
+  const submitSellerRequest = async (formData) => {
     if (!user?.email) return { success: false, error: "Not logged in" };
     try {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/users/request-seller/${user.email}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/seller-requests`,
         {
-          method: "PATCH",
+          method: "POST",
           headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ...formData, email: user.email }),
         },
       );
 
@@ -114,21 +115,22 @@ export const AuthProvider = ({ children }) => {
         throw new Error(data.message || "Failed to submit seller request");
       }
 
+      // Update local state
+      const updatedUser = { ...user, sellerRequest: "pending" };
       // Update local state with sellerRequest status (role stays "user" until approved)
       const updatedUser = { ...user,
         token: typeof window !== "undefined" ? localStorage.getItem("token") : null, sellerRequest: "pending" };
       setUser(updatedUser);
       localStorage.setItem("user", JSON.stringify(updatedUser));
-
-      // Update NextAuth session/JWT so it persists across refresh
       await update({ sellerRequest: "pending" });
 
       return { success: true, message: data.message };
     } catch (error) {
-      console.error("Request Seller Error:", error);
+      console.error("Submit Seller Request Error:", error);
       return { success: false, error: error.message };
     }
   };
+
 
   // Check seller request status from backend
   const checkSellerRequestStatus = async () => {
@@ -184,8 +186,10 @@ export const AuthProvider = ({ children }) => {
         register,
         logout,
         getDashboardByRole,
-        requestSeller,
+        submitSellerRequest,
         checkSellerRequestStatus,
+
+
       }}
     >
       {children}
