@@ -31,10 +31,8 @@ import {
 export default function Sidebar() {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const { user, logout, requestSeller } = useAuth();
+  const { user, logout } = useAuth();
   const role = user?.role || "user";
-  const [sellerLoading, setSellerLoading] = useState(false);
-  const [showSellerModal, setShowSellerModal] = useState(false);
   const [requestSent, setRequestSent] = useState(false);
 
   // Close mobile sidebar on window resize to desktop
@@ -68,8 +66,9 @@ export default function Sidebar() {
   const adminLinks = [
     { name: "Overview", href: "/dashboard/admin", icon: ShieldCheck },
     { name: "Manage Users", href: "/dashboard/admin/users", icon: Users },
-    { name: "Sellers Info", href: "/dashboard/admin/sellers", icon: UserCog },
+    { name: "Seller Requests", href: "/dashboard/admin/seller-requests", icon: UserCog },
     { name: "Products", href: "/dashboard/admin/products", icon: Package },
+
     {
       name: "System Settings",
       href: "/dashboard/admin/settings",
@@ -172,11 +171,10 @@ export default function Sidebar() {
                   onClick={() => setMobileOpen(false)}
                 >
                   <div
-                    className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 group relative ${
-                      isActive
-                        ? "bg-black text-white"
-                        : "text-gray-500 hover:bg-gray-100 hover:text-gray-900"
-                    }`}
+                    className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 group relative ${isActive
+                      ? "bg-black text-white"
+                      : "text-gray-500 hover:bg-gray-100 hover:text-gray-900"
+                      }`}
                   >
                     {isActive && (
                       <div className="absolute -left-4 top-1/2 -translate-y-1/2 w-1 h-5 bg-black rounded-r-full" />
@@ -218,8 +216,8 @@ export default function Sidebar() {
                 </div>
               </div>
             ) : (
-              <button
-                onClick={() => setShowSellerModal(true)}
+              <Link
+                href="/dashboard/user/become-seller"
                 className="w-full flex items-center gap-3 px-3 py-3 bg-gray-50 border border-gray-200 hover:border-gray-300 text-gray-600 hover:text-gray-900 rounded-xl transition-all duration-300 group"
               >
                 <div className="p-1.5 rounded-lg bg-gray-200 group-hover:bg-gray-300 transition-colors">
@@ -230,10 +228,11 @@ export default function Sidebar() {
                     ? "Re-apply as Seller"
                     : "Become a Seller"}
                 </span>
-              </button>
+              </Link>
             )}
           </div>
         )}
+
       </div>
 
       {/* User Info Footer */}
@@ -311,67 +310,8 @@ export default function Sidebar() {
         )}
       </AnimatePresence>
 
-      {/* Seller Request Modal */}
-      <AnimatePresence>
-        {showSellerModal && (
-          <div className="fixed inset-0 z-100 flex items-center justify-center p-4">
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => !sellerLoading && setShowSellerModal(false)}
-              className="absolute inset-0 bg-black/40 backdrop-blur-sm"
-            />
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 10 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 10 }}
-              className="relative bg-white border border-gray-200 rounded-2xl p-8 max-w-md w-full shadow-2xl"
-            >
-              <div className="text-center">
-                <div className="w-14 h-14 mx-auto mb-4 rounded-2xl bg-black flex items-center justify-center">
-                  <Store size={28} className="text-white" />
-                </div>
-                <h3 className="text-lg font-bold text-gray-900 mb-2">
-                  Request Seller Account
-                </h3>
-                <p className="text-gray-500 text-sm mb-6 leading-relaxed">
-                  Your request will be reviewed by the admin team. Once
-                  approved, your account will be upgraded to{" "}
-                  <strong className="text-gray-900">Seller</strong> and
-                  you&apos;ll be able to manage products and orders.
-                </p>
-                <div className="flex gap-3">
-                  <button
-                    onClick={() => setShowSellerModal(false)}
-                    disabled={sellerLoading}
-                    className="flex-1 px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-medium text-sm transition-colors disabled:opacity-50"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={async () => {
-                      setSellerLoading(true);
-                      const res = await requestSeller();
-                      setSellerLoading(false);
-                      if (res.success) {
-                        setRequestSent(true);
-                        setShowSellerModal(false);
-                      } else {
-                        alert(res.error || "Failed to submit request");
-                      }
-                    }}
-                    disabled={sellerLoading}
-                    className="flex-1 px-4 py-2.5 bg-black hover:bg-gray-800 text-white rounded-xl font-medium text-sm transition-all disabled:opacity-50"
-                  >
-                    {sellerLoading ? "Submitting..." : "Send Request"}
-                  </button>
-                </div>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
     </>
   );
 }
+
+

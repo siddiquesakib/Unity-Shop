@@ -39,6 +39,8 @@ import { useCart } from "@/contexts/CartContext";
 import { useCurrency } from "@/contexts/CurrencyContext";
 import { useAuth } from "@/contexts/AuthContext";
 import AINegoBot from "@/components/ai/AINegoBot"; // 🚀 AI Negotiation Bot
+import GroupBuyUI from "@/components/product/GroupBuyUI";
+
 
 /* ──────────────────── Helpers ──────────────────── */
 const PLACEHOLDER = "https://via.placeholder.com/800x800?text=Product+Image";
@@ -116,7 +118,7 @@ const saveRV = (p) => {
       rating: p.rating,
     });
     localStorage.setItem(RV_KEY, JSON.stringify(list.slice(0, 10)));
-  } catch {}
+  } catch { }
 };
 const getRV = (id) => {
   if (typeof window === "undefined") return [];
@@ -281,9 +283,9 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
   const disc =
     product.originalPrice && product.originalPrice > product.price
       ? Math.round(
-          ((product.originalPrice - product.price) / product.originalPrice) *
-            100,
-        )
+        ((product.originalPrice - product.price) / product.originalPrice) *
+        100,
+      )
       : null;
   const savings = disc ? product.originalPrice - product.price : 0;
   const colors = Array.isArray(product.colors)
@@ -383,7 +385,7 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
             setMyComment(mine.comment);
           }
         })
-        .catch(() => {});
+        .catch(() => { });
     }
   }, [pid, user]);
 
@@ -501,7 +503,7 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
         resetReviewForm();
         await fetchReviews(1);
       }
-    } catch {}
+    } catch { }
   };
 
   const startEdit = (r) => {
@@ -529,16 +531,16 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
           prev.map((r) =>
             r._id === reviewId
               ? {
-                  ...r,
-                  likes: data.liked
-                    ? [...(r.likes || []), user._id]
-                    : (r.likes || []).filter((id) => id !== user._id),
-                }
+                ...r,
+                likes: data.liked
+                  ? [...(r.likes || []), user._id]
+                  : (r.likes || []).filter((id) => id !== user._id),
+              }
               : r,
           ),
         );
       }
-    } catch {}
+    } catch { }
   };
 
   /* ── Reply to a review ── */
@@ -570,7 +572,7 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
         setReplyingTo(null);
         setExpandedReplies((p) => ({ ...p, [reviewId]: true }));
       }
-    } catch {}
+    } catch { }
     setReplySubmitting(false);
   };
 
@@ -780,6 +782,13 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
               </div>
             )}
           </div>
+
+          <GroupBuyUI
+            productId={pid}
+            user={user}
+            formatPrice={formatPrice}
+          />
+
 
           {/* Colors */}
           {colors.length > 0 && (
@@ -1131,51 +1140,51 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
                           {/* Image previews */}
                           {(keepImages.length > 0 ||
                             reviewPreviews.length > 0) && (
-                            <div className="flex gap-1.5 flex-wrap mb-2">
-                              {keepImages.map((url) => (
-                                <div
-                                  key={url}
-                                  className="relative w-14 h-14 rounded-lg overflow-hidden border border-gray-200 group"
-                                >
-                                  <Image
-                                    src={url}
-                                    alt=""
-                                    fill
-                                    className="object-cover"
-                                    sizes="56px"
-                                  />
-                                  <button
-                                    type="button"
-                                    onClick={() => removeKeptImage(url)}
-                                    className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                              <div className="flex gap-1.5 flex-wrap mb-2">
+                                {keepImages.map((url) => (
+                                  <div
+                                    key={url}
+                                    className="relative w-14 h-14 rounded-lg overflow-hidden border border-gray-200 group"
                                   >
-                                    <FiX size={10} />
-                                  </button>
-                                </div>
-                              ))}
-                              {reviewPreviews.map((src, i) => (
-                                <div
-                                  key={i}
-                                  className="relative w-14 h-14 rounded-lg overflow-hidden border border-gray-200 group"
-                                >
-                                  <Image
-                                    src={src}
-                                    alt=""
-                                    fill
-                                    className="object-cover"
-                                    sizes="56px"
-                                  />
-                                  <button
-                                    type="button"
-                                    onClick={() => removeNewImage(i)}
-                                    className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                                    <Image
+                                      src={url}
+                                      alt=""
+                                      fill
+                                      className="object-cover"
+                                      sizes="56px"
+                                    />
+                                    <button
+                                      type="button"
+                                      onClick={() => removeKeptImage(url)}
+                                      className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                                    >
+                                      <FiX size={10} />
+                                    </button>
+                                  </div>
+                                ))}
+                                {reviewPreviews.map((src, i) => (
+                                  <div
+                                    key={i}
+                                    className="relative w-14 h-14 rounded-lg overflow-hidden border border-gray-200 group"
                                   >
-                                    <FiX size={10} />
-                                  </button>
-                                </div>
-                              ))}
-                            </div>
-                          )}
+                                    <Image
+                                      src={src}
+                                      alt=""
+                                      fill
+                                      className="object-cover"
+                                      sizes="56px"
+                                    />
+                                    <button
+                                      type="button"
+                                      onClick={() => removeNewImage(i)}
+                                      className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                                    >
+                                      <FiX size={10} />
+                                    </button>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
 
                           {/* Bottom toolbar */}
                           <div className="flex items-center justify-between pt-2 border-t border-gray-200">
@@ -1752,7 +1761,7 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
                 {formatPrice(
                   (product.price +
                     fbt.reduce((s, p) => s + (p.price || 0), 0)) *
-                    0.9,
+                  0.9,
                 )}
               </p>
               <span className="text-[16px] sm:text-xs font-bold text-green-600 bg-green-50 px-1.5 py-0.5 rounded">
