@@ -7,6 +7,7 @@ const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
+
   const [loading, setLoading] = useState(true);
   const router = useRouter();
   const { data: session, status, update } = useSession();
@@ -114,7 +115,8 @@ export const AuthProvider = ({ children }) => {
       }
 
       // Update local state with sellerRequest status (role stays "user" until approved)
-      const updatedUser = { ...user, sellerRequest: "pending" };
+      const updatedUser = { ...user,
+        token: typeof window !== "undefined" ? localStorage.getItem("token") : null, sellerRequest: "pending" };
       setUser(updatedUser);
       localStorage.setItem("user", JSON.stringify(updatedUser));
 
@@ -137,7 +139,8 @@ export const AuthProvider = ({ children }) => {
       );
       const data = await res.json();
       if (res.ok && data.sellerRequest) {
-        const updatedUser = { ...user, sellerRequest: data.sellerRequest };
+        const updatedUser = { ...user,
+        token: typeof window !== "undefined" ? localStorage.getItem("token") : null, sellerRequest: data.sellerRequest };
         setUser(updatedUser);
         localStorage.setItem("user", JSON.stringify(updatedUser));
         // Sync NextAuth session/JWT
@@ -174,6 +177,7 @@ export const AuthProvider = ({ children }) => {
     <AuthContext.Provider
       value={{
         user,
+        token: typeof window !== "undefined" ? localStorage.getItem("token") : null,
         loading,
         login,
         googleLogin,

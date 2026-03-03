@@ -33,7 +33,7 @@ import {
  */
 
 const AINegoBot = ({ product, sellerId }) => {
-  const { user } = useAuth();
+  const { user, token } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
@@ -77,7 +77,7 @@ const AINegoBot = ({ product, sellerId }) => {
       // Call AI API to analyze offer
       const response = await fetch("/api/ai/negotiate", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
         body: JSON.stringify({
           productId: product._id,
           productPrice: product.price,

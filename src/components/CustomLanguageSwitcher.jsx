@@ -90,7 +90,7 @@ export default function CustomLanguageSwitcher() {
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-1.5 px-2 py-1 text-gray-300 hover:text-white rounded transition-colors text-sm"
+        className="flex items-center gap-1.5 px-2 py-1 text-black hover:text-gray-600 rounded transition-colors text-sm"
       >
         <span className="text-base">{currentLang.flag}</span>
         <span className="font-medium">{currentLang.name}</span>
@@ -101,21 +101,21 @@ export default function CustomLanguageSwitcher() {
       </button>
 
       {isOpen && (
-        <div className="absolute top-full right-0 mt-2 w-44 bg-white rounded-lg shadow-xl border border-gray-200 py-1 z-50 max-h-72 overflow-y-auto">
+        <div className="absolute top-full right-0 mt-2 w-44 bg-black rounded-md shadow-2xl border border-gray-800 py-1 z-50 max-h-72 overflow-y-auto text-[#fcfbf7]">
           {languages.map((lang) => (
             <button
               key={lang.code}
               onClick={() => handleLanguageChange(lang)}
               className={`flex items-center gap-2.5 w-full px-3 py-2 text-sm transition-colors ${
                 currentLang.code === lang.code
-                  ? "bg-gray-100 text-black font-semibold"
-                  : "text-gray-600 hover:bg-gray-50 hover:text-black"
+                  ? "bg-gray-800 text-[#fcfbf7] font-semibold"
+                  : "text-gray-300 hover:bg-gray-900 hover:text-[#fcfbf7]"
               }`}
             >
               <span className="text-base">{lang.flag}</span>
               <span>{lang.name}</span>
               {currentLang.code === lang.code && (
-                <span className="ml-auto text-black">✓</span>
+                <span className="ml-auto text-[#fcfbf7]">✓</span>
               )}
             </button>
           ))}
