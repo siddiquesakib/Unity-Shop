@@ -39,6 +39,7 @@ import { useCart } from "@/contexts/CartContext";
 import { useCurrency } from "@/contexts/CurrencyContext";
 import { useAuth } from "@/contexts/AuthContext";
 import AINegoBot from "@/components/ai/AINegoBot"; // 🚀 AI Negotiation Bot
+import { number } from "motion-dom";
 import GroupBuyUI from "@/components/product/GroupBuyUI";
 
 
@@ -222,6 +223,8 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
   const videoRef = useRef(null);
 
   /* ── Local state ─────────────────────────────────── */
+  const [bidAmount, setBidAmount] = useState("");
+  const [bidError, setBidError] = useState("");
   const [selImg, setSelImg] = useState(0);
   const [qty, setQty] = useState(1);
   const [wish, setWish] = useState(false);
@@ -633,6 +636,7 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
                   src={imgSrc(selImg)}
                   alt={product.name}
                   fill
+                  unoptimized={true}
                   className="object-contain p-4 group-hover:scale-105 transition-transform duration-500"
                   sizes="(max-width:768px) 100vw, 50vw"
                   onError={() => setImgErr((p) => ({ ...p, [selImg]: true }))}
@@ -693,6 +697,7 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
                   alt=""
                   width={56}
                   height={56}
+                  unoptimized={true}
                   className="object-contain w-full h-full p-0.5"
                   onError={() => setImgErr((p) => ({ ...p, [i]: true }))}
                 />
@@ -914,7 +919,7 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
           </div>
 
           {/* Buttons */}
-          <div className="flex gap-2">
+          {/* <div className="flex gap-2">
             <button
               onClick={addCart}
               disabled={product.stock === 0 || cartOk}
@@ -943,9 +948,127 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
             >
               <FiHeart size={16} className={wish ? "fill-current" : ""} />
             </button>
-          </div>
+          </div> */}
+          {/* ── Bidding or Purchase Buttons ── */}
+          {/* ── Bidding or Purchase Buttons ── */}
+          <div className="pt-2">
+            {product.category?.toLowerCase() === "auction" ? (
+              /* ───── AUCTION INTERFACE ───── */
+              <div className="p-4 bg-amber-50 rounded-2xl border-2 border-amber-200 space-y-4 shadow-sm">
+                <div className="flex justify-between items-center">
+                  <span className="flex items-center gap-1.5 text-amber-700 font-black text-xs uppercase tracking-widest">
+                    <FiZap className="fill-amber-500 text-amber-500 animate-pulse" />{" "}
+                    Live Auction
+                  </span>
+                  <span className="text-[10px] font-bold bg-amber-200 text-amber-800 px-2 py-0.5 rounded-full">
+                    Lot Size: 1 Pcs
+                  </span>
+                </div>
 
-          {/* 🚀 AI NEGOTIATION BOT (only for logged-in buyers who are not the seller) */}
+                <div className="space-y-2">
+                  <label className="text-[11px] font-bold text-gray-500 uppercase ml-1">
+                    Place Your Bid (Min: {formatPrice(product.price)})
+                  </label>
+
+                  <div className="flex gap-2">
+                    <div className="relative flex-1">
+                      <span className="absolute left-4 top-1/2 -translate-y-1/2 font-bold text-gray-400 pointer-events-none">
+                        {formatPrice(0).replace(/[0-9.,\s]/g, "")}
+                      </span>
+                      <input
+                        type="number"
+                        value={parseInt(bidAmount)}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setBidAmount(val);
+
+                          // টাইপ করার সময় সাথে সাথে এরর চেক
+                          if (val && parseInt(val) >= parseInt(product.price)) {
+                            setBidError("");
+                          }
+                        }}
+                        placeholder="Enter amount"
+                        className={`w-full h-12 pl-10 pr-4 rounded-xl border-2 outline-none font-bold text-lg transition-all ${
+                          bidError
+                            ? "border-red-500 bg-red-50"
+                            : "border-gray-200 focus:border-amber-500 focus:ring-4 focus:ring-amber-100"
+                        }`}
+                      />
+                    </div>
+                    <button
+                      onClick={() => {
+                        // ইনপুট এবং প্রাইস দুটোকেই পূর্ণসংখ্যায় কনভার্ট করা হলো
+                        const userBidValue = parseInt(bidAmount);
+                        const minimumRequired = parseFloat(
+                          formatPrice(product.price).replace(/[^0-9 .]/g, ""),
+                        ); // এখানে প্রোডাক্টের দামই মিনিমাম রিকোয়ার্ড
+                        // console.log(
+                        //   "User Bid:",
+                        //   userBidValue,
+                        //   "Minimum Required:",
+                        //   minimumRequired,
+                        // );
+
+                        if (!bidAmount || isNaN(userBidValue)) {
+                          setBidError("Please enter a valid amount");
+                        } else if (userBidValue < minimumRequired) {
+                          // এখানে আর ভুল হওয়ার সুযোগ নেই
+                          setBidError(
+                            `Minimum bid is ${formatPrice(0).replace(/[0-9.,\s]/g, "")}${minimumRequired}`,
+                          );
+                        } else {
+                          setBidError("");
+                          alert(
+                            `Success! Bid of ${formatPrice(0).replace(/[0-9.,\s]/g, "")}${userBidValue} placed.`,
+                          );
+                          setBidAmount("");
+                        }
+                      }}
+                      className="px-6 bg-amber-500 hover:bg-amber-600 text-white font-black rounded-xl transition-all active:scale-95 shadow-lg shadow-amber-200 flex items-center gap-2"
+                    >
+                      BID <FiChevronRight />
+                    </button>
+                  </div>
+
+                  {bidError && (
+                    <p className="text-red-600 text-[11px] font-bold flex items-center gap-1 ml-1">
+                      <FiX
+                        size={14}
+                        className="bg-red-500 text-white rounded-full p-0.5"
+                      />
+                      {bidError}
+                    </p>
+                  )}
+                </div>
+              </div>
+            ) : (
+              /* ───── NORMAL SHOPPING ───── */
+              <div className="flex gap-3">
+                <button
+                  onClick={addCart}
+                  disabled={product.stock === 0 || cartOk}
+                  className="flex-1 h-12 bg-black text-white font-bold text-sm uppercase tracking-wider rounded-full hover:bg-gray-800 active:scale-95 transition-all flex items-center justify-center gap-2"
+                >
+                  {cartOk ? <FiCheck /> : <FiShoppingCart />}{" "}
+                  {cartOk ? "Added" : "Add to Cart"}
+                </button>
+                <button
+                  onClick={buyNow}
+                  disabled={product.stock === 0}
+                  className="flex-1 h-11 bg-black text-white font-bold text-[16px] sm:text-[16px] sm:text-base uppercase tracking-wide rounded-full hover:bg-gray-800 active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-40"
+                >
+                  <FiZap size={16} /> Buy Now
+                </button>
+                <button
+                  onClick={() => setWish(!wish)}
+                  className={`w-11 h-11 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${wish ? "bg-red-500 border-red-500 text-white" : "border-gray-200 text-gray-500 hover:border-red-500 hover:text-red-500"}`}
+                >
+                  <FiHeart size={16} className={wish ? "fill-current" : ""} />
+                </button>
+              </div>
+            )}
+          </div>
+          {/* NEGOTIATION BOT (only for logged-in buyers who are not the seller) */}
           {user && user._id !== product.seller?._id && (
             <div className="flex justify-center pt-2">
               <AINegoBot product={product} sellerId={product.sellerEmail} />

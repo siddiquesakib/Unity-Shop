@@ -232,6 +232,7 @@ export default function AddProductPage() {
                     <option value="lighting">Lighting</option>
                     <option value="stationery">Stationery</option>
                     <option value="outdoor">Outdoor</option>
+                    <option value="auction">Auction</option>
                   </select>
                 </div>
                 <div className="space-y-2">

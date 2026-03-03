@@ -52,6 +52,7 @@ const categories = [
   { id: "grocery", label: "Grocery", icon: FiShoppingCart },
   { id: "tools", label: "Tools", icon: FiTool },
   { id: "automotive", label: "Automotive", icon: FiTruck },
+  { id: "auction", label: "Auction", icon: FiRefreshCw },
 ];
 
 export default function ProductFilters({
