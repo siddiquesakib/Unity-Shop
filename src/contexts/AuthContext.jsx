@@ -115,11 +115,12 @@ export const AuthProvider = ({ children }) => {
         throw new Error(data.message || "Failed to submit seller request");
       }
 
-      // Update local state
-      const updatedUser = { ...user, sellerRequest: "pending" };
       // Update local state with sellerRequest status (role stays "user" until approved)
-      const updatedUser = { ...user,
-        token: typeof window !== "undefined" ? localStorage.getItem("token") : null, sellerRequest: "pending" };
+      const updatedUser = {
+        ...user,
+        token: typeof window !== "undefined" ? localStorage.getItem("token") : null,
+        sellerRequest: "pending",
+      };
       setUser(updatedUser);
       localStorage.setItem("user", JSON.stringify(updatedUser));
       await update({ sellerRequest: "pending" });

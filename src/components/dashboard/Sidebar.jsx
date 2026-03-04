@@ -31,8 +31,6 @@ import {
 export default function Sidebar() {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const { user, logout } = useAuth();
-  const role = user?.role || "user";
   const { user, logout, requestSeller } = useAuth();
   const role = user?.role || 'user';
   const [sellerLoading, setSellerLoading] = useState(false);
