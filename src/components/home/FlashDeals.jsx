@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import Link from "next/link";
 import ProductCard from "../product/ProductCard";
+import Button from "../common/Button";
 import {
   FiZap,
   FiChevronLeft,
@@ -65,7 +65,7 @@ const FlashDeals = () => {
   if (!loading && products.length === 0) return null;
 
   return (
-    <section className="py-12 sm:py-16 bg-[#f7f6f3]">
+    <section className="py-12 sm:py-16 bg-white/10 backdrop-blur-md border border-white/20 shadow-xl m-4 rounded-3xl">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
@@ -162,12 +162,7 @@ const FlashDeals = () => {
         {/* View All */}
         {products.length > 0 && (
           <div className="text-center mt-8">
-            <Link
-              href="/products"
-              className="inline-flex items-center gap-2 px-6 py-3 text-base sm:text-sm font-bold text-black border-2 border-black rounded-full hover:bg-black hover:text-white transition-all duration-200"
-            >
-              View All Deals <FiArrowRight className="w-3.5 h-3.5" />
-            </Link>
+            <Button href="/products">View All Deals</Button>
           </div>
         )}
       </div>

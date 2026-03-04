@@ -72,7 +72,7 @@ const TradeAssuranceBanner = () => {
             return (
               <div
                 key={feature.id}
-                className="bg-white rounded-xl p-4 border border-gray-200 hover:border-gray-300 hover:shadow-md transition-all duration-200 group"
+                className="bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/20 hover:bg-white/20 hover:shadow-lg transition-all duration-200 group"
               >
                 <div className="w-9 h-9 rounded-lg bg-black flex items-center justify-center mb-3 group-hover:scale-105 transition-transform">
                   <Icon className="w-4.5 h-4.5 text-white" />

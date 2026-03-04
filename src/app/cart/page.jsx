@@ -260,7 +260,7 @@ export default function CartPage() {
               <FiTruck size={14} className={subtotal >= FREE_SHIP ? "text-black" : "text-gray-500"} />
               <span className="text-[16px] sm:text-[16px] sm:text-base font-bold">
                 {subtotal >= FREE_SHIP
-                  ? "🎉 You unlocked FREE shipping!"
+                  ? "You unlocked FREE shipping!"
                   : `Spend ${formatPrice(remaining)} more for FREE shipping`}
               </span>
             </div>
