@@ -31,10 +31,8 @@ import {
 export default function Sidebar() {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const { user, logout } = useAuth();
+  const { user, logout, submitSellerRequest } = useAuth();
   const role = user?.role || "user";
-  const { user, logout, requestSeller } = useAuth();
-  const role = user?.role || 'user';
   const [sellerLoading, setSellerLoading] = useState(false);
   const [showSellerModal, setShowSellerModal] = useState(false);
   const [requestSent, setRequestSent] = useState(false);
@@ -68,14 +66,9 @@ export default function Sidebar() {
   ];
 
   const adminLinks = [
-    { name: "Overview", href: "/dashboard/admin", icon: ShieldCheck },
-    { name: "Manage Users", href: "/dashboard/admin/users", icon: Users },
-    { name: "Seller Requests", href: "/dashboard/admin/seller-requests", icon: UserCog },
-    { name: "Products", href: "/dashboard/admin/products", icon: Package },
-
     { name: 'Overview', href: '/dashboard/admin', icon: ShieldCheck },
     { name: 'Manage Users', href: '/dashboard/admin/users', icon: Users },
-    { name: 'Sellers Info', href: '/dashboard/admin/sellers', icon: UserCog },
+    { name: 'Seller Requests', href: '/dashboard/admin/seller-requests', icon: UserCog },
     { name: 'Products', href: '/dashboard/admin/products', icon: Package },
     { name: 'Orders', href: '/dashboard/admin/orders', icon: ListOrdered },
     {
@@ -181,14 +174,9 @@ export default function Sidebar() {
                 >
                   <div
                     className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 group relative ${isActive
-                      ? "bg-black text-white"
-                      : "text-gray-500 hover:bg-gray-100 hover:text-gray-900"
-                      }`}
-                    className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 group relative ${
-                      isActive
                         ? 'bg-black text-white'
                         : 'text-gray-500 hover:bg-gray-100 hover:text-gray-900'
-                    }`}
+                      }`}
                   >
                     {isActive && (
                       <div className="absolute -left-4 top-1/2 -translate-y-1/2 w-1 h-5 bg-black rounded-r-full" />
@@ -365,7 +353,7 @@ export default function Sidebar() {
                   <button
                     onClick={async () => {
                       setSellerLoading(true);
-                      const res = await requestSeller();
+                      const res = await submitSellerRequest({});
                       setSellerLoading(false);
                       if (res.success) {
                         setRequestSent(true);

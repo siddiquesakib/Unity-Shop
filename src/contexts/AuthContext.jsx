@@ -116,10 +116,13 @@ export const AuthProvider = ({ children }) => {
       }
 
       // Update local state
-      const updatedUser = { ...user, sellerRequest: "pending" };
+      const updatedUser = {
+        ...user,
+        token: typeof window !== "undefined" ? localStorage.getItem("token") : null,
+        sellerRequest: "pending",
+      };
       // Update local state with sellerRequest status (role stays "user" until approved)
-      const updatedUser = { ...user,
-        token: typeof window !== "undefined" ? localStorage.getItem("token") : null, sellerRequest: "pending" };
+
       setUser(updatedUser);
       localStorage.setItem("user", JSON.stringify(updatedUser));
       await update({ sellerRequest: "pending" });
@@ -141,8 +144,10 @@ export const AuthProvider = ({ children }) => {
       );
       const data = await res.json();
       if (res.ok && data.sellerRequest) {
-        const updatedUser = { ...user,
-        token: typeof window !== "undefined" ? localStorage.getItem("token") : null, sellerRequest: data.sellerRequest };
+        const updatedUser = {
+          ...user,
+          token: typeof window !== "undefined" ? localStorage.getItem("token") : null, sellerRequest: data.sellerRequest
+        };
         setUser(updatedUser);
         localStorage.setItem("user", JSON.stringify(updatedUser));
         // Sync NextAuth session/JWT
