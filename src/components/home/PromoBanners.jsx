@@ -14,7 +14,7 @@ const banners = [
     description: "Buy from verified new sellers at the best prices",
     cta: "Shop Now",
     link: "/products",
-    bg: "bg-black",
+    bg: "bg-black/80 backdrop-blur-md",
     textColor: "text-white",
     subtextColor: "text-gray-400",
     ctaBg: "bg-white text-black hover:bg-gray-100",
@@ -28,7 +28,7 @@ const banners = [
     description: "Get instant cashback when you pay with bKash or Nagad",
     cta: "Shop Now",
     link: "/products",
-    bg: "bg-gray-100",
+    bg: "bg-white/70 backdrop-blur-md border border-white/40",
     textColor: "text-black",
     subtextColor: "text-gray-500",
     ctaBg: "bg-black text-white hover:bg-gray-800",
@@ -42,7 +42,7 @@ const banners = [
     description: "Get fast and free delivery nationwide",
     cta: "Order Now",
     link: "/products",
-    bg: "bg-gray-900",
+    bg: "bg-gray-900/80 backdrop-blur-md",
     textColor: "text-white",
     subtextColor: "text-gray-400",
     ctaBg: "bg-white text-black hover:bg-gray-100",
@@ -52,7 +52,7 @@ const banners = [
 
 const PromoBanners = () => {
   return (
-    <section className="py-8 sm:py-12 bg-[#f7f6f3]">
+    <section className="py-8 sm:py-12 bg-white/10 backdrop-blur-md border border-white/20 shadow-xl m-4 rounded-3xl">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* ── Desktop: 3-column grid ── */}
         <div className="hidden sm:grid sm:grid-cols-3 gap-4">
@@ -171,5 +171,4 @@ const PromoBanners = () => {
     </section>
   );
 };
-
 export default PromoBanners;

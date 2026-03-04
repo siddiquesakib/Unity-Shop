@@ -349,12 +349,12 @@ const ProductCard = ({ product }) => {
     <>
       <Link
         href={`/products/${productId}`}
-        className="group relative bg-white rounded-xl border border-gray-100 overflow-hidden transition-all duration-300 hover:shadow-xl hover:shadow-black/8 hover:border-gray-200 hover:-translate-y-0.5 block"
+        className="group relative bg-white/40 backdrop-blur-md rounded-xl border border-white/20 overflow-hidden transition-all duration-300 hover:shadow-xl hover:bg-white/60 hover:border-white/40 hover:-translate-y-0.5 block shadow-sm"
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
         {/* Image */}
-        <div className="relative aspect-square overflow-hidden bg-gray-50">
+        <div className="relative aspect-square overflow-hidden bg-transparent">
           {/* Primary image */}
           <Image
             src={primaryImage}

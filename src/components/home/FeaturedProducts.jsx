@@ -54,7 +54,7 @@ const FeaturedProducts = ({
   };
 
   return (
-    <section className="py-16 sm:py-20 bg-[#f7f6f3]">
+    <section className="py-16 sm:py-20 bg-white/10 backdrop-blur-md border border-white/20 shadow-xl m-4 rounded-3xl">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="text-center mb-10">
