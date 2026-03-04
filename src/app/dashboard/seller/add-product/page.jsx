@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react"; // useEffect যোগ করা হয়েছে
 import { useRouter } from "next/navigation";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/hooks/useAuth";
 import AIProductPreview from "@/components/ai/AIProductPreview";
 import {
@@ -17,6 +17,7 @@ import {
   AlertCircle,
   Loader2,
   Sparkles,
+  Calendar,
 } from "lucide-react";
 
 export default function AddProductPage() {
@@ -30,8 +31,9 @@ export default function AddProductPage() {
     description: "",
     price: "",
     originalPrice: "",
-    stock: "",
+    stock: "1", // Default 1
     image: "",
+    endAt: "",
   });
 
   const [tags, setTags] = useState([]);
@@ -40,8 +42,34 @@ export default function AddProductPage() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
 
+  // Auction সিলেক্ট করলে স্টক অটোমেটিক ১ করে দেওয়ার লজিক
+  useEffect(() => {
+    if (formData.category === "auction") {
+      setFormData((prev) => ({ ...prev, stock: "1" }));
+    }
+  }, [formData.category]);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
+
+    // প্রাইস ভ্যালিডেশন: মাইনাস ইনপুট দেওয়া যাবে না
+    if (name === "price" || name === "originalPrice") {
+      if (value !== "" && Number(value) < 0) {
+        return; // নেগেটিভ হলে আপডেট হবে না
+      }
+    }
+
+    // স্টক ভ্যালিডেশন: মাইনাস বা ০ ইনপুট দেওয়া যাবে না
+    if (name === "stock") {
+      if (formData.category === "auction") {
+        return; // অকশন হলে চেঞ্জ করতে দেবে না
+      }
+      if (value !== "" && Number(value) < 1) {
+        setFormData((prev) => ({ ...prev, [name]: "1" }));
+        return;
+      }
+    }
+
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
@@ -62,13 +90,19 @@ export default function AddProductPage() {
   const handleSubmit = async () => {
     setError("");
 
+    const isAuction = formData.category === "auction";
     if (
       !formData.name ||
       !formData.category ||
       !formData.price ||
-      !formData.image
+      !formData.image ||
+      (isAuction && !formData.endAt)
     ) {
-      setError("Product name, category, price, and image are required.");
+      setError(
+        isAuction
+          ? "Product name, category, price, image, and auction end date are required."
+          : "Product name, category, price, and image are required.",
+      );
       return;
     }
 
@@ -84,14 +118,15 @@ export default function AddProductPage() {
         originalPrice: formData.originalPrice
           ? Number(formData.originalPrice)
           : null,
-        stock: formData.stock ? Number(formData.stock) : 0,
+        stock: isAuction ? 1 : formData.stock ? Number(formData.stock) : 1,
         image: formData.image,
         tags,
-        badge: null,
+        badge: isAuction ? "Auction" : null,
         rating: 0,
         reviews: 0,
         sellerName: user?.name || "Unknown Seller",
         sellerEmail: user?.email || "",
+        endAt: isAuction ? formData.endAt : null,
       };
 
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/products`, {
@@ -130,9 +165,6 @@ export default function AddProductPage() {
           Product Published!
         </h2>
         <p className="text-gray-500">Your product is now live on UnityShop.</p>
-        <p className="text-gray-400 text-sm mt-2">
-          Redirecting to dashboard...
-        </p>
       </div>
     );
   }
@@ -146,30 +178,28 @@ export default function AddProductPage() {
             Add New Product
           </h1>
           <p className="text-gray-500 mt-1">
-            Fill in the details below to list a new product on UnityShop.
+            Fill in the details below to list a new product.
           </p>
         </div>
         <div className="flex items-center gap-3">
           <button
             onClick={() => router.back()}
-            className="px-6 py-2.5 rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-50 transition-all font-medium"
+            className="px-6 py-2.5 rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-50 font-medium"
           >
             Cancel
           </button>
           <button
             onClick={handleSubmit}
             disabled={isLoading}
-            className="px-6 py-2.5 rounded-xl bg-black text-white hover:bg-gray-800 shadow-lg shadow-black/10 transition-all font-bold flex items-center gap-2 disabled:opacity-50"
+            className="px-6 py-2.5 rounded-xl bg-black text-white hover:bg-gray-800 shadow-lg font-bold flex items-center gap-2 disabled:opacity-50"
           >
             {isLoading ? (
               <>
-                <Loader2 size={18} className="animate-spin" />
-                Publishing...
+                <Loader2 size={18} className="animate-spin" /> Publishing...
               </>
             ) : (
               <>
-                <Plus size={18} />
-                Publish Product
+                <Plus size={18} /> Publish Product
               </>
             )}
           </button>
@@ -186,7 +216,6 @@ export default function AddProductPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Left Column */}
         <div className="lg:col-span-2 space-y-8">
-          {/* Basic Information */}
           <section className="p-8 rounded-2xl bg-white border border-gray-200 space-y-6">
             <div className="flex items-center gap-3 border-b border-gray-200 pb-4">
               <div className="p-2 rounded-lg bg-gray-100 text-gray-600">
@@ -207,8 +236,8 @@ export default function AddProductPage() {
                   name="name"
                   value={formData.name}
                   onChange={handleChange}
-                  placeholder="e.g. Wireless Noise Cancelling Headphones"
-                  className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-300 focus:border-gray-400 transition-all placeholder:text-gray-400"
+                  placeholder="Product Name"
+                  className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-gray-300 outline-none"
                 />
               </div>
 
@@ -221,7 +250,7 @@ export default function AddProductPage() {
                     name="category"
                     value={formData.category}
                     onChange={handleChange}
-                    className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-300 focus:border-gray-400 transition-all appearance-none cursor-pointer"
+                    className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 outline-none cursor-pointer"
                   >
                     <option value="">Select Category</option>
                     <option value="electronics">Electronics</option>
@@ -244,8 +273,8 @@ export default function AddProductPage() {
                     name="brand"
                     value={formData.brand}
                     onChange={handleChange}
-                    placeholder="e.g. Sony, Apple"
-                    className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-300 focus:border-gray-400 transition-all placeholder:text-gray-400"
+                    placeholder="Brand Name"
+                    className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 outline-none"
                   />
                 </div>
               </div>
@@ -259,14 +288,13 @@ export default function AddProductPage() {
                   name="description"
                   value={formData.description}
                   onChange={handleChange}
-                  placeholder="Describe your product features, materials, and benefits..."
-                  className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-300 focus:border-gray-400 transition-all placeholder:text-gray-400 resize-none"
+                  placeholder="Description..."
+                  className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 outline-none resize-none"
                 />
               </div>
             </div>
           </section>
 
-          {/* Product Image */}
           <section className="p-8 rounded-2xl bg-white border border-gray-200 space-y-6">
             <div className="flex items-center gap-3 border-b border-gray-200 pb-4">
               <div className="p-2 rounded-lg bg-purple-50 text-purple-500">
@@ -274,63 +302,33 @@ export default function AddProductPage() {
               </div>
               <h2 className="text-xl font-bold text-gray-900">Product Image</h2>
             </div>
-
             <div className="space-y-4">
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">
-                  Image URL <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="url"
-                  name="image"
-                  value={formData.image}
-                  onChange={handleChange}
-                  placeholder="https://example.com/product-image.jpg"
-                  className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-gray-900 focus:outline-none focus:ring-2 focus:ring-purple-200 focus:border-purple-400 transition-all placeholder:text-gray-400"
-                />
-              </div>
-
+              <input
+                type="url"
+                name="image"
+                value={formData.image}
+                onChange={handleChange}
+                placeholder="Image URL"
+                className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 outline-none"
+              />
               {formData.image && (
-                <div className="relative w-full max-w-sm aspect-square rounded-2xl overflow-hidden border-2 border-gray-200 bg-gray-50">
-                  <img
-                    src={formData.image}
-                    alt="Preview"
-                    className="w-full h-full object-cover"
-                    onError={(e) => {
-                      e.target.style.display = "none";
-                    }}
-                  />
-                </div>
-              )}
-
-              {/* AI Product Preview Button */}
-              <div className="flex items-center gap-3 pt-2">
-                <AIProductPreview
-                  onImageGenerated={(enhancedImageUrl) => {
-                    setFormData((prev) => ({
-                      ...prev,
-                      image: enhancedImageUrl,
-                    }));
-                  }}
+                <img
+                  src={formData.image}
+                  alt="Preview"
+                  className="w-40 h-40 object-cover rounded-xl border"
                 />
-                <p className="text-xs text-gray-400 flex items-center gap-1">
-                  <Sparkles size={14} className="text-purple-500" />
-                  Enhance your product image with AI
-                </p>
-              </div>
-
-              <p className="text-xs text-gray-400 flex items-center gap-2">
-                <AlertCircle size={14} />
-                Paste a direct image URL or use AI to enhance one. Recommended:
-                1200x1200px.
-              </p>
+              )}
+              <AIProductPreview
+                onImageGenerated={(url) =>
+                  setFormData((prev) => ({ ...prev, image: url }))
+                }
+              />
             </div>
           </section>
         </div>
 
         {/* Right Column */}
         <div className="space-y-8">
-          {/* Pricing & Inventory */}
           <section className="p-6 rounded-2xl bg-white border border-gray-200 space-y-6">
             <div className="flex items-center gap-3 border-b border-gray-200 pb-4">
               <div className="p-2 rounded-lg bg-emerald-50 text-emerald-500">
@@ -344,16 +342,20 @@ export default function AddProductPage() {
             <div className="space-y-4">
               <div className="space-y-2">
                 <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                  Price ($) <span className="text-red-500">*</span>
+                  {formData.category === "auction"
+                    ? "Starting Bid ($)"
+                    : "Price ($)"}{" "}
+                  <span className="text-red-500">*</span>
                 </label>
                 <div className="relative">
                   <input
                     type="number"
                     name="price"
+                    min="0"
                     value={formData.price}
                     onChange={handleChange}
                     placeholder="0.00"
-                    className="w-full bg-gray-50 border border-gray-200 rounded-xl pl-10 pr-4 py-3 text-gray-900 focus:outline-none focus:ring-2 focus:ring-emerald-200 focus:border-emerald-400 transition-all"
+                    className="w-full bg-gray-50 border border-gray-200 rounded-xl pl-10 pr-4 py-3 outline-none focus:ring-2 focus:ring-emerald-200"
                   />
                   <DollarSign
                     size={16}
@@ -362,25 +364,29 @@ export default function AddProductPage() {
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                  Original Price ($)
-                </label>
-                <div className="relative">
-                  <input
-                    type="number"
-                    name="originalPrice"
-                    value={formData.originalPrice}
-                    onChange={handleChange}
-                    placeholder="For sale items (optional)"
-                    className="w-full bg-gray-50 border border-gray-200 rounded-xl pl-10 pr-4 py-3 text-gray-900 focus:outline-none focus:ring-2 focus:ring-emerald-200 focus:border-emerald-400 transition-all"
-                  />
-                  <DollarSign
-                    size={16}
-                    className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
-                  />
-                </div>
-              </div>
+              <AnimatePresence>
+                {formData.category === "auction" && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="space-y-2 pt-2">
+                      <label className="text-xs font-semibold text-purple-600 uppercase tracking-wider flex items-center gap-1">
+                        <Calendar size={14} /> Auction End Date *
+                      </label>
+                      <input
+                        type="datetime-local"
+                        name="endAt"
+                        value={formData.endAt}
+                        onChange={handleChange}
+                        className="w-full bg-purple-50 border border-purple-200 rounded-xl px-4 py-3 outline-none"
+                      />
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
 
               <div className="space-y-2">
                 <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
@@ -390,21 +396,26 @@ export default function AddProductPage() {
                   <input
                     type="number"
                     name="stock"
+                    min="1"
                     value={formData.stock}
                     onChange={handleChange}
-                    placeholder="e.g. 50"
-                    className="w-full bg-gray-50 border border-gray-200 rounded-xl pl-10 pr-4 py-3 text-gray-900 focus:outline-none focus:ring-2 focus:ring-emerald-200 focus:border-emerald-400 transition-all"
+                    readOnly={formData.category === "auction"}
+                    className={`w-full bg-gray-50 border border-gray-200 rounded-xl pl-10 pr-4 py-3 outline-none focus:ring-2 focus:ring-emerald-200 ${formData.category === "auction" ? "opacity-60 cursor-not-allowed bg-gray-100 text-gray-500" : ""}`}
                   />
                   <Package
                     size={16}
                     className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
                   />
                 </div>
+                {formData.category === "auction" && (
+                  <p className="text-[10px] text-amber-600 font-medium">
+                    * Auction stock is fixed to 1.
+                  </p>
+                )}
               </div>
             </div>
           </section>
 
-          {/* Tags */}
           <section className="p-6 rounded-2xl bg-white border border-gray-200 space-y-6">
             <div className="flex items-center gap-3 border-b border-gray-200 pb-4">
               <div className="p-2 rounded-lg bg-orange-50 text-orange-500">
@@ -412,56 +423,32 @@ export default function AddProductPage() {
               </div>
               <h2 className="text-lg font-bold text-gray-900">Tags</h2>
             </div>
-
             <div className="space-y-4">
-              <div className="space-y-2">
-                <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                  Product Tags
-                </label>
-                <div className="flex flex-wrap gap-2 mb-3">
-                  {tags.map((tag) => (
-                    <span
-                      key={tag}
-                      className="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-gray-100 text-gray-700 text-xs font-medium border border-gray-200"
+              <div className="flex flex-wrap gap-2">
+                {tags.map((tag) => (
+                  <span
+                    key={tag}
+                    className="flex items-center gap-1 px-3 py-1 rounded-lg bg-gray-100 text-xs border border-gray-200"
+                  >
+                    {tag}{" "}
+                    <button
+                      onClick={() => removeTag(tag)}
+                      className="hover:text-red-500"
                     >
-                      {tag}
-                      <button
-                        onClick={() => removeTag(tag)}
-                        className="hover:text-red-500"
-                      >
-                        <X size={12} />
-                      </button>
-                    </span>
-                  ))}
-                </div>
-                <input
-                  type="text"
-                  value={inputValue}
-                  onChange={(e) => setInputValue(e.target.value)}
-                  onKeyDown={addTag}
-                  placeholder="Press Enter to add tag"
-                  className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-gray-900 focus:outline-none focus:ring-2 focus:ring-orange-200 focus:border-orange-400 transition-all placeholder:text-gray-400 text-sm"
-                />
+                      <X size={12} />
+                    </button>
+                  </span>
+                ))}
               </div>
+              <input
+                type="text"
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
+                onKeyDown={addTag}
+                placeholder="Add tag..."
+                className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none"
+              />
             </div>
-          </section>
-
-          {/* Seller Info */}
-          <section className="p-6 rounded-2xl bg-white border border-gray-200">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-gray-700 to-gray-900 flex items-center justify-center text-white text-sm font-bold">
-                {user?.name?.charAt(0)?.toUpperCase() || "S"}
-              </div>
-              <div>
-                <p className="text-sm font-medium text-gray-900">
-                  {user?.name || "Seller"}
-                </p>
-                <p className="text-xs text-gray-400">{user?.email || ""}</p>
-              </div>
-            </div>
-            <p className="text-xs text-gray-400">
-              This product will be listed under your seller account.
-            </p>
           </section>
         </div>
       </div>
