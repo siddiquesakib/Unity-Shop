@@ -30,8 +30,8 @@ function QuickViewModal({ product, onClose, formatPrice }) {
   const images = Array.isArray(product.image)
     ? product.image.filter((img) => typeof img === "string" && img.trim())
     : typeof product.image === "string" && product.image.trim()
-    ? [product.image]
-    : [];
+      ? [product.image]
+      : [];
 
   const safeImg = (url) => {
     if (!url) return "https://via.placeholder.com/600x600?text=No+Image";
@@ -44,7 +44,8 @@ function QuickViewModal({ product, onClose, formatPrice }) {
     }
   };
 
-  const prevImg = () => setImgIdx((p) => (p - 1 + images.length) % images.length);
+  const prevImg = () =>
+    setImgIdx((p) => (p - 1 + images.length) % images.length);
   const nextImg = () => setImgIdx((p) => (p + 1) % images.length);
 
   const handleAdd = () => {
@@ -56,13 +57,19 @@ function QuickViewModal({ product, onClose, formatPrice }) {
 
   const discount =
     product.originalPrice && product.originalPrice > product.price
-      ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
+      ? Math.round(
+          ((product.originalPrice - product.price) / product.originalPrice) *
+            100,
+        )
       : null;
 
   const productId = product._id || product.id;
 
   return (
-    <div className="fixed inset-0 z-200 flex items-center justify-center p-4" onClick={onClose}>
+    <div
+      className="fixed inset-0 z-200 flex items-center justify-center p-4"
+      onClick={onClose}
+    >
       {/* Backdrop */}
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
 
@@ -144,11 +151,15 @@ function QuickViewModal({ product, onClose, formatPrice }) {
               <span className="text-xl sm:text-2xl font-black text-black">
                 {formatPrice(product.price, product.currency || "USD")}
               </span>
-              {product.originalPrice && product.originalPrice > product.price && (
-                <span className="text-sm text-gray-400 line-through">
-                  {formatPrice(product.originalPrice, product.currency || "USD")}
-                </span>
-              )}
+              {product.originalPrice &&
+                product.originalPrice > product.price && (
+                  <span className="text-sm text-gray-400 line-through">
+                    {formatPrice(
+                      product.originalPrice,
+                      product.currency || "USD",
+                    )}
+                  </span>
+                )}
             </div>
 
             {/* Rating */}
@@ -198,7 +209,9 @@ function QuickViewModal({ product, onClose, formatPrice }) {
               <div className="flex items-center gap-3">
                 <div className="flex items-center border border-gray-200 rounded-lg overflow-hidden">
                   <button
-                    onClick={() => setQty((q) => Math.max(product.moq || 1, q - 1))}
+                    onClick={() =>
+                      setQty((q) => Math.max(product.moq || 1, q - 1))
+                    }
                     className="w-9 h-9 flex items-center justify-center text-gray-500 hover:bg-gray-100 transition-colors"
                   >
                     <FiMinus size={14} />
@@ -336,12 +349,12 @@ const ProductCard = ({ product }) => {
     <>
       <Link
         href={`/products/${productId}`}
-        className="group relative bg-white rounded-xl border border-gray-100 overflow-hidden transition-all duration-300 hover:shadow-xl hover:shadow-black/8 hover:border-gray-200 hover:-translate-y-0.5 block"
+        className="group relative bg-white/40 backdrop-blur-md rounded-xl border border-white/20 overflow-hidden transition-all duration-300 hover:shadow-xl hover:bg-white/60 hover:border-white/40 hover:-translate-y-0.5 block shadow-sm"
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
         {/* Image */}
-        <div className="relative aspect-square overflow-hidden bg-gray-50">
+        <div className="relative aspect-square overflow-hidden bg-transparent">
           {/* Primary image */}
           <Image
             src={primaryImage}
@@ -366,7 +379,9 @@ const ProductCard = ({ product }) => {
           {/* Desktop hover — 3 action buttons (right side, vertical) */}
           <div
             className={`absolute top-2.5 right-2.5 flex-col gap-1.5 transition-all duration-200 hidden lg:flex ${
-              isHovered ? "opacity-100 translate-x-0" : "opacity-0 translate-x-2 pointer-events-none"
+              isHovered
+                ? "opacity-100 translate-x-0"
+                : "opacity-0 translate-x-2 pointer-events-none"
             }`}
           >
             {/* Add to cart */}
@@ -379,7 +394,11 @@ const ProductCard = ({ product }) => {
                   : "bg-white hover:bg-black hover:text-white text-gray-700"
               }`}
             >
-              {addedFeedback ? <FiCheck size={14} /> : <FiShoppingCart size={14} />}
+              {addedFeedback ? (
+                <FiCheck size={14} />
+              ) : (
+                <FiShoppingCart size={14} />
+              )}
             </button>
 
             {/* Quick View */}
@@ -417,7 +436,11 @@ const ProductCard = ({ product }) => {
                   : "bg-white text-black border border-gray-200"
               }`}
             >
-              {addedFeedback ? <FiCheck size={14} /> : <FiShoppingCart size={14} />}
+              {addedFeedback ? (
+                <FiCheck size={14} />
+              ) : (
+                <FiShoppingCart size={14} />
+              )}
             </button>
           </div>
 
