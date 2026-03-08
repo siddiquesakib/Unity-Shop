@@ -38,6 +38,7 @@ import {
   FiLayers,
 } from 'react-icons/fi';
 import CustomLanguageSwitcher from '@/components/CustomLanguageSwitcher';
+import VoiceSearch from '../search/VoiceSearch';
 
 // ─── Time ago helper ────────────────────────────────────────────────────────
 function timeAgo(date) {
@@ -278,69 +279,6 @@ const Navbar = () => {
     }
   };
 
-  // Voice search
-
-  const startVoiceSearch = useCallback(() => {
-    if (
-      !('webkitSpeechRecognition' in window) &&
-      !('SpeechRecognition' in window)
-    )
-      return;
-
-    const SpeechRecognition =
-      window.SpeechRecognition || window.webkitSpeechRecognition;
-
-    const recognition = new SpeechRecognition();
-
-    recognition.lang = language === 'bn' ? 'bn-BD' : 'en-US';
-    recognition.interimResults = false;
-
-    recognition.onstart = () => setIsListening(true);
-
-    recognition.onresult = e => {
-      let transcript = e.results[0][0].transcript.trim().toLowerCase();
-
-      const VOICE_SEARCH_MAP = {
-        মোবাইল: 'mobile',
-        ফোন: 'mobile',
-        ল্যাপটপ: 'laptop',
-        কম্পিউটার: 'computer',
-        জামা: 'shirt',
-        কাপড়: 'clothes',
-        জুতা: 'shoes',
-        ঘড়ি: 'watch',
-        ওয়াচ: 'watch',
-        ক্যামেরা: 'camera',
-        বই: 'books',
-        ব্যাগ: 'bag',
-        টিভি: 'tv',
-        গেমিং: 'gaming',
-        হেডফোন: 'headphones',
-        ইয়ারফোন: 'earphones',
-        ঘর: 'home',
-        ফার্নিচার: 'furniture',
-      };
-
-      Object.keys(VOICE_SEARCH_MAP).forEach(bnWord => {
-        if (transcript.includes(bnWord)) {
-          transcript = VOICE_SEARCH_MAP[bnWord];
-        }
-      });
-
-      setSearchQuery(transcript);
-      setShowAutocomplete(true);
-
-      setTimeout(() => {
-        router.push(`/products?q=${encodeURIComponent(transcript)}`);
-      }, 500);
-    };
-
-    recognition.onerror = () => setIsListening(false);
-    recognition.onend = () => setIsListening(false);
-
-    recognition.start();
-  }, [router, language]);
-
   const isActive = href => {
     if (href === '/') return pathname === '/';
     return pathname.startsWith(href);
@@ -463,14 +401,20 @@ const Navbar = () => {
                         className="w-full h-10 text-sm bg-transparent text-gray-900 border-0 outline-none placeholder:text-gray-400"
                       />
                     </div>
-                    <button
+                    {/* <button
                       type="button"
                       onClick={startVoiceSearch}
                       className={`h-10 px-3 bg-transparent transition-colors ${isListening ? 'text-red-500 animate-pulse' : 'text-gray-400 hover:text-gray-700'}`}
                       title="Voice search"
                     >
                       <FiMic size={16} />
-                    </button>
+                    </button> */}
+
+                    <VoiceSearch
+                      setSearchQuery={setSearchQuery}
+                      setShowAutocomplete={setShowAutocomplete}
+                    />
+
                     <button type="submit" className="hidden">
                       Search
                     </button>
