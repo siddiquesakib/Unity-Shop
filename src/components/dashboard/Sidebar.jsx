@@ -70,6 +70,7 @@ export default function Sidebar() {
     { name: 'Manage Users', href: '/dashboard/admin/users', icon: Users },
     { name: 'Seller Requests', href: '/dashboard/admin/seller-requests', icon: UserCog },
     { name: 'Products', href: '/dashboard/admin/products', icon: Package },
+    { name: 'Sellers Info', href: '/dashboard/admin/sellers', icon: UserCog },
     { name: 'Orders', href: '/dashboard/admin/orders', icon: ListOrdered },
     {
       name: 'System Settings',
@@ -234,7 +235,6 @@ export default function Sidebar() {
             )}
           </div>
         )}
-
       </div>
 
       {/* User Info Footer */}
@@ -376,5 +376,3 @@ export default function Sidebar() {
     </>
   );
 }
-
-

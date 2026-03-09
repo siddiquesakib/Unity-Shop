@@ -32,7 +32,7 @@ const ShopByBrand = () => {
   if (!loading && brands.length === 0) return null;
 
   return (
-    <section className="py-12 sm:py-16 bg-[#f7f6f3]">
+    <section className="py-12 sm:py-16 bg-white/10 backdrop-blur-md border border-white/20 shadow-xl m-4 rounded-3xl">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="text-center mb-8">
@@ -67,7 +67,7 @@ const ShopByBrand = () => {
               <Link
                 key={brand.name}
                 href={`/products?brand=${encodeURIComponent(brand.name)}`}
-                className="group relative bg-white rounded-2xl p-4 sm:p-5 border border-gray-200 hover:border-black hover:shadow-lg transition-all duration-300 flex flex-col items-center justify-center text-center aspect-square"
+                className="group relative bg-white/40 backdrop-blur-md rounded-2xl p-4 sm:p-5 border border-white/20 hover:bg-white/60 hover:border-white/40 hover:shadow-lg transition-all duration-300 flex flex-col items-center justify-center text-center aspect-square"
               >
                 {/* Brand image or initial */}
                 {brand.image ? (

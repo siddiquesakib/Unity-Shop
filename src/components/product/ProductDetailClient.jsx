@@ -42,7 +42,6 @@ import AINegoBot from "@/components/ai/AINegoBot"; // 🚀 AI Negotiation Bot
 import { number } from "motion-dom";
 import GroupBuyUI from "@/components/product/GroupBuyUI";
 
-
 /* ──────────────────── Helpers ──────────────────── */
 const PLACEHOLDER = "https://via.placeholder.com/800x800?text=Product+Image";
 const safeUrl = (u) => {
@@ -119,7 +118,7 @@ const saveRV = (p) => {
       rating: p.rating,
     });
     localStorage.setItem(RV_KEY, JSON.stringify(list.slice(0, 10)));
-  } catch { }
+  } catch {}
 };
 const getRV = (id) => {
   if (typeof window === "undefined") return [];
@@ -223,7 +222,10 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
   const videoRef = useRef(null);
 
   /* ── Local state ─────────────────────────────────── */
-  const [bidAmount, setBidAmount] = useState("");
+  const [timeLeft, setTimeLeft] = useState("");
+  const [bidAmount, setBidAmount] = useState(
+    product.currentHighestBId || product.price,
+  );
   const [bidError, setBidError] = useState("");
   const [selImg, setSelImg] = useState(0);
   const [qty, setQty] = useState(1);
@@ -286,9 +288,9 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
   const disc =
     product.originalPrice && product.originalPrice > product.price
       ? Math.round(
-        ((product.originalPrice - product.price) / product.originalPrice) *
-        100,
-      )
+          ((product.originalPrice - product.price) / product.originalPrice) *
+            100,
+        )
       : null;
   const savings = disc ? product.originalPrice - product.price : 0;
   const colors = Array.isArray(product.colors)
@@ -339,9 +341,35 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
 
   /* ── Effects ─────────────────────────────────────── */
   useEffect(() => {
+    const calculateTime = () => {
+      const now = new Date().getTime();
+      const end = new Date(product.endAt).getTime();
+
+      const gap = end - now;
+      console.log({ now: new Date(now), end: new Date(end), gap });
+      if (gap <= 0) {
+        setTimeLeft("AUCTION ENDED");
+        return;
+      }
+
+      const d = Math.floor(gap / (1000 * 60 * 60 * 24));
+      const h = Math.floor((gap % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const m = Math.floor((gap % (1000 * 60 * 60)) / (1000 * 60));
+      const s = Math.floor((gap % (1000 * 60)) / 1000);
+
+      setTimeLeft(`${d > 0 ? d + "d " : ""}${h}h ${m}m ${s}s`);
+    };
+
+    const timer = setInterval(calculateTime, 1000);
+    calculateTime();
+
+    return () => clearInterval(timer);
+  }, [product.endAt]);
+  useEffect(() => {
     saveRV(product);
     setRv(getRV(pid));
   }, [pid]);
+
   useEffect(() => {
     if (colors.length && !selColor) setSelColor(colors[0]);
     if (sizes.length && !selSize) setSelSize(sizes[0]);
@@ -388,7 +416,7 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
             setMyComment(mine.comment);
           }
         })
-        .catch(() => { });
+        .catch(() => {});
     }
   }, [pid, user]);
 
@@ -506,7 +534,7 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
         resetReviewForm();
         await fetchReviews(1);
       }
-    } catch { }
+    } catch {}
   };
 
   const startEdit = (r) => {
@@ -534,16 +562,16 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
           prev.map((r) =>
             r._id === reviewId
               ? {
-                ...r,
-                likes: data.liked
-                  ? [...(r.likes || []), user._id]
-                  : (r.likes || []).filter((id) => id !== user._id),
-              }
+                  ...r,
+                  likes: data.liked
+                    ? [...(r.likes || []), user._id]
+                    : (r.likes || []).filter((id) => id !== user._id),
+                }
               : r,
           ),
         );
       }
-    } catch { }
+    } catch {}
   };
 
   /* ── Reply to a review ── */
@@ -575,7 +603,7 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
         setReplyingTo(null);
         setExpandedReplies((p) => ({ ...p, [reviewId]: true }));
       }
-    } catch { }
+    } catch {}
     setReplySubmitting(false);
   };
 
@@ -788,12 +816,7 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
             )}
           </div>
 
-          <GroupBuyUI
-            productId={pid}
-            user={user}
-            formatPrice={formatPrice}
-          />
-
+          <GroupBuyUI productId={pid} user={user} formatPrice={formatPrice} />
 
           {/* Colors */}
           {colors.length > 0 && (
@@ -919,42 +942,25 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
           </div>
 
           {/* Buttons */}
-          {/* <div className="flex gap-2">
-            <button
-              onClick={addCart}
-              disabled={product.stock === 0 || cartOk}
-              className="flex-1 h-11 bg-black text-white font-bold text-[16px] sm:text-[16px] sm:text-base uppercase tracking-wide rounded-full hover:bg-gray-800 active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-40"
-            >
-              {cartOk ? (
-                <>
-                  <FiCheck size={16} /> Added!
-                </>
-              ) : (
-                <>
-                  <FiShoppingCart size={16} /> Add to Cart
-                </>
-              )}
-            </button>
-            <button
-              onClick={buyNow}
-              disabled={product.stock === 0}
-              className="flex-1 h-11 bg-black text-white font-bold text-[16px] sm:text-[16px] sm:text-base uppercase tracking-wide rounded-full hover:bg-gray-800 active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-40"
-            >
-              <FiZap size={16} /> Buy Now
-            </button>
-            <button
-              onClick={() => setWish(!wish)}
-              className={`w-11 h-11 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${wish ? "bg-red-500 border-red-500 text-white" : "border-gray-200 text-gray-500 hover:border-red-500 hover:text-red-500"}`}
-            >
-              <FiHeart size={16} className={wish ? "fill-current" : ""} />
-            </button>
-          </div> */}
-          {/* ── Bidding or Purchase Buttons ── */}
           {/* ── Bidding or Purchase Buttons ── */}
           <div className="pt-2">
             {product.category?.toLowerCase() === "auction" ? (
               /* ───── AUCTION INTERFACE ───── */
               <div className="p-4 bg-amber-50 rounded-2xl border-2 border-amber-200 space-y-4 shadow-sm">
+                <div className="flex items-center justify-between px-2 mb-2">
+                  <div className="flex items-center gap-2">
+                    <FiClock
+                      className="text-amber-600 animate-pulse"
+                      size={16}
+                    />
+                    <span className="text-[11px] font-bold text-amber-800 uppercase tracking-tighter">
+                      Auction Ends In:
+                    </span>
+                  </div>
+                  <div className="font-mono font-black text-amber-700 text-sm">
+                    {timeLeft || "Calculating..."}
+                  </div>
+                </div>
                 <div className="flex justify-between items-center">
                   <span className="flex items-center gap-1.5 text-amber-700 font-black text-xs uppercase tracking-widest">
                     <FiZap className="fill-amber-500 text-amber-500 animate-pulse" />{" "}
@@ -965,7 +971,7 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
                   </span>
                 </div>
 
-                <div className="space-y-2">
+                {/* <div className="space-y-2">
                   <label className="text-[11px] font-bold text-gray-500 uppercase ml-1">
                     Place Your Bid (Min: {formatPrice(product.price)})
                   </label>
@@ -1038,6 +1044,105 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
                       />
                       {bidError}
                     </p>
+                  )}
+                </div> */}
+                <div className="space-y-2">
+                  {timeLeft !== "AUCTION ENDED" ? (
+                    /* ───── নিলাম চলাকালীন ইনপুট ফিল্ড ───── */
+                    <>
+                      <label className="text-[11px] font-bold text-gray-500 uppercase ml-1">
+                        Place Your Bid (Min:{" "}
+                        {formatPrice(product.currentHighestBId + 1)})
+                      </label>
+
+                      <div className="flex gap-2">
+                        <div className="relative flex-1">
+                          <span className="absolute left-4 top-1/2 -translate-y-1/2 font-bold text-gray-400 pointer-events-none">
+                            {formatPrice(0).replace(/[0-9.,\s]/g, "")}
+                          </span>
+                          <input
+                            type="number"
+                            value={bidAmount}
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              setBidAmount(val);
+
+                              // টাইপ করার সময় সাথে সাথে এরর চেক
+                              if (
+                                val &&
+                                parseInt(val) >= parseInt(product.price)
+                              ) {
+                                setBidError("");
+                              }
+                            }}
+                            placeholder="Enter amount"
+                            className={`w-full h-12 pl-10 pr-4 rounded-xl border-2 outline-none font-bold text-lg transition-all ${
+                              bidError
+                                ? "border-red-500 bg-red-50"
+                                : "border-gray-200 focus:border-amber-500"
+                            }`}
+                          />
+                        </div>
+                        <button
+                          onClick={() => {
+                            // ইনপুট এবং প্রাইস দুটোকেই পূর্ণসংখ্যায় কনভার্ট করা হলো
+                            const userBidValue = parseInt(bidAmount);
+                            const minimumRequired = parseFloat(
+                              formatPrice(product.price).replace(
+                                /[^0-9 .]/g,
+                                "",
+                              ),
+                            );
+                            if (!bidAmount || isNaN(userBidValue)) {
+                              setBidError("Please enter a valid amount");
+                            } else if (userBidValue < minimumRequired) {
+                              setBidError(
+                                `Minimum bid is ${formatPrice(0).replace(/[0-9.,\s]/g, "")}${minimumRequired}`,
+                              );
+                            } else {
+                              setBidError("");
+                              alert(
+                                `Success! Bid of ${formatPrice(0).replace(/[0-9.,\s]/g, "")}${userBidValue} placed.`,
+                              );
+                              setBidAmount("");
+                            }
+                          }}
+                          className="px-6 bg-amber-500 hover:bg-amber-600 text-white font-black rounded-xl transition-all active:scale-95 shadow-lg flex items-center gap-2"
+                        >
+                          BID <FiChevronRight />
+                        </button>
+                      </div>
+                      {bidError && (
+                        <p className="text-red-600 text-[11px] font-bold flex items-center gap-1 ml-1">
+                          <FiX
+                            size={14}
+                            className="bg-red-500 text-white rounded-full p-0.5"
+                          />
+                          {bidError}
+                        </p>
+                      )}
+                    </>
+                  ) : (
+                    /* ───── নিলাম শেষ হওয়ার পর UI ───── */
+                    <div className="p-4 bg-emerald-50 border-2 border-emerald-200 rounded-xl text-center space-y-2">
+                      <div className="flex justify-center">
+                        <div className="bg-emerald-500 text-white p-2 rounded-full shadow-lg animate-bounce">
+                          <FiCheck size={24} strokeWidth={3} />
+                        </div>
+                      </div>
+                      <h3 className="text-emerald-800 font-black text-lg uppercase tracking-tight">
+                        Auction Completed
+                      </h3>
+                      <p className="text-emerald-600 text-xs font-bold bg-white/50 py-1 px-3 rounded-full inline-block border border-emerald-100">
+                        Sold for: {formatPrice(product.currentHighestBId)}
+                      </p>
+
+                      {/* উইনারের নাম দেখানোর জন্য (যদি ব্যাকএন্ডে winnerName থাকে) */}
+                      <div className="pt-2 text-[11px] text-emerald-700 font-bold">
+                        Winner:{" "}
+                        {product.highestBidderName || "Anonymous Bidder"} 🎉
+                      </div>
+                    </div>
                   )}
                 </div>
               </div>
@@ -1263,51 +1368,51 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
                           {/* Image previews */}
                           {(keepImages.length > 0 ||
                             reviewPreviews.length > 0) && (
-                              <div className="flex gap-1.5 flex-wrap mb-2">
-                                {keepImages.map((url) => (
-                                  <div
-                                    key={url}
-                                    className="relative w-14 h-14 rounded-lg overflow-hidden border border-gray-200 group"
+                            <div className="flex gap-1.5 flex-wrap mb-2">
+                              {keepImages.map((url) => (
+                                <div
+                                  key={url}
+                                  className="relative w-14 h-14 rounded-lg overflow-hidden border border-gray-200 group"
+                                >
+                                  <Image
+                                    src={url}
+                                    alt=""
+                                    fill
+                                    className="object-cover"
+                                    sizes="56px"
+                                  />
+                                  <button
+                                    type="button"
+                                    onClick={() => removeKeptImage(url)}
+                                    className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
                                   >
-                                    <Image
-                                      src={url}
-                                      alt=""
-                                      fill
-                                      className="object-cover"
-                                      sizes="56px"
-                                    />
-                                    <button
-                                      type="button"
-                                      onClick={() => removeKeptImage(url)}
-                                      className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                                    >
-                                      <FiX size={10} />
-                                    </button>
-                                  </div>
-                                ))}
-                                {reviewPreviews.map((src, i) => (
-                                  <div
-                                    key={i}
-                                    className="relative w-14 h-14 rounded-lg overflow-hidden border border-gray-200 group"
+                                    <FiX size={10} />
+                                  </button>
+                                </div>
+                              ))}
+                              {reviewPreviews.map((src, i) => (
+                                <div
+                                  key={i}
+                                  className="relative w-14 h-14 rounded-lg overflow-hidden border border-gray-200 group"
+                                >
+                                  <Image
+                                    src={src}
+                                    alt=""
+                                    fill
+                                    className="object-cover"
+                                    sizes="56px"
+                                  />
+                                  <button
+                                    type="button"
+                                    onClick={() => removeNewImage(i)}
+                                    className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
                                   >
-                                    <Image
-                                      src={src}
-                                      alt=""
-                                      fill
-                                      className="object-cover"
-                                      sizes="56px"
-                                    />
-                                    <button
-                                      type="button"
-                                      onClick={() => removeNewImage(i)}
-                                      className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                                    >
-                                      <FiX size={10} />
-                                    </button>
-                                  </div>
-                                ))}
-                              </div>
-                            )}
+                                    <FiX size={10} />
+                                  </button>
+                                </div>
+                              ))}
+                            </div>
+                          )}
 
                           {/* Bottom toolbar */}
                           <div className="flex items-center justify-between pt-2 border-t border-gray-200">
@@ -1884,7 +1989,7 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
                 {formatPrice(
                   (product.price +
                     fbt.reduce((s, p) => s + (p.price || 0), 0)) *
-                  0.9,
+                    0.9,
                 )}
               </p>
               <span className="text-[16px] sm:text-xs font-bold text-green-600 bg-green-50 px-1.5 py-0.5 rounded">
