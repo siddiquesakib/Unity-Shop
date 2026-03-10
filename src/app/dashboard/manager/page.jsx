@@ -9,6 +9,7 @@ import {
   Clock,
   Truck,
   CheckCircle,
+  ArrowRight,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import Link from "next/link";
@@ -75,20 +76,31 @@ export default function ManagerDashboard() {
   ];
 
   return (
-    <div className="space-y-8">
-      <div className="flex items-end justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900 uppercase tracking-tight">
-            Manager Hub
+    <div className="space-y-12 pb-16 px-4 md:px-0">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-gray-100 pb-10">
+        <div className="space-y-4">
+          <div className="flex items-center gap-3">
+            <div className="p-1.5 rounded-lg bg-black shadow-lg shadow-black/10">
+              <Package className="text-white" size={16} />
+            </div>
+            <span className="text-[11px] font-black text-gray-400 uppercase tracking-[0.3em]">
+              Operations Command
+            </span>
+          </div>
+          <h1 className="text-5xl font-black text-black uppercase tracking-tight leading-[0.9]">
+            Manager <span className="text-gray-200">Hub</span>
           </h1>
-          <p className="text-gray-500">
-            Operations overview, fulfillment tracking, and platform statistics.
+          <p className="text-base text-gray-500 font-medium max-w-md">
+            Operational overview, fulfillment tracking, and mission-critical platform metrics.
           </p>
         </div>
-        <div className="hidden md:flex items-center gap-2 text-sm text-gray-400">
-          <span>Shift Status:</span>
-          <span className="px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-600 font-medium border border-emerald-200">
-            Active Management
+        <div className="px-5 py-2.5 rounded-2xl bg-white border border-gray-100 flex items-center gap-4 shadow-[0_8px_30px_rgb(0,0,0,0.02)] self-start transition-all hover:border-black/20 group cursor-default">
+          <div className="relative">
+            <div className="w-2.5 h-2.5 rounded-full bg-emerald-500"></div>
+            <div className="absolute inset-0 w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping opacity-75"></div>
+          </div>
+          <span className="text-xs font-black text-black uppercase tracking-widest">
+            Management Active
           </span>
         </div>
       </div>
@@ -97,53 +109,55 @@ export default function ManagerDashboard() {
       <ManagerOverview />
 
       {/* Operational Insights Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
         {/* Fulfillment Efficiency */}
-        <div className="lg:col-span-2 p-6 rounded-xl bg-white border border-gray-200">
-          <div className="flex items-center justify-between mb-6">
-            <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-              <ShoppingCart size={18} className="text-gray-400" />
-              Order Fulfillment Status
-            </h3>
+        <div className="lg:col-span-2 p-10 rounded-[2.5rem] bg-white border border-gray-50 shadow-[0_20px_50px_rgba(0,0,0,0.02)] transition-all duration-500 hover:shadow-[0_40px_80px_rgba(0,0,0,0.05)] group/card">
+          <div className="flex items-center justify-between mb-10">
+            <div>
+              <h3 className="text-2xl font-black text-black flex items-center gap-3 tracking-tight uppercase">
+                Fulfillment <span className="text-gray-300">Velocity</span>
+              </h3>
+              <p className="text-[10px] text-gray-400 font-black uppercase tracking-[0.2em] mt-2">Logistics Pipeline Status</p>
+            </div>
             <Link
               href="/dashboard/manager/fulfillment"
-              className="text-xs text-gray-500 hover:text-gray-900 transition-colors"
+              className="w-12 h-12 rounded-2xl bg-gray-50 text-gray-400 flex items-center justify-center group-hover/card:bg-black group-hover/card:text-white transition-all duration-500 shadow-sm"
             >
-              Manage All →
+              <ArrowRight size={20} />
             </Link>
           </div>
 
           {loading ? (
-            <div className="space-y-6">
+            <div className="space-y-8 py-4">
               {[...Array(4)].map((_, i) => (
-                <div key={i} className="animate-pulse space-y-2">
+                <div key={i} className="animate-pulse space-y-4">
                   <div className="flex justify-between">
-                    <div className="h-3 bg-gray-100 rounded w-28" />
-                    <div className="h-3 bg-gray-100 rounded w-10" />
+                    <div className="h-4 bg-gray-50 rounded-lg w-32" />
+                    <div className="h-4 bg-gray-50 rounded-lg w-12" />
                   </div>
-                  <div className="h-2 w-full bg-gray-100 rounded-full" />
+                  <div className="h-3 w-full bg-gray-50 rounded-full" />
                 </div>
               ))}
             </div>
           ) : (
-            <div className="space-y-5">
+            <div className="space-y-8">
               {fulfillmentBars.map((item, i) => (
-                <div key={i} className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-500 flex items-center gap-2">
-                      <item.icon size={14} />
+                <div key={i} className="space-y-3 group/bar">
+                  <div className="flex justify-between text-[11px] font-black uppercase tracking-wider">
+                    <span className="text-gray-400 flex items-center gap-3 group-hover/bar:text-black transition-colors">
+                      <item.icon size={16} strokeWidth={2.5} />
                       {item.label}
                     </span>
-                    <span className="text-gray-900 font-medium">
-                      {item.count} ({item.percent}%)
+                    <span className="text-black bg-gray-50 px-3 py-1 rounded-lg">
+                      {item.count} <span className="text-gray-300 ml-1">[{item.percent}%]</span>
                     </span>
                   </div>
-                  <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden">
+                  <div className="h-3 w-full bg-gray-50 rounded-full overflow-hidden shadow-inner">
                     <motion.div
                       initial={{ width: 0 }}
                       animate={{ width: `${item.percent}%` }}
-                      transition={{ duration: 1, delay: i * 0.15 }}
-                      className={`h-full ${item.color} rounded-full`}
+                      transition={{ duration: 1.5, delay: i * 0.15, ease: [0.23, 1, 0.32, 1] }}
+                      className={`h-full rounded-full ${i % 2 === 0 ? 'bg-black' : 'bg-gray-400'} shadow-lg shadow-black/5`}
                     />
                   </div>
                 </div>
@@ -153,169 +167,111 @@ export default function ManagerDashboard() {
         </div>
 
         {/* Platform Summary */}
-        <div className="p-6 rounded-xl bg-black flex flex-col justify-between overflow-hidden relative group">
+        <div className="p-10 rounded-[2.5rem] bg-black text-white flex flex-col justify-between overflow-hidden relative group/summary shadow-[0_40px_80px_rgba(0,0,0,0.15)]">
           <TrendingUp
-            size={120}
-            className="absolute -bottom-4 -right-4 text-white/10 rotate-12 group-hover:scale-110 transition-transform duration-500"
+            size={180}
+            className="absolute -bottom-10 -right-10 text-white/5 rotate-12 group-hover/summary:scale-110 group-hover/summary:text-white/10 transition-all duration-700"
           />
           <div className="relative z-10">
-            <h3 className="text-lg font-bold text-white mb-2">
-              Platform Summary
+            <h3 className="text-2xl font-black mb-2 tracking-tight uppercase">
+              Operational <span className="text-gray-500">Pulse</span>
             </h3>
-            <p className="text-gray-400 text-sm">
-              Daily performance overview for management.
-            </p>
+            <p className="text-[10px] text-gray-500 font-black uppercase tracking-[0.2em] mb-10">Real-time Summary Matrix</p>
+
+            <div className="space-y-6">
+              {[
+                { label: "Daily Revenue", value: `$${(stats?.todaySales || 0).toLocaleString()}`, highlight: true },
+                { label: "Daily Volume", value: `${stats?.todayOrderCount || 0} Units` },
+                { label: "New Entrants", value: `+${stats?.newUsersToday || 0} Total` },
+                { label: "Onboarding Queue", value: `${stats?.pendingSellerRequests || 0} Pending` },
+              ].map((row, i) => (
+                <div key={i} className="flex items-center justify-between border-b border-white/10 pb-4 group/row">
+                  <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest group-hover/row:text-gray-200 transition-colors">{row.label}</span>
+                  <span className={`text-xl font-black tracking-tighter ${row.highlight ? 'text-white' : 'text-gray-400 group-hover/row:text-white transition-colors'}`}>
+                    {loading ? "---" : row.value}
+                  </span>
+                </div>
+              ))}
+            </div>
           </div>
-          <div className="space-y-4 relative z-10 mt-6">
-            <div className="flex items-center justify-between border-b border-gray-700 pb-2">
-              <span className="text-sm text-gray-400">Today&apos;s Sales</span>
-              <span className="text-lg font-bold text-white">
-                ${loading ? "..." : (stats?.todaySales || 0).toLocaleString()}
-              </span>
-            </div>
-            <div className="flex items-center justify-between border-b border-gray-700 pb-2">
-              <span className="text-sm text-gray-400">Today&apos;s Orders</span>
-              <span className="text-lg font-bold text-white">
-                {loading ? "..." : stats?.todayOrderCount || 0}
-              </span>
-            </div>
-            <div className="flex items-center justify-between border-b border-gray-700 pb-2">
-              <span className="text-sm text-gray-400">New Users Today</span>
-              <span className="text-lg font-bold text-white">
-                +{loading ? "..." : stats?.newUsersToday || 0}
-              </span>
-            </div>
-            <div className="flex items-center justify-between border-b border-gray-700 pb-2">
-              <span className="text-sm text-gray-400">Seller Requests</span>
-              <span className="text-lg font-bold text-white">
-                {loading ? "..." : stats?.pendingSellerRequests || 0}
-              </span>
-            </div>
-            <Link
-              href="/dashboard/manager/stats"
-              className="block w-full py-3 bg-white text-gray-900 rounded-xl font-bold text-sm hover:bg-gray-100 transition-colors text-center"
-            >
-              View Full Stats
-            </Link>
-          </div>
+
+          <Link
+            href="/dashboard/manager/stats"
+            className="relative z-10 block w-full py-5 bg-white text-black rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-gray-100 transition-all duration-300 text-center shadow-2xl mt-10 hover:-translate-y-1"
+          >
+            Access Core Analytics
+          </Link>
         </div>
       </div>
 
-      {/* Recent Orders Table */}
-      <div className="p-6 rounded-xl bg-white border border-gray-200">
-        <div className="flex items-center justify-between mb-6">
-          <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-            <Package size={18} className="text-gray-400" />
-            Recent Orders
-          </h3>
+      {/* Recent Orders Styled as Activity Stream */}
+      <div className="p-10 rounded-[2.5rem] bg-white border border-gray-50 shadow-[0_20px_50px_rgba(0,0,0,0.02)] transition-all duration-500 hover:shadow-[0_40px_80px_rgba(0,0,0,0.05)] group/activity">
+        <div className="flex items-center justify-between mb-10">
+          <div>
+            <h3 className="text-2xl font-black text-black flex items-center gap-3 tracking-tight uppercase">
+              Activity <span className="text-gray-300">Stream</span>
+            </h3>
+            <p className="text-[10px] text-gray-400 font-black uppercase tracking-[0.2em] mt-2">Platform Transaction Ledger</p>
+          </div>
           <Link
             href="/dashboard/manager/fulfillment"
-            className="text-xs text-gray-500 hover:text-gray-900 transition-colors"
+            className="text-[10px] font-black text-gray-300 hover:text-black transition-colors uppercase tracking-[0.2em]"
           >
-            View All →
+            Monitor All →
           </Link>
         </div>
 
         {loading ? (
-          <div className="space-y-3">
+          <div className="space-y-6">
             {[...Array(5)].map((_, i) => (
-              <div
-                key={i}
-                className="h-12 bg-gray-100 rounded-xl animate-pulse"
-              />
+              <div key={i} className="h-20 bg-gray-50 rounded-[1.5rem] animate-pulse" />
             ))}
           </div>
         ) : !stats?.recentOrders?.length ? (
-          <div className="text-center py-12 text-gray-400">
-            <Package size={48} className="mx-auto mb-3 opacity-30" />
-            <p className="text-lg font-medium">No orders yet</p>
+          <div className="text-center py-24 bg-gray-50/50 rounded-[2.5rem] border-2 border-dashed border-gray-100">
+            <Package size={48} className="mx-auto mb-4 text-gray-200" />
+            <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.3em]">No Recorded Activity</p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="bg-gray-50">
-                  <th className="px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                    Order ID
-                  </th>
-                  <th className="px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                    Customer
-                  </th>
-                  <th className="px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                    Product
-                  </th>
-                  <th className="px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                    Amount
-                  </th>
-                  <th className="px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                    Status
-                  </th>
-                  <th className="px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                    Date
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100">
-                {stats.recentOrders.map((order, i) => (
-                  <motion.tr
-                    key={order._id}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: i * 0.05 }}
-                    className="hover:bg-gray-50 transition-colors"
-                  >
-                    <td className="px-4 py-3 text-xs text-gray-400 font-mono">
-                      #{order._id?.slice(-6).toUpperCase()}
-                    </td>
-                    <td className="px-4 py-3 text-sm text-gray-900">
-                      {order.customerName || order.CustomerName || "N/A"}
-                    </td>
-                    <td className="px-4 py-3 text-sm text-gray-500 max-w-[200px] truncate">
-                      {order.productName || "N/A"}
-                    </td>
-                    <td className="px-4 py-3 text-sm text-emerald-600 font-medium">
-                      $
-                      {(
-                        Number(order.amountPaid) ||
-                        Number(order.amountpaid) ||
-                        0
-                      ).toFixed(2)}
-                    </td>
-                    <td className="px-4 py-3">
-                      <span
-                        className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${
-                          (order.status || "New") === "Delivered"
-                            ? "bg-emerald-50 text-emerald-600"
-                            : (order.status || "New") === "Shipped"
-                              ? "bg-blue-50 text-blue-600"
-                              : (order.status || "New") === "Processing"
-                                ? "bg-amber-50 text-amber-600"
-                                : (order.status || "New") === "Cancelled"
-                                  ? "bg-red-50 text-red-600"
-                                  : "bg-gray-100 text-gray-600"
-                        }`}
-                      >
-                        {order.status || "New"}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-xs text-gray-400">
-                      {order.createdAt
-                        ? new Date(order.createdAt).toLocaleDateString(
-                            "en-US",
-                            {
-                              month: "short",
-                              day: "numeric",
-                            },
-                          )
-                        : "N/A"}
-                    </td>
-                  </motion.tr>
-                ))}
-              </tbody>
-            </table>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {stats.recentOrders.slice(0, 6).map((order, i) => (
+              <motion.div
+                key={order._id}
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: i * 0.05, duration: 0.5 }}
+                className="flex items-center justify-between p-6 rounded-[1.5rem] bg-white border border-gray-50 hover:border-black hover:shadow-[0_15px_30px_rgba(0,0,0,0.05)] transition-all duration-300 group/item"
+              >
+                <div className="flex items-center gap-5">
+                  <div className="w-14 h-14 rounded-2xl bg-gray-50 flex items-center justify-center text-black group-hover/item:bg-black group-hover/item:text-white transition-all duration-500 shadow-sm">
+                    <ShoppingCart size={22} strokeWidth={2.5} />
+                  </div>
+                  <div>
+                    <p className="text-sm font-black text-black leading-tight group-hover/item:translate-x-1 transition-transform duration-300">
+                      Order #{order._id?.slice(-6).toUpperCase()}
+                    </p>
+                    <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mt-1">
+                      {order.productName || "Unknown Product"}
+                    </p>
+                  </div>
+                </div>
+                <div className="text-right flex flex-col items-end gap-2">
+                  <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border ${order.status === 'Delivered' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
+                    order.status === 'Cancelled' ? 'bg-red-50 text-red-600 border-red-100' :
+                      'bg-gray-50 text-gray-600 border-gray-100 group-hover/item:border-black'
+                    }`}>
+                    {order.status || "Pending"}
+                  </span>
+                  <p className="text-[9px] font-black text-gray-300 uppercase">
+                    {order.createdAt ? new Date(order.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : "--"}
+                  </p>
+                </div>
+              </motion.div>
+            ))}
           </div>
         )}
       </div>
     </div>
+
   );
 }

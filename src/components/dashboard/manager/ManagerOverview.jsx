@@ -10,6 +10,7 @@ import {
   Users,
   ShoppingBag,
   DollarSign,
+  Clock,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import Link from "next/link";
@@ -57,76 +58,62 @@ export default function ManagerOverview() {
   const pendingOrders =
     (stats?.statusCounts?.["New"] || 0) +
     (stats?.statusCounts?.["Processing"] || 0);
-  const shippedOrders = stats?.statusCounts?.["Shipped"] || 0;
-  const deliveredOrders = stats?.statusCounts?.["Delivered"] || 0;
 
   const panels = [
     {
       title: "Total Orders",
       value: stats?.totalOrders || 0,
-      subtitle: `${pendingOrders} pending`,
-      icon: Package,
-      color: "text-orange-600",
-      bg: "bg-orange-50",
+      icon: ShoppingBag,
       href: "/dashboard/manager/fulfillment",
     },
     {
-      title: "Total Revenue",
-      value: `$${(stats?.totalRevenue || 0).toLocaleString()}`,
-      subtitle: `$${(stats?.todaySales || 0).toLocaleString()} today`,
-      icon: DollarSign,
-      color: "text-emerald-600",
-      bg: "bg-emerald-50",
-      href: "/dashboard/manager/stats",
+      title: "Pending Orders",
+      value: pendingOrders,
+      icon: Clock,
+      href: "/dashboard/manager/fulfillment",
     },
     {
-      title: "Total Users",
-      value: stats?.totalUsers || 0,
-      subtitle: `${stats?.totalSellers || 0} sellers`,
+      title: "Total Sellers",
+      value: stats?.totalSellers || 0,
       icon: Users,
-      color: "text-gray-700",
-      bg: "bg-gray-100",
       href: "/dashboard/manager/sellers",
     },
     {
-      title: "Products",
-      value: stats?.totalProducts || 0,
-      subtitle: `${stats?.pendingSellerRequests || 0} seller requests`,
-      icon: ShoppingBag,
-      color: "text-purple-600",
-      bg: "bg-purple-50",
-      href: "/dashboard/manager/sellers",
+      title: "Revenue Overview",
+      value: `$${(stats?.totalRevenue || 0).toLocaleString()}`,
+      icon: DollarSign,
+      href: "/dashboard/manager/stats",
     },
   ];
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
       {panels.map((panel, index) => (
         <motion.div
           key={index}
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: index * 0.1 }}
+          whileHover={{ y: -4 }}
         >
           <Link
             href={panel.href}
-            className="block p-6 rounded-xl bg-white border border-gray-200 hover:border-gray-400 transition-all duration-300 group cursor-pointer"
+            className="block p-8 rounded-2xl bg-white border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_50px_rgba(0,0,0,0.08)] transition-all duration-300 group cursor-pointer h-full"
           >
-            <div className="flex items-start justify-between mb-4">
-              <div className={`p-3 rounded-xl ${panel.bg}`}>
-                <panel.icon className={panel.color} size={24} />
+            <div className="flex items-start justify-between mb-6">
+              <div className="p-3 rounded-xl bg-gray-50 text-black group-hover:bg-black group-hover:text-white transition-all duration-500 shadow-sm">
+                <panel.icon size={22} strokeWidth={2.5} />
               </div>
               <ArrowRight
-                size={20}
-                className="text-gray-400 group-hover:text-gray-900 transition-colors"
+                size={18}
+                className="text-gray-300 group-hover:text-black transition-all duration-500 transform group-hover:translate-x-1"
               />
             </div>
             <div>
-              <p className="text-sm text-gray-500 mb-1">{panel.title}</p>
-              <h3 className="text-2xl font-bold text-gray-900 mb-1">
+              <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-2">{panel.title}</p>
+              <h3 className="text-3xl font-black text-black tracking-tighter">
                 {panel.value}
               </h3>
-              <p className="text-xs text-gray-400">{panel.subtitle}</p>
             </div>
           </Link>
         </motion.div>

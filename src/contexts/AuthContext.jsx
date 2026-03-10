@@ -126,19 +126,19 @@ export const AuthProvider = ({ children }) => {
         throw new Error(data.message || 'Failed to submit seller request');
       }
 
+      // Update local state with sellerRequest status (role stays "user" until approved)
       const updatedUser = {
         ...user,
-        sellerRequest: 'pending',
+        token: typeof window !== "undefined" ? localStorage.getItem("token") : null,
+        sellerRequest: "pending",
       };
-
       setUser(updatedUser);
-      localStorage.setItem('user', JSON.stringify(updatedUser));
-
-      await update({ sellerRequest: 'pending' });
+      localStorage.setItem("user", JSON.stringify(updatedUser));
+      await update({ sellerRequest: "pending" });
 
       return { success: true, message: data.message };
     } catch (error) {
-      console.error('Submit Seller Request Error:', error);
+      console.error("Submit Seller Request Error:", error);
       return { success: false, error: error.message };
     }
   };
@@ -162,9 +162,8 @@ export const AuthProvider = ({ children }) => {
       if (res.ok && data.sellerRequest) {
         const updatedUser = {
           ...user,
-          sellerRequest: data.sellerRequest,
+          token: typeof window !== "undefined" ? localStorage.getItem("token") : null, sellerRequest: data.sellerRequest
         };
-
         setUser(updatedUser);
         localStorage.setItem('user', JSON.stringify(updatedUser));
 
