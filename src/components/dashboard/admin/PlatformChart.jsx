@@ -49,56 +49,57 @@ export default function PlatformChart() {
   };
 
   return (
-    <div className="p-6 rounded-xl bg-white border border-gray-200 flex flex-col h-[400px]">
-      <div className="flex items-center justify-between mb-6">
+    <div className="p-10 rounded-[2.5rem] bg-white border border-gray-100 flex flex-col h-[400px] shadow-[0_20px_50px_rgba(0,0,0,0.02)] group hover:shadow-[0_40px_80px_rgba(0,0,0,0.05)] transition-all duration-500">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
         <div>
-          <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-            Platform Growth <TrendingUp size={18} className="text-gray-400" />
+          <h3 className="text-2xl font-black text-black tracking-tight uppercase flex items-center gap-3">
+            Metric <span className="text-gray-300">Analyzer</span> <TrendingUp size={22} className="text-gray-200" />
           </h3>
-          <p className="text-sm text-gray-400">
-            Last 12 months — {modeLabels[viewMode]}
+          <p className="text-[10px] text-gray-400 font-black uppercase tracking-[0.2em] mt-2">
+            12-Month Comparative Synopsis
           </p>
         </div>
-        <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-0.5">
+        <div className="flex items-center gap-1.5 bg-gray-50 rounded-2xl p-1.5 border border-gray-100 shadow-sm transition-all duration-300 group-hover:bg-white">
           {["orders", "revenue", "newUsers"].map((mode) => (
             <button
               key={mode}
               onClick={() => setViewMode(mode)}
-              className={`px-2.5 py-1 rounded-md text-[11px] font-medium transition-all ${
-                viewMode === mode
-                  ? "bg-black text-white"
-                  : "text-gray-400 hover:text-gray-900"
-              }`}
+              className={`px-5 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all duration-500 ${viewMode === mode
+                  ? "bg-black text-white shadow-xl shadow-black/20"
+                  : "text-gray-400 hover:text-black hover:bg-gray-100"
+                }`}
             >
               {mode === "newUsers"
                 ? "Users"
-                : mode.charAt(0).toUpperCase() + mode.slice(1)}
+                : mode}
             </button>
           ))}
         </div>
       </div>
 
-      <div className="flex-1 flex items-end justify-between gap-2 px-2 pb-6">
+      <div className="flex-1 flex items-end justify-between gap-4 px-2 pb-6">
         {values.map((value, index) => {
           const height = maxValue > 0 ? (value / maxValue) * 100 : 0;
           return (
             <div
               key={index}
-              className="flex-1 flex flex-col items-center gap-3 group"
+              className="flex-1 flex flex-col items-center gap-4 group/bar h-full justify-end"
             >
-              <motion.div
-                initial={{ height: 0 }}
-                animate={{ height: `${Math.max(height, 2)}%` }}
-                transition={{ duration: 1, delay: index * 0.05 }}
-                className="w-full max-w-[32px] rounded-t-lg bg-gradient-to-t from-gray-900 to-gray-600 group-hover:from-black group-hover:to-gray-700 transition-all duration-300 relative"
-              >
-                <div className="absolute -top-10 left-1/2 -translate-x-1/2 px-2 py-1 rounded bg-gray-900 text-[10px] text-white opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-                  {viewMode === "revenue"
-                    ? `$${value.toLocaleString()}`
-                    : value}
-                </div>
-              </motion.div>
-              <span className="text-[10px] text-gray-400 font-medium">
+              <div className="relative w-full flex flex-col items-center group-hover/bar:-translate-y-1 transition-transform duration-500">
+                <motion.div
+                  initial={{ height: 0 }}
+                  animate={{ height: `${Math.max(height, 2)}%` }}
+                  transition={{ duration: 1.5, delay: index * 0.05, ease: [0.23, 1, 0.32, 1] }}
+                  className="w-full max-w-[32px] rounded-full bg-gradient-to-t from-gray-50 to-gray-200 group-hover/bar:from-black group-hover/bar:to-gray-800 transition-all duration-500 relative shadow-sm group-hover/bar:shadow-xl group-hover/bar:shadow-black/20"
+                >
+                  <div className="absolute -top-12 left-1/2 -translate-x-1/2 px-3 py-1.5 rounded-xl bg-black text-[10px] font-black text-white opacity-0 group-hover/bar:opacity-100 transition-all duration-500 whitespace-nowrap shadow-2xl scale-50 group-hover/bar:scale-100">
+                    {viewMode === "revenue"
+                      ? `$${value.toLocaleString()}`
+                      : value}
+                  </div>
+                </motion.div>
+              </div>
+              <span className="text-[10px] text-gray-400 font-black uppercase tracking-tighter group-hover/bar:text-black transition-colors duration-500">
                 {months[index]}
               </span>
             </div>
@@ -106,5 +107,6 @@ export default function PlatformChart() {
         })}
       </div>
     </div>
+
   );
 }

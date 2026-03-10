@@ -75,117 +75,83 @@ export default function RecentOrders() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
-        className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm"
+        className="p-10 rounded-[2.5rem] bg-white border border-gray-50 shadow-[0_20px_50px_rgba(0,0,0,0.02)] transition-all duration-500 hover:shadow-[0_40px_80px_rgba(0,0,0,0.05)] group/activity"
       >
-        <div className="flex items-center justify-between mb-5">
-          <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wider">
-            Recent Orders
-          </h3>
+        <div className="flex items-center justify-between mb-10">
+          <div>
+            <h3 className="text-2xl font-black text-black flex items-center gap-3 tracking-tight uppercase">
+              Recent <span className="text-gray-300">Activity</span>
+            </h3>
+            <p className="text-[10px] text-gray-400 font-black uppercase tracking-[0.2em] mt-2">Your latest transactions</p>
+          </div>
           <Link
             href="/dashboard/user/orders"
-            className="text-xs font-medium text-gray-400 hover:text-gray-900 transition-colors uppercase tracking-wider"
+            className="text-[10px] font-black text-gray-300 hover:text-black transition-colors uppercase tracking-[0.2em]"
           >
-            View All
+            History Hub →
           </Link>
         </div>
 
         {loading ? (
-          <div className="space-y-3">
+          <div className="space-y-6">
             {[...Array(4)].map((_, i) => (
-              <div
-                key={i}
-                className="h-14 bg-gray-100 rounded-xl animate-pulse"
-              />
+              <div key={i} className="h-24 bg-gray-50 rounded-[1.5rem] animate-pulse" />
             ))}
           </div>
         ) : orders.length === 0 ? (
-          <div className="text-center py-12">
-            <Package size={40} className="mx-auto text-gray-300 mb-3" />
-            <p className="text-gray-500">No orders yet</p>
-            <p className="text-gray-400 text-sm mt-1">
-              Your orders will appear here after you make a purchase.
-            </p>
+          <div className="text-center py-24 bg-gray-50/50 rounded-[2.5rem] border-2 border-dashed border-gray-100">
+            <Package size={48} className="mx-auto mb-4 text-gray-200" />
+            <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.3em]">No Recorded Activity</p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="text-left border-b border-gray-200">
-                  <th className="pb-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                    Order ID
-                  </th>
-                  <th className="pb-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                    Product
-                  </th>
-                  <th className="pb-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                    Date
-                  </th>
-                  <th className="pb-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                    Total
-                  </th>
-                  <th className="pb-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                    Status
-                  </th>
-                  <th className="pb-4 text-xs font-semibold text-gray-400 uppercase tracking-wider text-right">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200">
-                {orders.map((order) => (
-                  <tr
-                    key={order._id}
-                    className="group hover:bg-gray-50 transition-colors"
-                  >
-                    <td className="py-4 text-sm font-mono text-gray-900">
-                      #
-                      {(order.transitionId || order._id)
-                        .slice(-8)
-                        .toUpperCase()}
-                    </td>
-                    <td className="py-4 text-sm text-gray-700 truncate max-w-[150px]">
-                      {order.productName || "N/A"}
-                    </td>
-                    <td className="py-4 text-sm text-gray-500">
-                      {order.createdAt
-                        ? new Date(order.createdAt).toLocaleDateString(
-                            "en-US",
-                            {
-                              month: "short",
-                              day: "numeric",
-                              year: "numeric",
-                            },
-                          )
-                        : "N/A"}
-                    </td>
-                    <td className="py-4 text-sm font-semibold text-gray-900">
-                      ${Number(order.amountPaid || 0).toFixed(2)}
-                    </td>
-                    <td className="py-4">
-                      <span
-                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${getStatusColor(
-                          order.status || "New",
-                        )}`}
-                      >
-                        {getStatusIcon(order.status || "New")}
-                        {order.status || "New"}
-                      </span>
-                    </td>
-                    <td className="py-4 text-right">
-                      <button
-                        onClick={() => setSelectedOrder(order)}
-                        className="p-2 rounded-lg hover:bg-gray-100 text-gray-500 hover:text-gray-900 transition-colors"
-                      >
-                        <Eye size={16} />
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <div className="space-y-4">
+            {orders.map((order, i) => (
+              <motion.div
+                key={order._id}
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: i * 0.05, duration: 0.5 }}
+                className="flex items-center justify-between p-6 rounded-[2rem] bg-white border border-gray-50 hover:border-black hover:shadow-[0_15px_30px_rgba(0,0,0,0.05)] transition-all duration-300 group/item cursor-pointer"
+                onClick={() => setSelectedOrder(order)}
+              >
+                <div className="flex items-center gap-6">
+                  <div className="w-16 h-16 rounded-2xl bg-gray-50 flex items-center justify-center text-black group-hover/item:bg-black group-hover/item:text-white transition-all duration-500 shadow-sm">
+                    <Package size={24} strokeWidth={2.5} />
+                  </div>
+                  <div>
+                    <h4 className="text-base font-black text-black leading-tight group-hover/item:translate-x-1 transition-transform duration-300">
+                      {order.productName || "Product Purchase"}
+                    </h4>
+                    <div className="flex items-center gap-3 mt-1.5">
+                      <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">
+                        #{order._id?.slice(-8).toUpperCase()}
+                      </p>
+                      <span className="w-1 h-1 rounded-full bg-gray-200"></span>
+                      <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">
+                        ${Number(order.amountPaid || 0).toFixed(2)}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                <div className="text-right flex flex-col items-end gap-3">
+                  <span className={`px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest border ${getStatusColor(order.status || "New")
+                    } group-hover/item:border-black transition-colors`}>
+                    {order.status || "Processing"}
+                  </span>
+                  <p className="text-[9px] font-black text-gray-300 uppercase tracking-[0.1em]">
+                    {order.createdAt ? new Date(order.createdAt).toLocaleDateString('en-US', {
+                      month: 'short',
+                      day: 'numeric',
+                      year: 'numeric'
+                    }) : "--"}
+                  </p>
+                </div>
+              </motion.div>
+            ))}
           </div>
         )}
       </motion.div>
+
 
       {/* Order Detail Modal */}
       {selectedOrder && (
