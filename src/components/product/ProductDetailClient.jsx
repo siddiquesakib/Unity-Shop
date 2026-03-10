@@ -42,6 +42,7 @@ import AINegoBot from "@/components/ai/AINegoBot"; // 🚀 AI Negotiation Bot
 import { number } from "motion-dom";
 import GroupBuyUI from "@/components/product/GroupBuyUI";
 import PostaBId from "../bidrelatedComponents/postForBid";
+import ProductLiveStats from "./ProductLiveStats";
 
 /* ──────────────────── Helpers ──────────────────── */
 const PLACEHOLDER = "https://via.placeholder.com/800x800?text=Product+Image";
@@ -612,6 +613,7 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
         <span className="text-gray-700 font-medium truncate max-w-48">
           {product.name}
         </span>
+        <ProductLiveStats productId={product._id || product.id} />
       </nav>
 
       {/* ══════ MAIN 2-COL ══════ */}
@@ -638,7 +640,7 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
                   unoptimized={true}
                   className="object-contain p-4 group-hover:scale-105 transition-transform duration-500"
                   sizes="(max-width:768px) 100vw, 50vw"
-                  onError={() => setImgErr((p) => ({ ...p, [selImg]: true }))}
+                  onError={() => setImgErr(p => ({ ...p, [selImg]: true }))}
                   priority
                 />
               )}
@@ -657,9 +659,9 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
               <div className="absolute top-3 right-3 flex flex-col gap-1.5 z-10">
                 <button
                   onClick={() => setWish(!wish)}
-                  className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${wish ? "bg-red-500 text-white" : "bg-white/90 text-gray-500 border border-gray-200 hover:bg-red-500 hover:text-white"}`}
+                  className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${wish ? 'bg-red-500 text-white' : 'bg-white/90 text-gray-500 border border-gray-200 hover:bg-red-500 hover:text-white'}`}
                 >
-                  <FiHeart size={14} className={wish ? "fill-current" : ""} />
+                  <FiHeart size={14} className={wish ? 'fill-current' : ''} />
                 </button>
                 <button
                   onClick={() =>
@@ -689,7 +691,7 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
                   setSelImg(i);
                   setShowVideo(false);
                 }}
-                className={`shrink-0 w-14 h-14 rounded-lg border-2 bg-white overflow-hidden transition-colors ${selImg === i && !showVideo ? "border-black" : "border-gray-200 hover:border-gray-400"}`}
+                className={`shrink-0 w-14 h-14 rounded-lg border-2 bg-white overflow-hidden transition-colors ${selImg === i && !showVideo ? 'border-black' : 'border-gray-200 hover:border-gray-400'}`}
               >
                 <Image
                   src={safeUrl(img)}
@@ -698,14 +700,14 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
                   height={56}
                   unoptimized={true}
                   className="object-contain w-full h-full p-0.5"
-                  onError={() => setImgErr((p) => ({ ...p, [i]: true }))}
+                  onError={() => setImgErr(p => ({ ...p, [i]: true }))}
                 />
               </button>
             ))}
             {product.video && (
               <button
                 onClick={() => setShowVideo(true)}
-                className={`shrink-0 w-14 h-14 rounded-lg border-2 bg-gray-900 flex items-center justify-center ${showVideo ? "border-black" : "border-gray-200"}`}
+                className={`shrink-0 w-14 h-14 rounded-lg border-2 bg-gray-900 flex items-center justify-center ${showVideo ? 'border-black' : 'border-gray-200'}`}
               >
                 <FiPlay size={18} className="text-white" />
               </button>
@@ -775,7 +777,7 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
             )}
             {product.price >= 50 && (
               <div className="flex gap-2 flex-wrap mt-1">
-                {emi.map((m) => (
+                {emi.map(m => (
                   <span
                     key={m}
                     className="text-[16px] sm:text-xs text-blue-700 bg-blue-50 px-1.5 py-0.5 rounded font-semibold"
@@ -793,43 +795,43 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
           {colors.length > 0 && (
             <div>
               <span className="text-[16px] sm:text-xs font-bold uppercase tracking-wider text-gray-400 mb-2 block">
-                Color:{" "}
+                Color:{' '}
                 <span className="text-gray-900 capitalize">{selColor}</span>
               </span>
               <div className="flex gap-1.5 flex-wrap">
-                {colors.map((c) => {
+                {colors.map(c => {
                   const map = {
-                    black: "#000",
-                    white: "#fff",
-                    red: "#ef4444",
-                    blue: "#3b82f6",
-                    green: "#22c55e",
-                    yellow: "#eab308",
-                    pink: "#ec4899",
-                    purple: "#a855f7",
-                    orange: "#f97316",
-                    gray: "#6b7280",
-                    brown: "#92400e",
-                    navy: "#1e3a5f",
-                    beige: "#d4b896",
+                    black: '#000',
+                    white: '#fff',
+                    red: '#ef4444',
+                    blue: '#3b82f6',
+                    green: '#22c55e',
+                    yellow: '#eab308',
+                    pink: '#ec4899',
+                    purple: '#a855f7',
+                    orange: '#f97316',
+                    gray: '#6b7280',
+                    brown: '#92400e',
+                    navy: '#1e3a5f',
+                    beige: '#d4b896',
                   };
                   return (
                     <button
                       key={c}
                       onClick={() => setSelColor(c)}
                       title={c}
-                      className={`w-8 h-8 rounded-full border-2 flex items-center justify-center transition-all ${selColor === c ? "border-black ring-2 ring-black ring-offset-1 scale-110" : "border-gray-200 hover:border-gray-400"}`}
+                      className={`w-8 h-8 rounded-full border-2 flex items-center justify-center transition-all ${selColor === c ? 'border-black ring-2 ring-black ring-offset-1 scale-110' : 'border-gray-200 hover:border-gray-400'}`}
                       style={{ backgroundColor: map[c.toLowerCase()] || c }}
                     >
                       {selColor === c && (
                         <FiCheck
                           size={12}
                           className={
-                            ["white", "yellow", "beige"].includes(
+                            ['white', 'yellow', 'beige'].includes(
                               c.toLowerCase(),
                             )
-                              ? "text-black"
-                              : "text-white"
+                              ? 'text-black'
+                              : 'text-white'
                           }
                         />
                       )}
@@ -847,11 +849,11 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
                 Size: <span className="text-gray-900 uppercase">{selSize}</span>
               </span>
               <div className="flex gap-1.5 flex-wrap">
-                {sizes.map((s) => (
+                {sizes.map(s => (
                   <button
                     key={s}
                     onClick={() => setSelSize(s)}
-                    className={`min-w-[2.5rem] px-3 h-8 rounded-md border-2 text-[16px] sm:text-[16px] sm:text-base font-bold uppercase ${selSize === s ? "border-black bg-black text-white" : "border-gray-200 text-gray-700 hover:border-black"}`}
+                    className={`min-w-[2.5rem] px-3 h-8 rounded-md border-2 text-[16px] sm:text-[16px] sm:text-base font-bold uppercase ${selSize === s ? 'border-black bg-black text-white' : 'border-gray-200 text-gray-700 hover:border-black'}`}
                   >
                     {s}
                   </button>
@@ -864,14 +866,14 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
           {product.stock !== undefined && (
             <div className="flex items-center gap-2">
               <div
-                className={`w-2 h-2 rounded-full ${product.stock > 10 ? "bg-green-500" : product.stock > 0 ? "bg-amber-500 animate-pulse" : "bg-gray-300"}`}
+                className={`w-2 h-2 rounded-full ${product.stock > 10 ? 'bg-green-500' : product.stock > 0 ? 'bg-amber-500 animate-pulse' : 'bg-gray-300'}`}
               />
               <span className="text-[16px] sm:text-[16px] sm:text-base font-medium text-gray-600">
                 {product.stock > 10
-                  ? "In Stock"
+                  ? 'In Stock'
                   : product.stock > 0
                     ? `Only ${product.stock} left`
-                    : "Out of Stock"}
+                    : 'Out of Stock'}
               </span>
             </div>
           )}
@@ -889,7 +891,7 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
               <input
                 type="number"
                 value={qty}
-                onChange={(e) =>
+                onChange={e =>
                   setQty(
                     Math.max(
                       1,
@@ -926,8 +928,8 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
                   disabled={product.stock === 0 || cartOk}
                   className="flex-1 h-12 bg-black text-white font-bold text-sm uppercase tracking-wider rounded-full hover:bg-gray-800 active:scale-95 transition-all flex items-center justify-center gap-2"
                 >
-                  {cartOk ? <FiCheck /> : <FiShoppingCart />}{" "}
-                  {cartOk ? "Added" : "Add to Cart"}
+                  {cartOk ? <FiCheck /> : <FiShoppingCart />}{' '}
+                  {cartOk ? 'Added' : 'Add to Cart'}
                 </button>
                 <button
                   onClick={buyNow}
@@ -938,9 +940,9 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
                 </button>
                 <button
                   onClick={() => setWish(!wish)}
-                  className={`w-11 h-11 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${wish ? "bg-red-500 border-red-500 text-white" : "border-gray-200 text-gray-500 hover:border-red-500 hover:text-red-500"}`}
+                  className={`w-11 h-11 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${wish ? 'bg-red-500 border-red-500 text-white' : 'border-gray-200 text-gray-500 hover:border-red-500 hover:text-red-500'}`}
                 >
-                  <FiHeart size={16} className={wish ? "fill-current" : ""} />
+                  <FiHeart size={16} className={wish ? 'fill-current' : ''} />
                 </button>
               </div>
             )}
@@ -955,14 +957,14 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
           {/* Trust */}
           <div className="grid grid-cols-4 gap-2 pt-3 border-t border-gray-100">
             {[
-              { icon: FiTruck, label: "Free Ship", color: "text-green-600" },
+              { icon: FiTruck, label: 'Free Ship', color: 'text-green-600' },
               {
                 icon: FiRefreshCw,
-                label: "30d Return",
-                color: "text-blue-600",
+                label: '30d Return',
+                color: 'text-blue-600',
               },
-              { icon: FiShield, label: "Guarantee", color: "text-purple-600" },
-              { icon: FiLock, label: "Secure", color: "text-gray-600" },
+              { icon: FiShield, label: 'Guarantee', color: 'text-purple-600' },
+              { icon: FiLock, label: 'Secure', color: 'text-gray-600' },
             ].map(({ icon: I, label, color }) => (
               <div key={label} className="text-center py-2">
                 <I size={16} className={`mx-auto mb-1 ${color}`} />
@@ -991,7 +993,7 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
                 </span>
               </div>
               <Link
-                href={`/products?seller=${encodeURIComponent(product.sellerEmail || "")}`}
+                href={`/products?seller=${encodeURIComponent(product.sellerEmail || '')}`}
                 className="text-[16px] sm:text-xs font-bold text-gray-400 hover:text-black underline underline-offset-2"
               >
                 Store →
@@ -1028,19 +1030,19 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
         <div className="flex border-b border-gray-200 overflow-x-auto">
           {[
             {
-              id: "reviews",
+              id: 'reviews',
               label: `Reviews (${reviewMeta.totalCount || reviewCount})`,
             },
-            { id: "vendor", label: "Vendor" },
-            { id: "shipping", label: "Shipping" },
+            { id: 'vendor', label: 'Vendor' },
+            { id: 'shipping', label: 'Shipping' },
             ...(product.description
-              ? [{ id: "desc", label: "Description" }]
+              ? [{ id: 'desc', label: 'Description' }]
               : []),
-          ].map((t) => (
+          ].map(t => (
             <button
               key={t.id}
               onClick={() => setTab(t.id)}
-              className={`px-4 py-3 text-[16px] sm:text-[16px] sm:text-base font-bold uppercase tracking-wide relative whitespace-nowrap ${tab === t.id ? "text-gray-900" : "text-gray-400 hover:text-gray-600"}`}
+              className={`px-4 py-3 text-[16px] sm:text-[16px] sm:text-base font-bold uppercase tracking-wide relative whitespace-nowrap ${tab === t.id ? 'text-gray-900' : 'text-gray-400 hover:text-gray-600'}`}
             >
               {t.label}
               {tab === t.id && (
@@ -1052,7 +1054,7 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
 
         <div className="p-4 sm:p-6">
           {/* ── REVIEWS TAB ──────── */}
-          {tab === "reviews" && (
+          {tab === 'reviews' && (
             <div className="space-y-6">
               {/* ── Header: "Comments" + sort ── */}
               <div className="flex items-center justify-between">
@@ -1060,13 +1062,13 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
                   Comments
                 </h3>
                 <div className="flex items-center gap-2 text-sm">
-                  {["newest", "top"].map((s) => (
+                  {['newest', 'top'].map(s => (
                     <button
                       key={s}
                       onClick={() => setReviewSort(s)}
-                      className={`px-3 py-1 rounded-full text-sm font-semibold transition-colors ${reviewSort === s ? "bg-gray-900 text-white" : "text-gray-400 hover:text-gray-700"}`}
+                      className={`px-3 py-1 rounded-full text-sm font-semibold transition-colors ${reviewSort === s ? 'bg-gray-900 text-white' : 'text-gray-400 hover:text-gray-700'}`}
                     >
-                      {s === "newest" ? "Newest" : "Top"}
+                      {s === 'newest' ? 'Newest' : 'Top'}
                     </button>
                   ))}
                 </div>
@@ -1088,7 +1090,7 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
                         />
                       ) : (
                         <div className="w-10 h-10 rounded-full bg-black text-white flex items-center justify-center text-sm font-bold shrink-0">
-                          {(user.name || "U")[0].toUpperCase()}
+                          {(user.name || 'U')[0].toUpperCase()}
                         </div>
                       )
                     ) : (
@@ -1100,20 +1102,20 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
                     <div className="flex-1">
                       {!user ? (
                         <p className="text-sm text-gray-500 py-2">
-                          Please{" "}
+                          Please{' '}
                           <Link
                             href="/login"
                             className="text-black underline font-bold"
                           >
                             sign in
-                          </Link>{" "}
+                          </Link>{' '}
                           to write a review.
                         </p>
                       ) : (
                         <form onSubmit={submitReview}>
                           <textarea
                             value={myComment}
-                            onChange={(e) => setMyComment(e.target.value)}
+                            onChange={e => setMyComment(e.target.value)}
                             placeholder="What are your thoughts?"
                             rows={2}
                             className="w-full text-sm bg-transparent border-none outline-none resize-none placeholder:text-gray-400 text-gray-800"
@@ -1141,7 +1143,7 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
                           {(keepImages.length > 0 ||
                             reviewPreviews.length > 0) && (
                             <div className="flex gap-1.5 flex-wrap mb-2">
-                              {keepImages.map((url) => (
+                              {keepImages.map(url => (
                                 <div
                                   key={url}
                                   className="relative w-14 h-14 rounded-lg overflow-hidden border border-gray-200 group"
@@ -1215,7 +1217,7 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
                                   onClick={() => {
                                     resetReviewForm();
                                     setMyRating(userReview?.rating || 0);
-                                    setMyComment(userReview?.comment || "");
+                                    setMyComment(userReview?.comment || '');
                                     setKeepImages(userReview?.images || []);
                                   }}
                                   className="px-3 py-1.5 text-sm font-semibold text-gray-500 hover:text-black transition-colors"
@@ -1229,10 +1231,10 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
                                 className="inline-flex items-center gap-1.5 px-4 py-1.5 bg-gray-900 text-white text-sm font-bold rounded-full hover:bg-black disabled:opacity-40 transition-colors"
                               >
                                 {submitting
-                                  ? "Posting..."
+                                  ? 'Posting...'
                                   : editingId
-                                    ? "Update"
-                                    : "Post"}
+                                    ? 'Update'
+                                    : 'Post'}
                                 <FiSend size={12} />
                               </button>
                             </div>
@@ -1246,7 +1248,7 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
 
               {/* ── Comments list ── */}
               <div className="space-y-0 divide-y divide-gray-100">
-                {sortedReviews.map((r) => {
+                {sortedReviews.map(r => {
                   const isLiked = (r.likes || []).includes(user?._id);
                   const likeCount = (r.likes || []).length;
                   const replies = r.replies || [];
@@ -1267,7 +1269,7 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
                           />
                         ) : (
                           <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-sm font-bold text-gray-500 shrink-0">
-                            {(r.userName || "A")[0].toUpperCase()}
+                            {(r.userName || 'A')[0].toUpperCase()}
                           </div>
                         )}
 
@@ -1275,7 +1277,7 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
                           {/* Header */}
                           <div className="flex items-center gap-2 flex-wrap">
                             <span className="text-sm font-bold text-gray-900">
-                              {r.userName || "Anonymous"}
+                              {r.userName || 'Anonymous'}
                             </span>
                             {/* Rating badge */}
                             <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-gray-100 rounded text-[10px] font-bold text-gray-500">
@@ -1359,11 +1361,11 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
                           <div className="flex items-center gap-4 mt-3">
                             <button
                               onClick={() => toggleLike(r._id)}
-                              className={`flex items-center gap-1.5 text-xs font-medium transition-colors ${isLiked ? "text-red-500" : "text-gray-400 hover:text-gray-700"}`}
+                              className={`flex items-center gap-1.5 text-xs font-medium transition-colors ${isLiked ? 'text-red-500' : 'text-gray-400 hover:text-gray-700'}`}
                             >
                               <FiHeart
                                 size={14}
-                                className={isLiked ? "fill-current" : ""}
+                                className={isLiked ? 'fill-current' : ''}
                               />
                               {likeCount > 0 && likeCount}
                             </button>
@@ -1402,15 +1404,15 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
                                 />
                               ) : (
                                 <div className="w-7 h-7 rounded-full bg-gray-200 flex items-center justify-center text-xs font-bold text-gray-500 shrink-0">
-                                  {(user.name || "U")[0].toUpperCase()}
+                                  {(user.name || 'U')[0].toUpperCase()}
                                 </div>
                               )}
                               <div className="flex-1 flex items-center gap-2 bg-gray-50 rounded-full px-3 py-1.5 border border-gray-200 focus-within:border-gray-400 transition-colors">
                                 <input
                                   value={replyText}
-                                  onChange={(e) => setReplyText(e.target.value)}
-                                  onKeyDown={(e) =>
-                                    e.key === "Enter" &&
+                                  onChange={e => setReplyText(e.target.value)}
+                                  onKeyDown={e =>
+                                    e.key === 'Enter' &&
                                     !e.shiftKey &&
                                     (e.preventDefault(), submitReply(r._id))
                                   }
@@ -1436,7 +1438,7 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
                               {!showReplies && (
                                 <button
                                   onClick={() =>
-                                    setExpandedReplies((p) => ({
+                                    setExpandedReplies(p => ({
                                       ...p,
                                       [r._id]: true,
                                     }))
@@ -1445,13 +1447,13 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
                                 >
                                   <span className="w-6 h-px bg-gray-300" />
                                   {replies.length === 1
-                                    ? "Show 1 reply"
+                                    ? 'Show 1 reply'
                                     : `Show ${replies.length} replies`}
                                 </button>
                               )}
                               {showReplies && (
                                 <div className="space-y-3 pl-2 border-l-2 border-gray-100 ml-1">
-                                  {replies.map((reply) => (
+                                  {replies.map(reply => (
                                     <div
                                       key={reply._id}
                                       className="flex items-start gap-2.5 pl-3"
@@ -1467,13 +1469,13 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
                                       ) : (
                                         <div className="w-7 h-7 rounded-full bg-gray-100 flex items-center justify-center text-xs font-bold text-gray-500 shrink-0">
                                           {(reply.userName ||
-                                            "A")[0].toUpperCase()}
+                                            'A')[0].toUpperCase()}
                                         </div>
                                       )}
                                       <div className="flex-1 min-w-0">
                                         <div className="flex items-center gap-2">
                                           <span className="text-xs font-bold text-gray-900">
-                                            {reply.userName || "Anonymous"}
+                                            {reply.userName || 'Anonymous'}
                                           </span>
                                           <span className="text-[11px] text-gray-400">
                                             · {timeAgo(reply.createdAt)}
@@ -1487,7 +1489,7 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
                                   ))}
                                   <button
                                     onClick={() =>
-                                      setExpandedReplies((p) => ({
+                                      setExpandedReplies(p => ({
                                         ...p,
                                         [r._id]: false,
                                       }))
@@ -1537,7 +1539,7 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
           )}
 
           {/* ── VENDOR TAB ──────── */}
-          {tab === "vendor" && (
+          {tab === 'vendor' && (
             <div className="max-w-xl">
               <div className="bg-gray-50 rounded-lg p-4">
                 <div className="flex items-center gap-3 mb-4">
@@ -1565,17 +1567,17 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
                     {
                       icon: <FiAward size={16} className="text-amber-500" />,
                       val: `${vendor.trust}/100`,
-                      lbl: "Trust",
+                      lbl: 'Trust',
                     },
                     {
                       icon: <FiClock size={16} className="text-blue-500" />,
                       val: vendor.response,
-                      lbl: "Response",
+                      lbl: 'Response',
                     },
                     {
                       icon: <FiPackage size={16} className="text-green-500" />,
                       val: vendor.fulfillment,
-                      lbl: "Fulfillment",
+                      lbl: 'Fulfillment',
                     },
                     {
                       icon: (
@@ -1585,7 +1587,7 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
                         />
                       ),
                       val: `${rating.toFixed(1)}/5`,
-                      lbl: "Rating",
+                      lbl: 'Rating',
                     },
                   ].map(({ icon, val, lbl }) => (
                     <div
@@ -1618,17 +1620,17 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
           )}
 
           {/* ── SHIPPING TAB ──────── */}
-          {tab === "shipping" && (
+          {tab === 'shipping' && (
             <div className="max-w-xl space-y-4">
               <div className="bg-gray-50 rounded-lg p-4 space-y-2">
                 <h3 className="text-[16px] sm:text-[16px] sm:text-base font-bold flex items-center gap-1.5">
                   <FiTruck size={14} className="text-green-600" /> Shipping
                 </h3>
                 {[
-                  "Free Standard — 5-7 business days (orders $50+)",
-                  "Express — $9.99, 2-3 business days",
-                  "International — rates at checkout",
-                ].map((t) => (
+                  'Free Standard — 5-7 business days (orders $50+)',
+                  'Express — $9.99, 2-3 business days',
+                  'International — rates at checkout',
+                ].map(t => (
                   <div key={t} className="flex items-start gap-2">
                     <FiCheck
                       size={12}
@@ -1645,10 +1647,10 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
                   <FiRefreshCw size={14} className="text-blue-600" /> Returns
                 </h3>
                 {[
-                  "30-day full refund policy",
-                  "Free return shipping for defective items",
-                  "Easy process from your dashboard",
-                ].map((t) => (
+                  '30-day full refund policy',
+                  'Free return shipping for defective items',
+                  'Easy process from your dashboard',
+                ].map(t => (
                   <div key={t} className="flex items-start gap-2">
                     <FiCheck
                       size={12}
@@ -1679,17 +1681,17 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
           )}
 
           {/* ── DESC TAB ──────── */}
-          {tab === "desc" && product.description && (
+          {tab === 'desc' && product.description && (
             <div className="max-w-2xl">
               <p className="text-[16px] sm:text-base text-gray-600 leading-relaxed whitespace-pre-line">
                 {product.description}
               </p>
               <div className="mt-4 space-y-0">
                 {[
-                  product.brand && { l: "Brand", v: product.brand },
-                  product.category && { l: "Category", v: product.category },
+                  product.brand && { l: 'Brand', v: product.brand },
+                  product.category && { l: 'Category', v: product.category },
                   product.stock !== undefined && {
-                    l: "Stock",
+                    l: 'Stock',
                     v: `${product.stock}`,
                   },
                 ]
@@ -1697,7 +1699,7 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
                   .map(({ l, v }, i) => (
                     <div
                       key={l}
-                      className={`flex justify-between py-2 text-[16px] sm:text-[16px] sm:text-base ${i ? "border-t border-gray-100" : ""}`}
+                      className={`flex justify-between py-2 text-[16px] sm:text-[16px] sm:text-base ${i ? 'border-t border-gray-100' : ''}`}
                     >
                       <span className="text-gray-400">{l}</span>
                       <span className="font-bold capitalize">{v}</span>
@@ -1748,7 +1750,7 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
                     src={safeUrl(
                       Array.isArray(it.image) ? it.image[0] : it.image,
                     )}
-                    alt={it.name || ""}
+                    alt={it.name || ''}
                     width={64}
                     height={64}
                     className="w-full h-full object-contain p-1"
@@ -1770,7 +1772,7 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
               <button
                 onClick={() => {
                   addToCart(product, 1);
-                  fbt.forEach((p) => addToCart(p, 1));
+                  fbt.forEach(p => addToCart(p, 1));
                 }}
                 className="mt-1 block px-4 h-7 bg-black text-white text-[16px] sm:text-xs font-bold uppercase rounded hover:bg-gray-800"
               >
@@ -1788,7 +1790,7 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
             <FiClock size={16} /> Recently Viewed
           </h2>
           <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2">
-            {rv.slice(0, 6).map((it) => (
+            {rv.slice(0, 6).map(it => (
               <Link
                 key={it._id}
                 href={`/products/${it._id}`}
@@ -1797,7 +1799,7 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
                 <div className="relative aspect-square bg-gray-50">
                   <Image
                     src={safeUrl(it.image)}
-                    alt={it.name || ""}
+                    alt={it.name || ''}
                     fill
                     sizes="(max-width:768px) 33vw, 16vw"
                     className="object-cover group-hover:scale-105 transition-transform"
@@ -1876,7 +1878,7 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
           {/* Prev */}
           {lightbox.images.length > 1 && (
             <button
-              onClick={(e) => {
+              onClick={e => {
                 e.stopPropagation();
                 lbPrev();
               }}
@@ -1888,7 +1890,7 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
           {/* Image */}
           <div
             className="relative max-w-[90vw] max-h-[85vh] w-full h-full flex items-center justify-center"
-            onClick={(e) => e.stopPropagation()}
+            onClick={e => e.stopPropagation()}
           >
             <Image
               src={lightbox.images[lightbox.index]}
@@ -1901,7 +1903,7 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
           {/* Next */}
           {lightbox.images.length > 1 && (
             <button
-              onClick={(e) => {
+              onClick={e => {
                 e.stopPropagation();
                 lbNext();
               }}
@@ -1914,13 +1916,13 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
           {lightbox.images.length > 1 && (
             <div
               className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1.5 bg-black/40 rounded-lg p-1.5"
-              onClick={(e) => e.stopPropagation()}
+              onClick={e => e.stopPropagation()}
             >
               {lightbox.images.map((img, i) => (
                 <button
                   key={i}
-                  onClick={() => setLightbox((p) => ({ ...p, index: i }))}
-                  className={`relative w-10 h-10 rounded overflow-hidden border-2 transition-colors ${i === lightbox.index ? "border-white" : "border-transparent opacity-60 hover:opacity-100"}`}
+                  onClick={() => setLightbox(p => ({ ...p, index: i }))}
+                  className={`relative w-10 h-10 rounded overflow-hidden border-2 transition-colors ${i === lightbox.index ? 'border-white' : 'border-transparent opacity-60 hover:opacity-100'}`}
                 >
                   <Image
                     src={img}

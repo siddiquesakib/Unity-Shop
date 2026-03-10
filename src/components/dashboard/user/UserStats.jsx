@@ -38,54 +38,51 @@ export default function UserStats() {
       label: "Total Orders",
       value: stats ? `${stats.totalOrders}` : "0",
       icon: ShoppingBag,
-      accent: "bg-gray-900 text-white",
     },
     {
-      label: "Pending",
-      value: stats ? `${stats.pendingCount}` : "0",
-      icon: Clock,
-      accent: "bg-amber-50 text-amber-600",
-    },
-    {
-      label: "Total Spent",
-      value: stats ? `$${stats.totalSpent.toFixed(2)}` : "$0.00",
-      icon: CreditCard,
-      accent: "bg-emerald-50 text-emerald-600",
-    },
-    {
-      label: "Wishlist",
+      label: "Wishlist Items",
       value: stats ? `${stats.wishlistCount}` : "0",
       icon: Heart,
-      accent: "bg-rose-50 text-rose-500",
+    },
+    {
+      label: "Recent Purchases",
+      value: stats ? `${stats.totalOrders}` : "0", // Using total orders as proxy for count
+      icon: Clock,
+    },
+    {
+      label: "Saved Addresses",
+      value: user?.addresses?.length || 0,
+      icon: CreditCard, // Using CreditCard as a generic account icon or proxy
     },
   ];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
       {statCards.map((stat, index) => (
         <motion.div
           key={index}
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: index * 0.1 }}
-          className="p-5 rounded-xl bg-white border border-gray-200 hover:shadow-md transition-all duration-300 group"
+          whileHover={{ y: -4 }}
         >
-          <div className="flex items-center justify-between mb-4">
-            <div
-              className={`w-10 h-10 rounded-lg ${stat.accent} flex items-center justify-center`}
-            >
-              <stat.icon size={18} />
+          <div className="p-8 rounded-2xl bg-white border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_50px_rgba(0,0,0,0.08)] transition-all duration-300 group h-full">
+            <div className="flex items-start justify-between mb-6">
+              <div className="w-12 h-12 rounded-xl bg-gray-50 flex items-center justify-center text-black group-hover:bg-black group-hover:text-white transition-all duration-500 shadow-sm">
+                <stat.icon size={22} strokeWidth={2.5} />
+              </div>
+              <div className="h-2 w-2 rounded-full bg-black/10 group-hover:bg-black group-hover:scale-150 transition-all duration-500"></div>
             </div>
-          </div>
-          <div>
-            {loading ? (
-              <div className="h-8 w-20 bg-gray-100 rounded-lg animate-pulse" />
-            ) : (
-              <h3 className="text-2xl font-bold text-gray-900">{stat.value}</h3>
-            )}
-            <p className="text-gray-400 text-xs font-medium mt-1 uppercase tracking-wider">
-              {stat.label}
-            </p>
+            <div>
+              <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-2">{stat.label}</p>
+              {loading ? (
+                <div className="h-9 w-24 bg-gray-50 rounded-lg animate-pulse" />
+              ) : (
+                <h3 className="text-3xl font-black text-black tracking-tighter">
+                  {stat.value}
+                </h3>
+              )}
+            </div>
           </div>
         </motion.div>
       ))}
