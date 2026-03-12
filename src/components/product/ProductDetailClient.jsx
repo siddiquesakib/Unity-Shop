@@ -1,8 +1,8 @@
-"use client";
-import { useState, useEffect, useRef, useCallback } from "react";
-import Image from "next/image";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
+'use client';
+import { useState, useEffect, useRef, useCallback } from 'react';
+import Image from 'next/image';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import {
   FiShoppingCart,
   FiHeart,
@@ -34,29 +34,29 @@ import {
   FiSend,
   FiMoreHorizontal,
   FiCornerDownRight,
-} from "react-icons/fi";
-import { useCart } from "@/contexts/CartContext";
-import { useCurrency } from "@/contexts/CurrencyContext";
-import { useAuth } from "@/contexts/AuthContext";
-import AINegoBot from "@/components/ai/AINegoBot"; // 🚀 AI Negotiation Bot
-import { number } from "motion-dom";
-import GroupBuyUI from "@/components/product/GroupBuyUI";
-import PostaBId from "../bidrelatedComponents/postForBid";
-import ProductLiveStats from "./ProductLiveStats";
+} from 'react-icons/fi';
+import { useCart } from '@/contexts/CartContext';
+import { useCurrency } from '@/contexts/CurrencyContext';
+import { useAuth } from '@/contexts/AuthContext';
+import AINegoBot from '@/components/ai/AINegoBot'; // 🚀 AI Negotiation Bot
+import { number } from 'motion-dom';
+import GroupBuyUI from '@/components/product/GroupBuyUI';
+import PostaBId from '../bidrelatedComponents/postForBid';
+import ProductLiveStats from './ProductLiveStats';
 
 /* ──────────────────── Helpers ──────────────────── */
-const PLACEHOLDER = "https://via.placeholder.com/800x800?text=Product+Image";
-const safeUrl = (u) => {
+const PLACEHOLDER = 'https://via.placeholder.com/800x800?text=Product+Image';
+const safeUrl = u => {
   if (!u || !u.trim?.()) return PLACEHOLDER;
   try {
-    if (u.startsWith("/") || u.startsWith("data:")) return u;
+    if (u.startsWith('/') || u.startsWith('data:')) return u;
     new URL(u);
     return u;
   } catch {
     return PLACEHOLDER;
   }
 };
-const gallery = (p) => {
+const gallery = p => {
   let imgs = Array.isArray(p.image)
     ? p.image.filter(Boolean)
     : p.image
@@ -69,9 +69,9 @@ const gallery = (p) => {
 };
 
 /* ── Time-ago formatter ── */
-const timeAgo = (date) => {
+const timeAgo = date => {
   const seconds = Math.floor((new Date() - new Date(date)) / 1000);
-  if (seconds < 60) return "Just now";
+  if (seconds < 60) return 'Just now';
   const minutes = Math.floor(seconds / 60);
   if (minutes < 60) return `${minutes}m ago`;
   const hours = Math.floor(minutes / 60);
@@ -84,32 +84,32 @@ const timeAgo = (date) => {
   if (months < 12) return `${months}mo ago`;
   return `${Math.floor(months / 12)}y ago`;
 };
-const verdict = (r) =>
+const verdict = r =>
   r >= 4.5
-    ? "Excellent"
+    ? 'Excellent'
     : r >= 4
-      ? "Very Good"
+      ? 'Very Good'
       : r >= 3.5
-        ? "Good"
+        ? 'Good'
         : r >= 3
-          ? "Average"
+          ? 'Average'
           : r >= 2
-            ? "Below Avg"
-            : "Poor";
-const verdictColor = (r) =>
+            ? 'Below Avg'
+            : 'Poor';
+const verdictColor = r =>
   r >= 4
-    ? "bg-green-100 text-green-700"
+    ? 'bg-green-100 text-green-700'
     : r >= 3
-      ? "bg-amber-100 text-amber-700"
-      : "bg-red-100 text-red-700";
+      ? 'bg-amber-100 text-amber-700'
+      : 'bg-red-100 text-red-700';
 
 /* Recently viewed — localStorage */
-const RV_KEY = "unityshop_rv";
-const saveRV = (p) => {
-  if (typeof window === "undefined") return;
+const RV_KEY = 'unityshop_rv';
+const saveRV = p => {
+  if (typeof window === 'undefined') return;
   try {
-    const list = JSON.parse(localStorage.getItem(RV_KEY) || "[]").filter(
-      (i) => i._id !== (p._id || p.id),
+    const list = JSON.parse(localStorage.getItem(RV_KEY) || '[]').filter(
+      i => i._id !== (p._id || p.id),
     );
     list.unshift({
       _id: p._id || p.id,
@@ -122,11 +122,11 @@ const saveRV = (p) => {
     localStorage.setItem(RV_KEY, JSON.stringify(list.slice(0, 10)));
   } catch {}
 };
-const getRV = (id) => {
-  if (typeof window === "undefined") return [];
+const getRV = id => {
+  if (typeof window === 'undefined') return [];
   try {
-    return JSON.parse(localStorage.getItem(RV_KEY) || "[]").filter(
-      (i) => i._id !== id,
+    return JSON.parse(localStorage.getItem(RV_KEY) || '[]').filter(
+      i => i._id !== id,
     );
   } catch {
     return [];
@@ -135,14 +135,14 @@ const getRV = (id) => {
 
 /* ──────────── Image compression helper ──────────── */
 const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2 MB
-const compressImage = (file) =>
-  new Promise((resolve) => {
+const compressImage = file =>
+  new Promise(resolve => {
     if (file.size <= MAX_FILE_SIZE) return resolve(file);
     const reader = new FileReader();
-    reader.onload = (e) => {
+    reader.onload = e => {
       const img = new window.Image();
       img.onload = () => {
-        const canvas = document.createElement("canvas");
+        const canvas = document.createElement('canvas');
         // Scale down proportionally so the longer side ≤ 1600px
         let { width, height } = img;
         const maxDim = 1600;
@@ -153,27 +153,27 @@ const compressImage = (file) =>
         }
         canvas.width = width;
         canvas.height = height;
-        canvas.getContext("2d").drawImage(img, 0, 0, width, height);
+        canvas.getContext('2d').drawImage(img, 0, 0, width, height);
 
         // Binary search for quality that yields ≤ 2 MB
         let lo = 0.1,
           hi = 0.92,
           bestBlob = null;
-        const tryQuality = (q) => {
+        const tryQuality = q => {
           canvas.toBlob(
-            (blob) => {
+            blob => {
               if (!blob) return resolve(file);
               if (blob.size <= MAX_FILE_SIZE) bestBlob = blob;
               if (hi - lo < 0.05 || blob.size <= MAX_FILE_SIZE) {
                 const final = bestBlob || blob;
-                resolve(new File([final], file.name, { type: "image/jpeg" }));
+                resolve(new File([final], file.name, { type: 'image/jpeg' }));
               } else {
                 if (blob.size > MAX_FILE_SIZE) hi = q;
                 else lo = q;
                 tryQuality((lo + hi) / 2);
               }
             },
-            "image/jpeg",
+            'image/jpeg',
             q,
           );
         };
@@ -187,7 +187,7 @@ const compressImage = (file) =>
 /* Star component */
 const Stars = ({ value = 0, size = 14, interactive = false, onChange }) => (
   <div className="flex gap-px">
-    {[1, 2, 3, 4, 5].map((s) => (
+    {[1, 2, 3, 4, 5].map(s => (
       <button
         key={s}
         type="button"
@@ -195,16 +195,16 @@ const Stars = ({ value = 0, size = 14, interactive = false, onChange }) => (
         onClick={() => interactive && onChange?.(s)}
         className={
           interactive
-            ? "cursor-pointer hover:scale-110 transition-transform"
-            : "cursor-default"
+            ? 'cursor-pointer hover:scale-110 transition-transform'
+            : 'cursor-default'
         }
       >
         <FiStar
           size={size}
           className={
             s <= Math.round(value)
-              ? "text-amber-400 fill-amber-400"
-              : "text-gray-200"
+              ? 'text-amber-400 fill-amber-400'
+              : 'text-gray-200'
           }
         />
       </button>
@@ -224,12 +224,12 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
   const videoRef = useRef(null);
 
   /* ── Local state ─────────────────────────────────── */
-    const [selImg, setSelImg] = useState(0);
+  const [selImg, setSelImg] = useState(0);
   const [qty, setQty] = useState(1);
   const [wish, setWish] = useState(false);
   const [imgErr, setImgErr] = useState({});
   const [cartOk, setCartOk] = useState(false);
-  const [tab, setTab] = useState("reviews");
+  const [tab, setTab] = useState('reviews');
   const [selColor, setSelColor] = useState(null);
   const [selSize, setSelSize] = useState(null);
   const [showVideo, setShowVideo] = useState(false);
@@ -245,7 +245,7 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
   });
   const [reviewLoading, setReviewLoading] = useState(false);
   const [myRating, setMyRating] = useState(0);
-  const [myComment, setMyComment] = useState("");
+  const [myComment, setMyComment] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [userReview, setUserReview] = useState(null); // existing review by current user
@@ -253,10 +253,10 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
   const [reviewPreviews, setReviewPreviews] = useState([]); // data URLs
   const [keepImages, setKeepImages] = useState([]); // existing URLs to keep on edit
   const [replyingTo, setReplyingTo] = useState(null); // review _id being replied to
-  const [replyText, setReplyText] = useState("");
+  const [replyText, setReplyText] = useState('');
   const [replySubmitting, setReplySubmitting] = useState(false);
   const [expandedReplies, setExpandedReplies] = useState({}); // { reviewId: true }
-  const [reviewSort, setReviewSort] = useState("newest"); // newest | top
+  const [reviewSort, setReviewSort] = useState('newest'); // newest | top
   const [openMenuId, setOpenMenuId] = useState(null); // review _id for 3-dot menu
   const [lightbox, setLightbox] = useState({
     open: false,
@@ -270,12 +270,12 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
   const closeLightbox = () =>
     setLightbox({ open: false, images: [], index: 0 });
   const lbPrev = () =>
-    setLightbox((p) => ({
+    setLightbox(p => ({
       ...p,
       index: (p.index - 1 + p.images.length) % p.images.length,
     }));
   const lbNext = () =>
-    setLightbox((p) => ({ ...p, index: (p.index + 1) % p.images.length }));
+    setLightbox(p => ({ ...p, index: (p.index + 1) % p.images.length }));
 
   /* ── Derived ─────────────────────────────────────── */
   const imgs = gallery(product);
@@ -301,42 +301,42 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
       ? [product.size]
       : [];
   const vendor = {
-    name: product.sellerName || "UnityShop Seller",
-    email: product.sellerEmail || "",
+    name: product.sellerName || 'UnityShop Seller',
+    email: product.sellerEmail || '',
     verified: true,
     trust: 92,
-    response: "< 2h",
-    fulfillment: "97%",
-    since: "2023",
+    response: '< 2h',
+    fulfillment: '97%',
+    since: '2023',
     products: 156,
   };
   const fbt = relatedProducts.slice(0, 3);
   const emi = [3, 6, 12];
-  const imgSrc = (i) => (imgErr[i] ? PLACEHOLDER : safeUrl(imgs[i]));
+  const imgSrc = i => (imgErr[i] ? PLACEHOLDER : safeUrl(imgs[i]));
 
   /* ── "Who is this for" ──────────────────────────── */
   const whoFor = (() => {
-    const c = (product.category || "").toLowerCase();
-    if (c.includes("electr") || c.includes("tech"))
-      return ["Tech enthusiasts", "Working professionals", "Gift buyers"];
-    if (c.includes("fashion") || c.includes("cloth"))
+    const c = (product.category || '').toLowerCase();
+    if (c.includes('electr') || c.includes('tech'))
+      return ['Tech enthusiasts', 'Working professionals', 'Gift buyers'];
+    if (c.includes('fashion') || c.includes('cloth'))
       return [
-        "Fashion-forward shoppers",
-        "Everyday wardrobe builders",
-        "Style-conscious gifters",
+        'Fashion-forward shoppers',
+        'Everyday wardrobe builders',
+        'Style-conscious gifters',
       ];
-    if (c.includes("home") || c.includes("furni") || c.includes("living"))
-      return ["Home upgraders", "Interior design lovers", "New homeowners"];
-    if (c.includes("beauty") || c.includes("health"))
+    if (c.includes('home') || c.includes('furni') || c.includes('living'))
+      return ['Home upgraders', 'Interior design lovers', 'New homeowners'];
+    if (c.includes('beauty') || c.includes('health'))
       return [
-        "Self-care enthusiasts",
-        "Daily routine upgraders",
-        "Special occasion gifters",
+        'Self-care enthusiasts',
+        'Daily routine upgraders',
+        'Special occasion gifters',
       ];
-    return ["Quality seekers", "Smart shoppers", "Gift buyers"];
+    return ['Quality seekers', 'Smart shoppers', 'Gift buyers'];
   })();
 
-  /* ── Effects ─────────────────────────────────────── */  
+  /* ── Effects ─────────────────────────────────────── */
   useEffect(() => {
     saveRV(product);
     setRv(getRV(pid));
@@ -355,14 +355,14 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
         const res = await fetch(`${API}/reviews/${pid}?page=${page}&limit=5`);
         if (res.ok) {
           const data = await res.json();
-          setReviews((prev) =>
+          setReviews(prev =>
             page === 1 ? data.reviews : [...prev, ...data.reviews],
           );
           setReviewMeta(data.pagination);
           setReviewPage(page);
           // find current user's review
           if (user?._id) {
-            const mine = data.reviews.find((r) => r.userId === user._id);
+            const mine = data.reviews.find(r => r.userId === user._id);
             if (mine) setUserReview(mine);
           }
         }
@@ -379,9 +379,9 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
     // also check if user already reviewed (search all pages)
     if (user?._id) {
       fetch(`${API}/reviews/${pid}?page=1&limit=100`)
-        .then((r) => r.json())
-        .then((d) => {
-          const mine = d.reviews?.find((r) => r.userId === user._id);
+        .then(r => r.json())
+        .then(d => {
+          const mine = d.reviews?.find(r => r.userId === user._id);
           if (mine) {
             setUserReview(mine);
             setMyRating(mine.rating);
@@ -393,7 +393,7 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
   }, [pid, user]);
 
   /* ── Handlers ────────────────────────────────────── */
-  const qtyChange = (d) => {
+  const qtyChange = d => {
     const n = qty + d;
     if (n >= 1 && n <= (product.stock || 999)) setQty(n);
   };
@@ -410,68 +410,68 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
       { ...product, selectedColor: selColor, selectedSize: selSize },
       qty,
     );
-    router.push("/checkout");
+    router.push('/checkout');
   };
 
   /* ── Image picker handler ─────────────────────── */
-  const handleImagePick = async (e) => {
+  const handleImagePick = async e => {
     const files = Array.from(e.target.files || []);
     if (!files.length) return;
     const totalAllowed = 5 - keepImages.length - reviewImages.length;
-    if (totalAllowed <= 0) return alert("Maximum 5 images allowed");
+    if (totalAllowed <= 0) return alert('Maximum 5 images allowed');
     const picked = files.slice(0, totalAllowed);
     const compressed = await Promise.all(picked.map(compressImage));
     const previews = await Promise.all(
-      compressed.map((f) => {
-        return new Promise((res) => {
+      compressed.map(f => {
+        return new Promise(res => {
           const r = new FileReader();
-          r.onload = (e) => res(e.target.result);
+          r.onload = e => res(e.target.result);
           r.readAsDataURL(f);
         });
       }),
     );
-    setReviewImages((prev) => [...prev, ...compressed]);
-    setReviewPreviews((prev) => [...prev, ...previews]);
-    e.target.value = "";
+    setReviewImages(prev => [...prev, ...compressed]);
+    setReviewPreviews(prev => [...prev, ...previews]);
+    e.target.value = '';
   };
-  const removeNewImage = (idx) => {
-    setReviewImages((prev) => prev.filter((_, i) => i !== idx));
-    setReviewPreviews((prev) => prev.filter((_, i) => i !== idx));
+  const removeNewImage = idx => {
+    setReviewImages(prev => prev.filter((_, i) => i !== idx));
+    setReviewPreviews(prev => prev.filter((_, i) => i !== idx));
   };
-  const removeKeptImage = (url) =>
-    setKeepImages((prev) => prev.filter((u) => u !== url));
+  const removeKeptImage = url =>
+    setKeepImages(prev => prev.filter(u => u !== url));
 
   const resetReviewForm = () => {
     setMyRating(0);
-    setMyComment("");
+    setMyComment('');
     setReviewImages([]);
     setReviewPreviews([]);
     setKeepImages([]);
     setEditingId(null);
   };
 
-  const submitReview = async (e) => {
+  const submitReview = async e => {
     e.preventDefault();
-    if (!user) return router.push("/login");
+    if (!user) return router.push('/login');
     if (!myRating) return;
     setSubmitting(true);
     try {
       const isEdit = !!editingId;
       const url = isEdit ? `${API}/reviews/${editingId}` : `${API}/reviews`;
-      const method = isEdit ? "PUT" : "POST";
+      const method = isEdit ? 'PUT' : 'POST';
 
       const fd = new FormData();
       if (!isEdit) {
-        fd.append("productId", pid);
-        fd.append("userName", user.name || "");
-        fd.append("userEmail", user.email || "");
-        fd.append("userImage", user.image || "");
+        fd.append('productId', pid);
+        fd.append('userName', user.name || '');
+        fd.append('userEmail', user.email || '');
+        fd.append('userImage', user.image || '');
       }
-      fd.append("userId", user._id);
-      fd.append("rating", myRating);
-      fd.append("comment", myComment);
-      if (isEdit) fd.append("keepImages", JSON.stringify(keepImages));
-      reviewImages.forEach((f) => fd.append("images", f));
+      fd.append('userId', user._id);
+      fd.append('rating', myRating);
+      fd.append('comment', myComment);
+      if (isEdit) fd.append('keepImages', JSON.stringify(keepImages));
+      reviewImages.forEach(f => fd.append('images', f));
 
       const res = await fetch(url, { method, body: fd });
       if (res.ok) {
@@ -480,25 +480,25 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
         const d = await (
           await fetch(`${API}/reviews/${pid}?page=1&limit=100`)
         ).json();
-        const mine = d.reviews?.find((r) => r.userId === user._id);
+        const mine = d.reviews?.find(r => r.userId === user._id);
         setUserReview(mine || null);
       } else {
         const err = await res.json();
-        alert(err.error || "Failed to submit review");
+        alert(err.error || 'Failed to submit review');
       }
     } catch {
-      alert("Network error");
+      alert('Network error');
     } finally {
       setSubmitting(false);
     }
   };
 
-  const deleteReview = async (reviewId) => {
-    if (!confirm("Delete your review?")) return;
+  const deleteReview = async reviewId => {
+    if (!confirm('Delete your review?')) return;
     try {
       const res = await fetch(`${API}/reviews/${reviewId}`, {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId: user._id }),
       });
       if (res.ok) {
@@ -509,35 +509,35 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
     } catch {}
   };
 
-  const startEdit = (r) => {
+  const startEdit = r => {
     setEditingId(r._id);
     setMyRating(r.rating);
     setMyComment(r.comment);
     setKeepImages(r.images || []);
     setReviewImages([]);
     setReviewPreviews([]);
-    setTab("reviews");
+    setTab('reviews');
   };
 
   /* ── Like a review ── */
-  const toggleLike = async (reviewId) => {
-    if (!user) return router.push("/login");
+  const toggleLike = async reviewId => {
+    if (!user) return router.push('/login');
     try {
       const res = await fetch(`${API}/reviews/${reviewId}/like`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId: user._id }),
       });
       if (res.ok) {
         const data = await res.json();
-        setReviews((prev) =>
-          prev.map((r) =>
+        setReviews(prev =>
+          prev.map(r =>
             r._id === reviewId
               ? {
                   ...r,
                   likes: data.liked
                     ? [...(r.likes || []), user._id]
-                    : (r.likes || []).filter((id) => id !== user._id),
+                    : (r.likes || []).filter(id => id !== user._id),
                 }
               : r,
           ),
@@ -547,33 +547,33 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
   };
 
   /* ── Reply to a review ── */
-  const submitReply = async (reviewId) => {
-    if (!user) return router.push("/login");
+  const submitReply = async reviewId => {
+    if (!user) return router.push('/login');
     if (!replyText.trim()) return;
     setReplySubmitting(true);
     try {
       const res = await fetch(`${API}/reviews/${reviewId}/reply`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           userId: user._id,
-          userName: user.name || "Anonymous",
-          userImage: user.image || "",
+          userName: user.name || 'Anonymous',
+          userImage: user.image || '',
           comment: replyText.trim(),
         }),
       });
       if (res.ok) {
         const reply = await res.json();
-        setReviews((prev) =>
-          prev.map((r) =>
+        setReviews(prev =>
+          prev.map(r =>
             r._id === reviewId
               ? { ...r, replies: [...(r.replies || []), reply] }
               : r,
           ),
         );
-        setReplyText("");
+        setReplyText('');
         setReplyingTo(null);
-        setExpandedReplies((p) => ({ ...p, [reviewId]: true }));
+        setExpandedReplies(p => ({ ...p, [reviewId]: true }));
       }
     } catch {}
     setReplySubmitting(false);
@@ -581,7 +581,7 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
 
   /* ── Sorted reviews ── */
   const sortedReviews = [...reviews].sort((a, b) => {
-    if (reviewSort === "top")
+    if (reviewSort === 'top')
       return (b.likes || []).length - (a.likes || []).length;
     return new Date(b.createdAt) - new Date(a.createdAt);
   });
@@ -613,7 +613,10 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
         <span className="text-gray-700 font-medium truncate max-w-48">
           {product.name}
         </span>
-        <ProductLiveStats productId={product._id || product.id} />
+        <ProductLiveStats
+          productId={product._id}
+          initialViews={product.views ?? 0} // from your existing product fetch
+        />
       </nav>
 
       {/* ══════ MAIN 2-COL ══════ */}
@@ -917,8 +920,7 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
           {/* Buttons */}
           {/* ── Bidding or Purchase Buttons ── */}
           <div className="pt-2">
-            {product.category?.toLowerCase() === "auction" ? (
-             
+            {product.category?.toLowerCase() === 'auction' ? (
               <PostaBId product={product}></PostaBId>
             ) : (
               /* ───── NORMAL SHOPPING ───── */
