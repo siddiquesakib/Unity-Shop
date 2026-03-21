@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
+import { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import {
   User,
   MapPin,
@@ -9,33 +9,50 @@ import {
   Phone,
   ArrowUpRight,
   Calendar,
-} from "lucide-react";
-import { useAuth } from "@/hooks/useAuth";
-import Link from "next/link";
-import Image from "next/image";
+  Truck,
+  Home,
+  FileText,
+} from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
+import Link from 'next/link';
+import Image from 'next/image';
 
 export default function UserProfile() {
   const { user } = useAuth();
   const [profile, setProfile] = useState(null);
+  const [shippingInfo, setShippingInfo] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (user?.email) {
-      fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/profile/${user.email}`)
-        .then((res) => res.json())
-        .then((data) => {
-          setProfile(data);
-          setLoading(false);
-        })
-        .catch(() => setLoading(false));
-    }
+    if (!user?.email) return;
+
+    const email = encodeURIComponent(user.email);
+    const baseUrl = (process.env.NEXT_PUBLIC_API_URL || '').replace(/\/$/, '');
+
+    // Fetch profile + shipping info in parallel — no waterfall delay
+    Promise.all([
+      fetch(`${baseUrl}/users/profile/${email}`).then(r =>
+        r.ok ? r.json() : null,
+      ),
+      fetch(`${baseUrl}/users/shipping/${email}`).then(r =>
+        r.ok ? r.json() : null,
+      ),
+    ])
+      .then(([profileData, shippingData]) => {
+        setProfile(profileData);
+        if (shippingData && shippingData.fullName) {
+          setShippingInfo(shippingData);
+        }
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false));
   }, [user?.email]);
 
-  const formatDate = (dateStr) => {
-    if (!dateStr) return "Recently";
-    return new Date(dateStr).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
+  const formatDate = dateStr => {
+    if (!dateStr) return 'Recently';
+    return new Date(dateStr).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
     });
   };
 
@@ -75,7 +92,7 @@ export default function UserProfile() {
         ) : (
           <>
             <h4 className="mt-3 text-lg font-bold text-gray-900">
-              {profile?.name || "User"}
+              {profile?.name || 'User'}
             </h4>
             <div className="flex items-center gap-1.5 text-gray-400 text-xs mt-1">
               <Calendar size={12} />
@@ -85,25 +102,26 @@ export default function UserProfile() {
         )}
       </div>
 
-      {/* Info */}
+      {/* Body */}
       {!loading && (
         <div className="px-6 pt-6 pb-5 flex-1 flex flex-col">
+          {/* ── Contact info ── */}
           <div className="space-y-1">
             {[
               {
                 icon: Mail,
-                label: "Email",
-                value: profile?.email || "No email",
+                label: 'Email',
+                value: profile?.email || 'No email',
               },
               {
                 icon: Phone,
-                label: "Phone",
-                value: profile?.phone || "Not set",
+                label: 'Phone',
+                value: profile?.phone || 'Not set',
               },
               {
                 icon: MapPin,
-                label: "Address",
-                value: profile?.address || "Not set",
+                label: 'Address',
+                value: profile?.address || 'Not set',
               },
             ].map((item, i) => (
               <div
@@ -123,13 +141,80 @@ export default function UserProfile() {
             ))}
           </div>
 
+          {/* ── Saved Shipping Address ── */}
+          <div className="mt-5 pt-5 border-t border-gray-100">
+            <div className="flex items-center justify-between mb-3">
+              <h5 className="text-xs font-black text-gray-900 flex items-center gap-1.5">
+                <Truck size={13} className="text-gray-500" /> Saved Shipping
+                Address
+              </h5>
+              <Link
+                href="/cart"
+                className="text-[10px] text-gray-400 hover:text-black font-semibold transition-colors"
+              >
+                {shippingInfo ? 'Update' : 'Add'}
+              </Link>
+            </div>
+
+            {shippingInfo ? (
+              <div className="bg-gray-50 rounded-xl p-3 space-y-2.5">
+                {[
+                  { icon: User, label: 'Name', value: shippingInfo.fullName },
+                  { icon: Phone, label: 'Phone', value: shippingInfo.phone },
+                  { icon: Home, label: 'Address', value: shippingInfo.address },
+                  {
+                    icon: MapPin,
+                    label: 'City',
+                    value: shippingInfo.zip
+                      ? `${shippingInfo.city} – ${shippingInfo.zip}`
+                      : shippingInfo.city,
+                  },
+                  ...(shippingInfo.note
+                    ? [
+                        {
+                          icon: FileText,
+                          label: 'Note',
+                          value: shippingInfo.note,
+                        },
+                      ]
+                    : []),
+                ].map((row, i) => (
+                  <div key={i} className="flex items-start gap-2">
+                    <row.icon
+                      size={12}
+                      className="text-gray-400 mt-0.5 flex-shrink-0"
+                    />
+                    <div className="min-w-0">
+                      <span className="text-[9px] uppercase tracking-wider text-gray-400 font-medium block leading-none mb-0.5">
+                        {row.label}
+                      </span>
+                      <span className="text-[11px] text-gray-700 font-medium leading-snug">
+                        {row.value}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="bg-gray-50 rounded-xl p-4 text-center">
+                <Truck size={20} className="text-gray-300 mx-auto mb-2" />
+                <p className="text-[11px] text-gray-500 font-medium">
+                  No shipping address saved yet.
+                </p>
+                <p className="text-[10px] text-gray-400 mt-0.5">
+                  It saves automatically when you checkout.
+                </p>
+              </div>
+            )}
+          </div>
+
+          {/* ── Edit Profile button ── */}
           <div className="mt-auto pt-5">
             <Link
               href="/dashboard/user/profile"
               className="flex items-center justify-center gap-2 w-full py-2.5 bg-gray-900 hover:bg-black text-white text-sm font-medium rounded-lg transition-colors"
             >
-              Edit Profile
-              <ArrowUpRight size={14} />
+              Edit Profile <ArrowUpRight size={14} />
             </Link>
           </div>
         </div>
