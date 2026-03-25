@@ -5,6 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
 import { FcGoogle } from "react-icons/fc";
 import { FiMail, FiLock, FiArrowRight } from "react-icons/fi";
+import Button from "@/components/common/Button";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -97,7 +98,7 @@ export default function LoginPage() {
           <button
             onClick={handleGoogleLogin}
             disabled={isLoading}
-            className="w-full flex items-center justify-center gap-3 bg-white border-2 border-gray-200 hover:border-gray-300 hover:bg-gray-50 text-gray-700 font-medium py-3 px-4 rounded-xl shadow-sm transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed mb-6"
+            className="w-full flex cursor-pointer items-center justify-center gap-3 bg-white border-2 border-gray-200 hover:border-gray-300 hover:bg-gray-50 text-gray-700 font-medium py-3 px-4 rounded-xl shadow-sm transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed mb-6"
           >
             <FcGoogle className="text-xl" />
             Continue with Google
@@ -152,20 +153,19 @@ export default function LoginPage() {
             </div>
 
             {/* Login Button */}
-            <button
+            <Button
               type="submit"
               disabled={isLoading}
-              className="w-full flex items-center justify-center gap-2 bg-black hover:bg-gray-900 text-white py-3 rounded-xl font-semibold shadow-lg shadow-black/20 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full flex cursor-pointer items-center justify-center gap-2"
             >
               {isLoading ? (
                 <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
               ) : (
                 <>
                   Sign In
-                  <FiArrowRight size={16} />
                 </>
               )}
-            </button>
+            </Button>
           </form>
 
           {/* Register Link */}
