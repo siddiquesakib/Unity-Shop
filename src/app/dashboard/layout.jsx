@@ -24,6 +24,7 @@ export default function DashboardLayout({ children }) {
         seller: "/dashboard/seller",
         admin: "/dashboard/admin",
         manager: "/dashboard/manager",
+        delivery: "/dashboard/delivery",
       };
 
       const myPath = allowedPaths[role];
