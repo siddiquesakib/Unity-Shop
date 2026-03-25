@@ -38,8 +38,8 @@ import {
 import { useCart } from "@/contexts/CartContext";
 import { useCurrency } from "@/contexts/CurrencyContext";
 import { useAuth } from "@/contexts/AuthContext";
-import AINegoBot from "@/components/ai/AINegoBot"; // 🚀 AI Negotiation Bot
-import { number } from "motion-dom";
+import AINegoBot from "@/components/ai/AINegoBot";
+import AISupportBot from "@/components/ai/AISupportBot";
 import GroupBuyUI from "@/components/product/GroupBuyUI";
 import PostaBId from "../bidrelatedComponents/postForBid";
 import ProductLiveStats from "./ProductLiveStats";
@@ -144,7 +144,6 @@ const compressImage = (file) =>
       const img = new window.Image();
       img.onload = () => {
         const canvas = document.createElement("canvas");
-        // Scale down proportionally so the longer side ≤ 1600px
         let { width, height } = img;
         const maxDim = 1600;
         if (width > maxDim || height > maxDim) {
@@ -156,7 +155,6 @@ const compressImage = (file) =>
         canvas.height = height;
         canvas.getContext("2d").drawImage(img, 0, 0, width, height);
 
-        // Binary search for quality that yields ≤ 2 MB
         let lo = 0.1,
           hi = 0.92,
           bestBlob = null;
@@ -249,16 +247,16 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
   const [myComment, setMyComment] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [editingId, setEditingId] = useState(null);
-  const [userReview, setUserReview] = useState(null); // existing review by current user
-  const [reviewImages, setReviewImages] = useState([]); // File objects for new upload
-  const [reviewPreviews, setReviewPreviews] = useState([]); // data URLs
-  const [keepImages, setKeepImages] = useState([]); // existing URLs to keep on edit
-  const [replyingTo, setReplyingTo] = useState(null); // review _id being replied to
+  const [userReview, setUserReview] = useState(null);
+  const [reviewImages, setReviewImages] = useState([]);
+  const [reviewPreviews, setReviewPreviews] = useState([]);
+  const [keepImages, setKeepImages] = useState([]);
+  const [replyingTo, setReplyingTo] = useState(null);
   const [replyText, setReplyText] = useState("");
   const [replySubmitting, setReplySubmitting] = useState(false);
-  const [expandedReplies, setExpandedReplies] = useState({}); // { reviewId: true }
-  const [reviewSort, setReviewSort] = useState("newest"); // newest | top
-  const [openMenuId, setOpenMenuId] = useState(null); // review _id for 3-dot menu
+  const [expandedReplies, setExpandedReplies] = useState({});
+  const [reviewSort, setReviewSort] = useState("newest");
+  const [openMenuId, setOpenMenuId] = useState(null);
   const [lightbox, setLightbox] = useState({
     open: false,
     images: [],
@@ -361,7 +359,6 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
           );
           setReviewMeta(data.pagination);
           setReviewPage(page);
-          // find current user's review
           if (user?._id) {
             const mine = data.reviews.find((r) => r.userId === user._id);
             if (mine) setUserReview(mine);
@@ -377,7 +374,6 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
 
   useEffect(() => {
     fetchReviews(1);
-    // also check if user already reviewed (search all pages)
     if (user?._id) {
       fetch(`${API}/reviews/${pid}?page=1&limit=100`)
         .then((r) => r.json())
@@ -616,7 +612,7 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
         </span>
         <ProductLiveStats
           productId={product._id}
-          initialViews={product.views ?? 0} // from your existing product fetch
+          initialViews={product.views ?? 0}
         />
       </nav>
 
@@ -919,12 +915,10 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
           </div>
 
           {/* Buttons */}
-          {/* ── Bidding or Purchase Buttons ── */}
           <div className="pt-2">
             {product.category?.toLowerCase() === "auction" ? (
-              <PostaBId product={product}></PostaBId>
+              <PostaBId product={product} />
             ) : (
-              /* ───── NORMAL SHOPPING ───── */
               <div className="flex gap-3">
                 <button
                   onClick={addCart}
@@ -950,10 +944,12 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
               </div>
             )}
           </div>
-          {/* NEGOTIATION BOT (only for logged-in buyers who are not the seller) */}
+
+          {/* AI Bots (only for logged-in buyers who are not the seller) */}
           {user && user._id !== product.seller?._id && (
-            <div className="flex justify-center pt-2">
-              <AINegoBot product={product} sellerId={product.sellerEmail} />
+            <div className="flex justify-center gap-3 pt-2">
+              <AINegoBot product={product} sellerId={product.seller?._id} />
+              <AISupportBot product={product} />
             </div>
           )}
 
@@ -1059,7 +1055,7 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
           {/* ── REVIEWS TAB ──────── */}
           {tab === "reviews" && (
             <div className="space-y-6">
-              {/* ── Header: "Comments" + sort ── */}
+              {/* Header */}
               <div className="flex items-center justify-between">
                 <h3 className="text-lg sm:text-xl font-extrabold text-gray-900">
                   Comments
@@ -1077,7 +1073,7 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
                 </div>
               </div>
 
-              {/* ── Comment input box ── */}
+              {/* Comment input box */}
               {(!userReview || editingId) && (
                 <div className="bg-gray-50 rounded-2xl p-4 border border-gray-100">
                   <div className="flex items-start gap-3">
@@ -1124,7 +1120,6 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
                             className="w-full text-sm bg-transparent border-none outline-none resize-none placeholder:text-gray-400 text-gray-800"
                           />
 
-                          {/* Star rating selector */}
                           <div className="flex items-center gap-2 mt-1 mb-2">
                             <span className="text-xs text-gray-400">
                               Rating:
@@ -1142,7 +1137,6 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
                             )}
                           </div>
 
-                          {/* Image previews */}
                           {(keepImages.length > 0 ||
                             reviewPreviews.length > 0) && (
                             <div className="flex gap-1.5 flex-wrap mb-2">
@@ -1191,7 +1185,6 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
                             </div>
                           )}
 
-                          {/* Bottom toolbar */}
                           <div className="flex items-center justify-between pt-2 border-t border-gray-200">
                             <div className="flex items-center gap-1">
                               <input
@@ -1249,7 +1242,7 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
                 </div>
               )}
 
-              {/* ── Comments list ── */}
+              {/* Comments list */}
               <div className="space-y-0 divide-y divide-gray-100">
                 {sortedReviews.map((r) => {
                   const isLiked = (r.likes || []).includes(user?._id);
@@ -1282,7 +1275,6 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
                             <span className="text-sm font-bold text-gray-900">
                               {r.userName || "Anonymous"}
                             </span>
-                            {/* Rating badge */}
                             <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-gray-100 rounded text-[10px] font-bold text-gray-500">
                               <FiStar
                                 size={10}
@@ -1293,7 +1285,6 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
                             <span className="text-xs text-gray-400">
                               · {timeAgo(r.createdAt)}
                             </span>
-                            {/* 3-dot menu for own review */}
                             {isOwn && (
                               <div className="relative ml-auto">
                                 <button
@@ -1332,14 +1323,12 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
                             )}
                           </div>
 
-                          {/* Comment text */}
                           {r.comment && (
                             <p className="text-sm text-gray-700 leading-relaxed mt-1.5">
                               {r.comment}
                             </p>
                           )}
 
-                          {/* Review images */}
                           {r.images && r.images.length > 0 && (
                             <div className="flex gap-1.5 flex-wrap mt-2.5">
                               {r.images.map((img, i) => (
@@ -1360,7 +1349,7 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
                             </div>
                           )}
 
-                          {/* Action bar: Like · Reply · Share */}
+                          {/* Action bar */}
                           <div className="flex items-center gap-4 mt-3">
                             <button
                               onClick={() => toggleLike(r._id)}
@@ -1870,18 +1859,15 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
           className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm"
           onClick={closeLightbox}
         >
-          {/* Close */}
           <button
             onClick={closeLightbox}
             className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors z-10"
           >
             <FiX size={20} />
           </button>
-          {/* Counter */}
           <span className="absolute top-5 left-1/2 -translate-x-1/2 text-white/70 text-[16px] sm:text-[16px] sm:text-base font-bold">
             {lightbox.index + 1} / {lightbox.images.length}
           </span>
-          {/* Prev */}
           {lightbox.images.length > 1 && (
             <button
               onClick={(e) => {
@@ -1893,7 +1879,6 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
               <FiChevronRight size={20} className="rotate-180" />
             </button>
           )}
-          {/* Image */}
           <div
             className="relative max-w-[90vw] max-h-[85vh] w-full h-full flex items-center justify-center"
             onClick={(e) => e.stopPropagation()}
@@ -1906,7 +1891,6 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
               sizes="90vw"
             />
           </div>
-          {/* Next */}
           {lightbox.images.length > 1 && (
             <button
               onClick={(e) => {
@@ -1918,7 +1902,6 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
               <FiChevronRight size={20} />
             </button>
           )}
-          {/* Thumbnail strip */}
           {lightbox.images.length > 1 && (
             <div
               className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1.5 bg-black/40 rounded-lg p-1.5"
