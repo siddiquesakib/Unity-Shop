@@ -28,13 +28,19 @@ export default function PaymentButton({
   userEmail,
   sellerName,
   sellerEmail,
+  shippingAddress = null,
+  phoneNumber = "",
+  breakdown = null,
   label = "Buy Now",
   className = "",
+  disabled = false,
 }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
   const handlePayment = async () => {
+    if (disabled) return;
+
     if (
       !price ||
       !productId ||
@@ -64,6 +70,9 @@ export default function PaymentButton({
             userEmail,
             sellerName,
             sellerEmail,
+            shippingAddress,
+            phoneNumber,
+            breakdown,
           }),
         },
       );
@@ -90,14 +99,14 @@ export default function PaymentButton({
     <div className="flex flex-col items-start gap-2 w-full">
       <button
         onClick={handlePayment}
-        disabled={loading}
+        disabled={loading || disabled}
         className={`
           group relative w-full overflow-hidden
           inline-flex items-center justify-center gap-2.5
           px-8 py-4 rounded-xl font-bold text-sm tracking-wide
-          bg-black text-white
-          shadow-xl shadow-black/10
-          hover:bg-gray-900 hover:shadow-black/20 hover:scale-[1.01] transition-all duration-300
+          ${loading || disabled ? "opacity-50 cursor-not-allowed bg-gray-400" : "bg-black shadow-xl shadow-black/10 hover:bg-gray-900 hover:shadow-black/20 hover:scale-[1.01]"}
+          text-white
+          transition-all duration-300
           active:scale-[0.98]
           disabled:opacity-70 disabled:pointer-events-none
           ${className}

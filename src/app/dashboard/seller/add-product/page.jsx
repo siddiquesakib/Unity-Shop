@@ -18,6 +18,7 @@ import {
   Loader2,
   Sparkles,
   Calendar,
+  Truck,
 } from "lucide-react";
 import Image from "next/image";
 
@@ -35,6 +36,14 @@ export default function AddProductPage() {
     stock: "1",
     image: "",
     endAt: "",
+    weight: "",
+    originCountry: "",
+    isInternational: "false",
+    length: "",
+    width: "",
+    height: "",
+    shippingType: "paid",
+    hsCode: "",
   });
 
   const [tags, setTags] = useState([]);
@@ -122,7 +131,18 @@ export default function AddProductPage() {
         reviews: 0,
         sellerName: user?.name || "Unknown Seller",
         sellerEmail: user?.email || "",
+        tags,
         endAt: isAuction ? formData.endAt : null,
+        weight: formData.weight ? parseFloat(formData.weight) : 0,
+        dimensions: {
+          length: formData.length ? parseFloat(formData.length) : 0,
+          width: formData.width ? parseFloat(formData.width) : 0,
+          height: formData.height ? parseFloat(formData.height) : 0,
+        },
+        originCountry: formData.originCountry || "Local",
+        isInternational: formData.isInternational === "true",
+        shippingType: formData.shippingType,
+        hsCode: formData.hsCode,
       };
 
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/products`, {
@@ -488,6 +508,129 @@ export default function AddProductPage() {
                     * Auction stock is fixed to 1.
                   </p>
                 )}
+              </div>
+            </div>
+          </section>
+
+
+          <section className="p-6 rounded-2xl bg-white border border-gray-200 space-y-6">
+            <div className="flex items-center gap-3 border-b border-gray-200 pb-4">
+              <div className="p-2 rounded-lg bg-blue-50 text-blue-500">
+                <Truck size={20} />
+              </div>
+              <h2 className="text-lg font-bold text-gray-900">Shipping Info</h2>
+            </div>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                  Weight (Kg) <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="number"
+                  name="weight"
+                  step="0.1"
+                  min="0"
+                  value={formData.weight}
+                  onChange={handleChange}
+                  placeholder="e.g. 0.5"
+                  className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 outline-none"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                  Dimensions (cm)
+                </label>
+                <div className="grid grid-cols-3 gap-2">
+                  <input
+                    type="number"
+                    name="length"
+                    placeholder="L"
+                    value={formData.length}
+                    onChange={handleChange}
+                    className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 outline-none"
+                  />
+                  <input
+                    type="number"
+                    name="width"
+                    placeholder="W"
+                    value={formData.width}
+                    onChange={handleChange}
+                    className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 outline-none"
+                  />
+                  <input
+                    type="number"
+                    name="height"
+                    placeholder="H"
+                    value={formData.height}
+                    onChange={handleChange}
+                    className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 outline-none"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                  Shipping Type
+                </label>
+                <select
+                  name="shippingType"
+                  value={formData.shippingType}
+                  onChange={handleChange}
+                  className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 outline-none"
+                >
+                  <option value="paid">Paid Shipping</option>
+                  <option value="free">Free Shipping</option>
+                </select>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                  HS Code (Optional)
+                </label>
+                <input
+                  type="text"
+                  name="hsCode"
+                  value={formData.hsCode}
+                  onChange={handleChange}
+                  placeholder="Customs HS Code"
+                  className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 outline-none"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                  Origin Country
+                </label>
+                <input
+                  type="text"
+                  name="originCountry"
+                  value={formData.originCountry}
+                  onChange={handleChange}
+                  placeholder="e.g. Bangladesh"
+                  className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 outline-none"
+                />
+              </div>
+
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="isInternational"
+                  checked={formData.isInternational === "true"}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      isInternational: e.target.checked ? "true" : "false",
+                    }))
+                  }
+                  className="w-4 h-4 accent-black"
+                />
+                <label
+                  htmlFor="isInternational"
+                  className="text-sm text-gray-700"
+                >
+                  Available for International Shipping
+                </label>
               </div>
             </div>
           </section>
