@@ -27,6 +27,7 @@ export default function CheckoutPage() {
   const router = useRouter();
   const { data: session } = useSession();
   const userEmail = session?.user?.email || '';
+  const userId = session?.user?.id || '';
 
   // ── FIX 1: ALL hooks must come before any conditional return ──────────────
   // Previously these were AFTER the early return — that crashes React with
@@ -443,6 +444,7 @@ export default function CheckoutPage() {
                       quantity={1}
                       productName={productSummary}
                       userEmail={userEmail}
+                      userId={userId}
                       sellerName={SHOP_NAME}
                       sellerEmail={SHOP_EMAIL}
                       label={shippingInfo ? 'Pay Now' : 'Fill Shipping Info'}

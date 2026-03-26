@@ -553,7 +553,7 @@ export function CartProvider({ children }) {
             'Error removing items from backend during clearCart:',
             err,
           );
-          // Still don't throw - let the redirect happen
+          throw new Error(`Failed to clear cart from backend: ${err.message}`);
         }
       } else {
         console.warn(
@@ -561,13 +561,14 @@ export function CartProvider({ children }) {
         );
       }
 
-      // Reset the flag after a short delay to allow normal sync on next user ID change
+      // Reset the flag only after a reasonable delay to ensure network requests
+      // complete and prevent re-population race condition
       setTimeout(() => {
         isJustClearedRef.current = false;
         console.log(
           '[clearCart] Reset isJustClearedRef to false - sync allowed again',
         );
-      }, 500);
+      }, 2000);
     },
     [cartGroups, checkoutGroups, user],
   );

@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import { useState } from "react";
+import { useState } from 'react';
 
 /**
  * Reusable PaymentButton Component (Next.js)
@@ -18,7 +18,7 @@ import { useState } from "react";
  */
 
 const API_BASE =
-  process.env.NEXT_PUBLIC_API_URL || "https://unity-shop-server.vercel.app";
+  process.env.NEXT_PUBLIC_API_URL || 'https://unity-shop-server.vercel.app';
 
 export default function PaymentButton({
   price,
@@ -29,10 +29,11 @@ export default function PaymentButton({
   sellerName,
   sellerEmail,
   shippingAddress = null,
-  phoneNumber = "",
+  phoneNumber = '',
   breakdown = null,
-  label = "Buy Now",
-  className = "",
+  userId = null,
+  label = 'Buy Now',
+  className = '',
   disabled = false,
 }) {
   const [loading, setLoading] = useState(false);
@@ -49,7 +50,7 @@ export default function PaymentButton({
       !sellerName ||
       !sellerEmail
     ) {
-      setError("Missing required payment information.");
+      setError('Missing required payment information.');
       return;
     }
 
@@ -60,8 +61,8 @@ export default function PaymentButton({
       const response = await fetch(
         `${API_BASE}/payment/create-checkout-session`,
         {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             price,
             productId,
@@ -73,13 +74,14 @@ export default function PaymentButton({
             shippingAddress,
             phoneNumber,
             breakdown,
+            userId,
           }),
         },
       );
 
       if (!response.ok) {
         const errData = await response.json();
-        throw new Error(errData?.error || "Failed to create checkout session.");
+        throw new Error(errData?.error || 'Failed to create checkout session.');
       }
 
       const data = await response.json();
@@ -87,10 +89,10 @@ export default function PaymentButton({
       if (data?.url) {
         window.location.href = data.url;
       } else {
-        throw new Error("No checkout URL returned from server.");
+        throw new Error('No checkout URL returned from server.');
       }
     } catch (err) {
-      setError(err.message || "Something went wrong. Please try again.");
+      setError(err.message || 'Something went wrong. Please try again.');
       setLoading(false);
     }
   };
@@ -104,7 +106,7 @@ export default function PaymentButton({
           group relative w-full overflow-hidden
           inline-flex items-center justify-center gap-2.5
           px-8 py-4 rounded-xl font-bold text-sm tracking-wide
-          ${loading || disabled ? "opacity-50 cursor-not-allowed bg-gray-400" : "bg-black shadow-xl shadow-black/10 hover:bg-gray-900 hover:shadow-black/20 hover:scale-[1.01]"}
+          ${loading || disabled ? 'opacity-50 cursor-not-allowed bg-gray-400' : 'bg-black shadow-xl shadow-black/10 hover:bg-gray-900 hover:shadow-black/20 hover:scale-[1.01]'}
           text-white
           transition-all duration-300
           active:scale-[0.98]
