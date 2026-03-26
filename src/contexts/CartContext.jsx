@@ -6,6 +6,7 @@ import {
   useState,
   useEffect,
   useCallback,
+  useRef,
 } from 'react';
 import toast from 'react-hot-toast';
 import { useNotifications } from '@/contexts/NotificationContext';
@@ -42,6 +43,12 @@ export function CartProvider({ children }) {
   const { createNotification } = useNotifications() || {};
   const { user } = useAuth();
 
+  // Track which user we've already synced with backend to prevent duplicate syncs
+  const lastSyncedUserRef = useRef(null);
+
+  // Flag to prevent syncing right after clearing cart
+  const isJustClearedRef = useRef(false);
+
   // ─── Initial load from localStorage ────────────────────────────────────────
   useEffect(() => {
     try {
@@ -64,11 +71,41 @@ export function CartProvider({ children }) {
 
   // ─── Backend sync when user logs in ─────────────────────────────────────────
   useEffect(() => {
-    if (user?._id) {
+    // Only sync if the user ID actually changed, not every time hydration happens
+    // AND don't sync if we just cleared the cart
+    if (
+      user?._id &&
+      lastSyncedUserRef.current !== user._id &&
+      !isJustClearedRef.current
+    ) {
+      lastSyncedUserRef.current = user._id;
+      console.log(
+        '[CartContext] Syncing cart with backend for user:',
+        user._id,
+      );
       fetch(`${process.env.NEXT_PUBLIC_API_URL}/cart/${user._id}`)
-        .then(res => res.json())
+        .then(res => {
+          console.log(
+            '[CartContext] Backend response status:',
+            res.status,
+            res.statusText,
+          );
+          return res.json();
+        })
         .then(data => {
-          if (Array.isArray(data)) {
+          console.log('[CartContext] Backend cart data:', data);
+          console.log(
+            '[CartContext] Data is array?',
+            Array.isArray(data),
+            'Length:',
+            Array.isArray(data) ? data.length : 'N/A',
+          );
+          if (Array.isArray(data) && data.length > 0) {
+            console.log(
+              '[CartContext] Cart has',
+              data.length,
+              'items from backend',
+            );
             const groups = {};
             data.forEach(item => {
               const sellerId = item.sellerId || 'general';
@@ -102,12 +139,21 @@ export function CartProvider({ children }) {
                 }),
               );
             });
+            console.log(
+              '[CartContext] Setting cart groups:',
+              Object.values(groups),
+            );
             setCartGroups(Object.values(groups));
+          } else {
+            console.log('[CartContext] Backend cart is empty or not an array');
           }
         })
-        .catch(err => console.error('Failed to sync cart:', err));
+        .catch(err => console.error('[CartContext] Failed to sync cart:', err));
+    } else if (!user?._id) {
+      // Clear ref when user logs out
+      lastSyncedUserRef.current = null;
     }
-  }, [user, hydrated]);
+  }, [user?._id]);
 
   // ─── Persist to localStorage ─────────────────────────────────────────────────
   useEffect(() => {
@@ -377,28 +423,154 @@ export function CartProvider({ children }) {
   }, []);
 
   // ─── Clear Checkout Items ─────────────────────────────────────────────────────
-  const clearCheckoutItems = useCallback(() => {
-    setCartGroups(prev => {
-      const paidItemIds = new Set(
-        checkoutGroups.flatMap(g => g.items.map(i => i.id)),
-      );
-      return prev
+  const clearCheckoutItems = useCallback(async () => {
+    // Snapshot the paid item IDs + productIds before mutating state
+    const paidItems = checkoutGroups.flatMap(g =>
+      g.items.map(i => ({ id: i.id, productId: i.productId })),
+    );
+    const paidItemIds = new Set(paidItems.map(i => i.id));
+
+    // 1. Clear from local state (same as before)
+    setCartGroups(prev =>
+      prev
         .map(group => ({
           ...group,
           items: group.items.filter(item => !paidItemIds.has(item.id)),
         }))
-        .filter(group => group.items.length > 0);
-    });
+        .filter(group => group.items.length > 0),
+    );
     setCheckoutGroups([]);
     setCheckoutPromo(null);
-  }, [checkoutGroups]);
+
+    // 2. Delete every paid item from the backend so a page refresh
+    //    doesn't re-populate the cart via the sync useEffect.
+    if (user?._id && paidItems.length > 0) {
+      // Wait for all DELETE requests to complete before returning
+      try {
+        await Promise.all(
+          paidItems.map(async ({ productId }) => {
+            const res = await fetch(
+              `${process.env.NEXT_PUBLIC_API_URL}/cart/remove`,
+              {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userId: user._id, productId }),
+              },
+            );
+            if (!res.ok) {
+              throw new Error(
+                `Failed to remove product ${productId}: ${res.statusText}`,
+              );
+            }
+          }),
+        );
+      } catch (err) {
+        console.error('Error removing paid items from backend:', err);
+      }
+    }
+  }, [checkoutGroups, user]);
 
   // ─── Clear Entire Cart ────────────────────────────────────────────────────────
-  const clearCart = useCallback(() => {
-    setCartGroups([]);
-    setCheckoutGroups([]);
-    setCheckoutPromo(null);
-  }, []);
+  const clearCart = useCallback(
+    async (userIdOverride = null) => {
+      console.log('[clearCart] Called with userIdOverride:', userIdOverride);
+
+      // Set flag to prevent sync right after clearing
+      isJustClearedRef.current = true;
+      console.log(
+        '[clearCart] Set isJustClearedRef to true - will prevent sync',
+      );
+
+      // 1. Snapshot all items from BOTH cartGroups and checkoutGroups
+      // (checkout items should be in cart, but just to be safe)
+      const cartItems = cartGroups.flatMap(g => g.items.map(i => i.productId));
+      const checkoutItems = checkoutGroups.flatMap(g =>
+        g.items.map(i => i.productId),
+      );
+
+      // Combine and deduplicate
+      const allProductIds = [...new Set([...cartItems, ...checkoutItems])];
+
+      // Use provided user ID (from payment flow) or fall back to context user
+      const userId = userIdOverride || user?._id;
+
+      console.log(
+        `[clearCart] Removing ${allProductIds.length} products for user ${userId}:`,
+        allProductIds,
+      );
+
+      // 2. Clear local state immediately (keeps the UI snappy)
+      setCartGroups([]);
+      setCheckoutGroups([]);
+      setCheckoutPromo(null);
+      console.log('[clearCart] Local state cleared');
+
+      // 3. Also explicitly clear localStorage to be safe
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('unityshop_cart');
+        localStorage.removeItem('unityshop_saved');
+        console.log('[clearCart] localStorage cleared');
+      }
+
+      // 4. Delete every item from the backend so the GET /cart sync on
+      //    refresh finds nothing and does not repopulate the cart.
+      if (userId && allProductIds.length > 0) {
+        // Wait for all DELETE requests to complete before returning
+        try {
+          await Promise.all(
+            allProductIds.map(async productId => {
+              console.log(
+                `[clearCart] Deleting product ${productId} from backend...`,
+              );
+              const res = await fetch(
+                `${process.env.NEXT_PUBLIC_API_URL}/cart/remove`,
+                {
+                  method: 'DELETE',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ userId, productId }),
+                },
+              );
+              if (!res.ok) {
+                const errorText = await res.text();
+                console.error(
+                  `[clearCart] ✗ Failed to delete product ${productId}: ${res.status} ${res.statusText}`,
+                  errorText,
+                );
+                throw new Error(
+                  `Failed to remove product ${productId}: ${res.statusText}`,
+                );
+              }
+              console.log(
+                `[clearCart] ✓ Product ${productId} deleted from backend`,
+              );
+            }),
+          );
+          console.log(
+            '[clearCart] ✓✓✓ All products successfully removed from backend',
+          );
+        } catch (err) {
+          console.error(
+            'Error removing items from backend during clearCart:',
+            err,
+          );
+          // Still don't throw - let the redirect happen
+        }
+      } else {
+        console.warn(
+          '[clearCart] Skipped backend deletion: no userId or products',
+        );
+      }
+
+      // Reset the flag after a short delay to allow normal sync on next user ID change
+      setTimeout(() => {
+        isJustClearedRef.current = false;
+        console.log(
+          '[clearCart] Reset isJustClearedRef to false - sync allowed again',
+        );
+      }, 500);
+    },
+    [cartGroups, checkoutGroups, user],
+  );
 
   // ─── Derived values ───────────────────────────────────────────────────────────
   const totalUniqueItems = cartGroups.reduce(

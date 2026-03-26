@@ -2,6 +2,7 @@
 
 import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import { useCart } from '@/contexts/CartContext';
 import { useNotifications } from '@/contexts/NotificationContext';
 
@@ -19,6 +20,7 @@ function SuccessContent() {
   const searchParams = useSearchParams();
   const sessionId = searchParams.get('session_id');
   const router = useRouter();
+  const { data: session } = useSession();
 
   const { clearCart } = useCart();
   const { fetchNotifications } = useNotifications() || {};
@@ -34,15 +36,25 @@ function SuccessContent() {
 
     const processPayment = async () => {
       try {
+        console.log('🔍 [PaymentSuccess] Starting payment verification...');
         const res = await fetch(
           `${API_BASE}/payment/retrivedsessionAfterPayment?session_id=${sessionId}`,
           { method: 'PATCH' },
         );
 
+        console.log(
+          '🔍 [PaymentSuccess] Response received:',
+          res.status,
+          res.statusText,
+        );
         const data = await res.json();
+        console.log('🔍 [PaymentSuccess] Response data:', data);
 
         // "Already processed" is still a success — just redirect
         if (data?.message === 'Order already processed.') {
+          console.log(
+            '⚠️  [PaymentSuccess] Order already processed - redirecting...',
+          );
           router.replace('/dashboard/user/orders');
           return;
         }
@@ -51,22 +63,32 @@ function SuccessContent() {
           throw new Error(data?.error || 'Could not verify payment.');
         }
 
-        // Clear cart and refresh notifications before navigating
-        clearCart();
+        console.log('✓ Payment verified. Clearing cart...');
+
+        // Get user ID from session (backup in case context user isn't ready)
+        const userId = session?.user?.id || session?.user?._id;
+        console.log('🔍 [PaymentSuccess] User ID for clearing:', userId);
+
+        // Clear cart and wait for backend sync to complete before navigating
+        // Pass userId directly to ensure it's available
+        await clearCart(userId);
+        console.log('✓ Cart cleared from backend.');
 
         if (fetchNotifications) {
           setTimeout(() => fetchNotifications(), 1000);
         }
 
+        console.log('→ Redirecting to orders page...');
         router.replace('/dashboard/user/orders');
       } catch (err) {
         // On error, stay on page and show a message with a fallback link
+        console.error('❌ [PaymentSuccess] Error:', err);
         setError(err.message || 'Something went wrong verifying your payment.');
       }
     };
 
     processPayment();
-  }, [sessionId, clearCart, fetchNotifications, router]);
+  }, [sessionId, clearCart, fetchNotifications, router, session]);
 
   if (error) return <ErrorView message={error} />;
 
