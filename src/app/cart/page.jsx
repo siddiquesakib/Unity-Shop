@@ -1,7 +1,7 @@
 // app/cart/page.jsx
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
@@ -15,15 +15,12 @@ import {
   FiShield,
   FiTruck,
   FiLock,
-  FiChevronRight,
   FiBookmark,
-  FiGift,
   FiCheck,
   FiRefreshCw,
-  FiTag,
-  FiZap,
   FiCreditCard,
-  FiSmartphone,
+  FiCheckCircle,
+  FiAlertCircle,
 } from 'react-icons/fi';
 import { useCart } from '@/contexts/CartContext';
 import { useCurrency } from '@/contexts/CurrencyContext';
@@ -31,10 +28,27 @@ import { useSession } from 'next-auth/react';
 import PromoCodeInput from '@/components/promoCode/PromoCodeInput';
 import PaymentButton from '@/components/common/payment-button/PaymentButton';
 import FreeShippingProgress from '@/components/common/FreeShippingProgress';
+import Button from '@/components/common/Button';
 
 const FREE_SHIP = 999;
 const SHOP_EMAIL = process.env.NEXT_PUBLIC_SHOP_EMAIL || 'shop@unityshop.com';
 const SHOP_NAME = process.env.NEXT_PUBLIC_SHOP_NAME || 'UnityShop';
+
+/** Returns base API URL with no trailing slash, or null if env var is missing. */
+function getApiUrl() {
+  const raw = process.env.NEXT_PUBLIC_API_URL;
+  if (!raw) return null;
+  return raw.replace(/\/$/, '');
+}
+
+const EMPTY_SHIPPING = {
+  fullName: '',
+  phone: '',
+  address: '',
+  city: '',
+  zip: '',
+  note: '',
+};
 
 export default function CartPage() {
   const {
@@ -48,25 +62,57 @@ export default function CartPage() {
     removeSavedItem,
   } = useCart();
   const { formatPrice } = useCurrency();
-  const { data: session } = useSession();
+  const { data: session, status: sessionStatus } = useSession();
   const userEmail = session?.user?.email || '';
-  const router = useRouter();
 
   const [removingId, setRemovingId] = useState(null);
   const [appliedPromo, setAppliedPromo] = useState(null);
-  // Checkout step: "cart" | "shipping" | "payment"
   const [step, setStep] = useState('cart');
-  const [shipping, setShipping] = useState({
-    fullName: '',
-    phone: '',
-    address: '',
-    city: '',
-    zip: '',
-    note: '',
-  });
+  const [shipping, setShipping] = useState(EMPTY_SHIPPING);
   const [shippingMethod, setShippingMethod] = useState('standard');
+  const [savedBadge, setSavedBadge] = useState(false);
+  const [savingShipping, setSavingShipping] = useState(false);
+  const [shippingMsg, setShippingMsg] = useState(null); // { type:'ok'|'err', text }
 
-  /* ── Flatten all cart items ────────────────────────────────── */
+  /* ── Auto-load saved shipping info ─────────────────────────────── */
+  useEffect(() => {
+    if (sessionStatus === 'loading') return; // wait until session resolves
+    if (!userEmail) return;
+
+    const API_URL = getApiUrl();
+    if (!API_URL) {
+      console.warn(
+        '[Cart] NEXT_PUBLIC_API_URL is not set — cannot load shipping info.',
+      );
+      return;
+    }
+
+    const url = `${API_URL}/users/shipping/${encodeURIComponent(userEmail)}`;
+    console.log('[Cart] Loading shipping info →', url);
+
+    fetch(url)
+      .then(res => {
+        console.log('[Cart] GET shipping status:', res.status);
+        return res.ok ? res.json() : null;
+      })
+      .then(data => {
+        console.log('[Cart] Shipping data:', data);
+        if (data && data.fullName) {
+          setShipping({
+            fullName: data.fullName || '',
+            phone: data.phone || '',
+            address: data.address || '',
+            city: data.city || '',
+            zip: data.zip || '',
+            note: data.note || '',
+          });
+          setSavedBadge(true);
+        }
+      })
+      .catch(err => console.error('[Cart] Failed to load shipping info:', err));
+  }, [userEmail, sessionStatus]);
+
+  /* ── Derived totals ─────────────────────────────────────────────── */
   const allItems = useMemo(
     () =>
       cartGroups.flatMap(g =>
@@ -79,8 +125,6 @@ export default function CartPage() {
     [cartGroups],
   );
   const totalItems = allItems.length;
-
-  /* ── Totals ────────────────────────────────────────────────── */
   const subtotal = allItems.reduce((s, i) => s + i.price * i.quantity, 0);
   const totalQty = allItems.reduce((s, i) => s + i.quantity, 0);
   const discountAmount = appliedPromo
@@ -90,21 +134,11 @@ export default function CartPage() {
     subtotal >= FREE_SHIP ? 0 : shippingMethod === 'express' ? 120 : 60;
   const grandTotal = Math.max(0, subtotal - discountAmount + shippingCost);
   const totalSavings = discountAmount + (subtotal >= FREE_SHIP ? 60 : 0);
-  const remaining = FREE_SHIP - subtotal;
-  const freeShipPct = Math.min((subtotal / FREE_SHIP) * 100, 100);
 
-  /* ── Smart suggestion ──────────────────────────────────────── */
-  const suggestion =
-    remaining > 0 && remaining < 500
-      ? {
-          text: `Add items worth ${formatPrice(remaining)} more for FREE shipping!`,
-          amount: remaining,
-        }
-      : null;
-
-  /* ── Handlers ──────────────────────────────────────────────── */
+  /* ── Handlers ───────────────────────────────────────────────────── */
   const handleQtyChange = (item, d) =>
     updateQuantity(item.id, item.quantity + d * (item.moq || 1));
+
   const handleRemove = id => {
     setRemovingId(id);
     setTimeout(() => {
@@ -116,31 +150,89 @@ export default function CartPage() {
   const handleShippingChange = e => {
     const { name, value } = e.target;
     setShipping(p => ({ ...p, [name]: value }));
+    setShippingMsg(null);
   };
-  const shippingValid =
-    shipping.fullName && shipping.phone && shipping.address && shipping.city;
 
-  /* product summary for payment */
+  const shippingValid =
+    shipping.fullName.trim() &&
+    shipping.phone.trim() &&
+    shipping.address.trim() &&
+    shipping.city.trim();
+
+  /* ── Save to DB then advance to payment ─────────────────────────── */
+  const handleContinueToPayment = useCallback(async () => {
+    if (!shippingValid) return;
+
+    const API_URL = getApiUrl();
+
+    if (!API_URL) {
+      console.warn('[Cart] Skipping save — NEXT_PUBLIC_API_URL not set.');
+      setStep('payment');
+      return;
+    }
+    if (!userEmail) {
+      console.warn('[Cart] Skipping save — user not logged in.');
+      setStep('payment');
+      return;
+    }
+
+    setSavingShipping(true);
+    setShippingMsg(null);
+
+    const url = `${API_URL}/users/shipping/${encodeURIComponent(userEmail)}`;
+    console.log('[Cart] Saving shipping info →', url, shipping);
+
+    try {
+      const res = await fetch(url, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(shipping),
+      });
+      const data = await res.json();
+      console.log('[Cart] PATCH shipping response:', res.status, data);
+
+      if (res.ok) {
+        setSavedBadge(true);
+        setShippingMsg({ type: 'ok', text: 'Address saved to your profile ✓' });
+        setTimeout(() => setStep('payment'), 600);
+      } else {
+        setShippingMsg({
+          type: 'err',
+          text:
+            data?.message || 'Address could not be saved — proceeding anyway.',
+        });
+        setTimeout(() => setStep('payment'), 1400);
+      }
+    } catch (err) {
+      console.error('[Cart] Network error saving shipping:', err);
+      setShippingMsg({
+        type: 'err',
+        text: 'Network error — address not saved, but you can still proceed.',
+      });
+      setTimeout(() => setStep('payment'), 1400);
+    } finally {
+      setSavingShipping(false);
+    }
+  }, [shippingValid, userEmail, shipping]);
+
   const productSummary = allItems
     .map(i => `${i.name} (×${i.quantity})`)
     .join(', ');
   const allProductIds = allItems.map(i => i.productId).join(',');
 
-  /* ── Loading ───────────────────────────────────── */
+  /* ── Loading ────────────────────────────────────────────────────── */
   if (!hydrated) {
     return (
       <div className="min-h-screen bg-[#f7f6f3] flex items-center justify-center pt-20">
         <div className="flex flex-col items-center gap-3">
           <div className="w-8 h-8 rounded-full border-[3px] border-gray-200 border-t-black animate-spin" />
-          <p className="text-gray-400 text-[16px] sm:text-[16px] sm:text-base">
-            Loading cart…
-          </p>
+          <p className="text-gray-400 text-[16px]">Loading cart…</p>
         </div>
       </div>
     );
   }
 
-  /* ── Empty ─────────────────────────────────────── */
+  /* ── Empty states ───────────────────────────────────────────────── */
   if (totalItems === 0 && savedItems.length === 0) {
     return (
       <div className="min-h-screen bg-[#f7f6f3] pt-20">
@@ -151,12 +243,12 @@ export default function CartPage() {
           <h1 className="text-2xl font-black text-gray-900 mb-2">
             Your Cart is Empty
           </h1>
-          <p className="text-gray-500 text-[16px] sm:text-base mb-6">
+          <p className="text-gray-500 text-[16px] mb-6">
             Browse our products and add items you love.
           </p>
           <Link
             href="/products"
-            className="inline-flex items-center gap-2 px-7 py-3 bg-black text-white font-bold text-[16px] sm:text-base rounded-full hover:bg-gray-800 active:scale-95 transition-all"
+            className="inline-flex items-center gap-2 px-7 py-3 bg-black text-white font-bold text-[16px] rounded-full hover:bg-gray-800 active:scale-95 transition-all"
           >
             Browse Products <FiArrowRight size={14} />
           </Link>
@@ -165,7 +257,6 @@ export default function CartPage() {
     );
   }
 
-  /* ── Empty cart but has saved items ─────────────── */
   if (totalItems === 0 && savedItems.length > 0) {
     return (
       <div className="min-h-screen bg-[#f7f6f3] pt-20 pb-12">
@@ -177,7 +268,7 @@ export default function CartPage() {
             <h1 className="text-xl font-black text-gray-900 mb-1">
               Your Cart is Empty
             </h1>
-            <p className="text-[16px] sm:text-[16px] sm:text-base text-gray-500">
+            <p className="text-[16px] text-gray-500">
               But you have saved items! Move them to cart to checkout.
             </p>
           </div>
@@ -190,7 +281,7 @@ export default function CartPage() {
           <div className="text-center mt-5">
             <Link
               href="/products"
-              className="inline-flex items-center gap-1.5 text-[16px] sm:text-[16px] sm:text-base font-bold text-gray-500 hover:text-black transition-colors"
+              className="inline-flex items-center gap-1.5 text-[16px] font-bold text-gray-500 hover:text-black transition-colors"
             >
               <FiArrowRight className="rotate-180" size={12} /> Continue
               Shopping
@@ -201,6 +292,7 @@ export default function CartPage() {
     );
   }
 
+  /* ── Main layout ────────────────────────────────────────────────── */
   return (
     <div className="min-h-screen bg-[#f7f6f3] pt-20 pb-28 lg:pb-12">
       <div className="max-w-6xl mx-auto px-3 sm:px-5">
@@ -214,7 +306,7 @@ export default function CartPage() {
                   ? 'Shipping Details'
                   : 'Payment'}
             </h1>
-            <p className="text-[16px] sm:text-[16px] sm:text-base text-gray-400 mt-0.5">
+            <p className="text-[16px] text-gray-400 mt-0.5">
               {totalItems} {totalItems === 1 ? 'item' : 'items'} · {totalQty}{' '}
               units
             </p>
@@ -253,31 +345,6 @@ export default function CartPage() {
           </div>
         </div>
 
-        {/* Free Shipping Progress */}
-        {/* <div className="bg-white rounded-xl border border-gray-200 px-4 py-3 mb-4">
-          <div className="flex items-center justify-between mb-1.5">
-            <div className="flex items-center gap-1.5">
-              <FiTruck size={14} className={subtotal >= FREE_SHIP ? "text-black" : "text-gray-500"} />
-              <span className="text-[16px] sm:text-[16px] sm:text-base font-bold">
-                {subtotal >= FREE_SHIP
-                  ? "You unlocked FREE shipping!"
-                  : `Spend ${formatPrice(remaining)} more for FREE shipping`}
-              </span>
-            </div>
-            <span className="text-[10px] text-gray-400 font-medium">{formatPrice(FREE_SHIP)} threshold</span>
-          </div>
-          <div className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden">
-            <div className={`h-full rounded-full transition-all duration-500 ${subtotal >= FREE_SHIP ? "bg-black" : "bg-gray-800"}`} style={{ width: `${freeShipPct}%` }} />
-          </div>
-          {suggestion && (
-            <div className="mt-2 flex items-center gap-1.5 bg-gray-50 rounded-lg px-3 py-1.5 border border-gray-200">
-              <FiGift size={12} className="text-gray-500 shrink-0" />
-              <span className="text-[10px] text-gray-700 font-medium">{suggestion.text}</span>
-              <Link href="/products" className="ml-auto text-[10px] font-bold text-black hover:underline whitespace-nowrap">Shop Now →</Link>
-            </div>
-          )}
-        </div> */}
-
         <FreeShippingProgress
           subtotal={subtotal}
           threshold={FREE_SHIP}
@@ -285,9 +352,9 @@ export default function CartPage() {
         />
 
         <div className="flex flex-col lg:flex-row gap-4">
-          {/* ═══ LEFT COLUMN ═══ */}
+          {/* LEFT */}
           <div className="flex-1 space-y-3 min-w-0">
-            {/* ── STEP: CART ──────────────────────── */}
+            {/* STEP: CART */}
             {step === 'cart' && (
               <>
                 {cartGroups.map(group => (
@@ -295,10 +362,9 @@ export default function CartPage() {
                     key={group.id}
                     className="bg-white rounded-xl border border-gray-200 overflow-hidden"
                   >
-                    {/* Seller header */}
                     <div className="px-4 py-2.5 border-b border-gray-100 flex items-center gap-2">
                       <FiPackage size={12} className="text-gray-400" />
-                      <span className="text-[16px] sm:text-[16px] sm:text-base font-bold text-gray-700">
+                      <span className="text-[16px] font-bold text-gray-700">
                         {group.seller.name}
                       </span>
                       {group.seller.verified && (
@@ -310,7 +376,6 @@ export default function CartPage() {
                         {group.items.length} items
                       </span>
                     </div>
-                    {/* Items */}
                     <div className="divide-y divide-gray-50">
                       {group.items.map(item => {
                         const isRemoving = removingId === item.id;
@@ -319,7 +384,6 @@ export default function CartPage() {
                             key={item.id}
                             className={`flex gap-3 p-3 sm:p-4 transition-all duration-250 ${isRemoving ? 'opacity-0 -translate-x-4 max-h-0 py-0 overflow-hidden' : ''}`}
                           >
-                            {/* Image */}
                             <Link
                               href={`/products/${item.productId}`}
                               className="relative w-20 h-20 sm:w-22 sm:h-22 rounded-lg overflow-hidden bg-gray-50 shrink-0 group"
@@ -338,7 +402,6 @@ export default function CartPage() {
                                 </div>
                               )}
                             </Link>
-                            {/* Details */}
                             <div className="flex-1 min-w-0 flex flex-col justify-between">
                               <div>
                                 <Link
@@ -363,9 +426,6 @@ export default function CartPage() {
                                       {item.selectedSize}
                                     </span>
                                   )}
-                                  <span className="text-[10px] text-gray-300">
-                                    {group.seller.name}
-                                  </span>
                                 </div>
                                 {item.stock > 0 && item.stock <= 5 && (
                                   <p className="text-[10px] text-gray-600 font-semibold mt-1 flex items-center gap-1">
@@ -375,7 +435,6 @@ export default function CartPage() {
                                 )}
                               </div>
                               <div className="flex items-center gap-3 mt-2">
-                                {/* Qty */}
                                 <div className="inline-flex items-center rounded-full border border-gray-200">
                                   <button
                                     onClick={() => handleQtyChange(item, -1)}
@@ -384,7 +443,7 @@ export default function CartPage() {
                                   >
                                     <FiMinus size={11} />
                                   </button>
-                                  <span className="w-8 text-center text-[16px] sm:text-[16px] sm:text-base font-bold">
+                                  <span className="w-8 text-center text-[16px] font-bold">
                                     {item.quantity}
                                   </span>
                                   <button
@@ -397,20 +456,16 @@ export default function CartPage() {
                                     <FiPlus size={11} />
                                   </button>
                                 </div>
-                                {/* Save for later */}
                                 <button
                                   onClick={() => moveToSaved(item.id)}
                                   className="text-[10px] text-gray-400 hover:text-black flex items-center gap-0.5 transition-colors"
-                                  title="Save for later"
                                 >
                                   <FiBookmark size={11} />{' '}
                                   <span className="hidden sm:inline">Save</span>
                                 </button>
-                                {/* Remove */}
                                 <button
                                   onClick={() => handleRemove(item.id)}
                                   className="text-[10px] text-gray-400 hover:text-gray-900 flex items-center gap-0.5 transition-colors"
-                                  title="Remove"
                                 >
                                   <FiTrash2 size={11} />{' '}
                                   <span className="hidden sm:inline">
@@ -419,7 +474,6 @@ export default function CartPage() {
                                 </button>
                               </div>
                             </div>
-                            {/* Price */}
                             <div className="text-right shrink-0 pl-2">
                               <p className="text-[16px] sm:text-base font-black text-gray-900">
                                 {formatPrice(item.price * item.quantity)}
@@ -436,16 +490,13 @@ export default function CartPage() {
                     </div>
                   </div>
                 ))}
-
                 <Link
                   href="/products"
-                  className="inline-flex items-center gap-1.5 text-[16px] sm:text-[16px] sm:text-base font-medium text-gray-400 hover:text-black transition-colors"
+                  className="inline-flex items-center gap-1.5 text-[16px] font-medium text-gray-400 hover:text-black transition-colors"
                 >
                   <FiArrowRight className="rotate-180" size={12} /> Continue
                   Shopping
                 </Link>
-
-                {/* Saved For Later */}
                 {savedItems.length > 0 && (
                   <SavedForLater
                     items={savedItems}
@@ -457,12 +508,20 @@ export default function CartPage() {
               </>
             )}
 
-            {/* ── STEP: SHIPPING ──────────────────── */}
+            {/* STEP: SHIPPING */}
             {step === 'shipping' && (
               <div className="bg-white rounded-xl border border-gray-200 p-4 sm:p-5 space-y-4">
-                <h2 className="text-[16px] sm:text-base font-black text-gray-900 flex items-center gap-1.5">
-                  <FiTruck size={14} /> Shipping Information
-                </h2>
+                <div className="flex items-center justify-between">
+                  <h2 className="text-[16px] sm:text-base font-black text-gray-900 flex items-center gap-1.5">
+                    <FiTruck size={14} /> Shipping Information
+                  </h2>
+                  {savedBadge && (
+                    <span className="flex items-center gap-1 text-[10px] font-bold text-black bg-gray-100 px-2 py-1 rounded-full">
+                      <FiCheckCircle size={10} /> Saved address loaded
+                    </span>
+                  )}
+                </div>
+
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <Input
                     label="Full Name *"
@@ -473,9 +532,9 @@ export default function CartPage() {
                   <Input
                     label="Phone *"
                     name="phone"
-                    type="tel"
                     value={shipping.phone}
                     onChange={handleShippingChange}
+                    type="tel"
                   />
                 </div>
                 <Input
@@ -507,7 +566,7 @@ export default function CartPage() {
 
                 {/* Shipping method */}
                 <div>
-                  <p className="text-[16px] sm:text-[16px] sm:text-base font-bold text-gray-500 mb-2">
+                  <p className="text-[16px] font-bold text-gray-500 mb-2">
                     Shipping Method
                   </p>
                   <div className="space-y-2">
@@ -538,14 +597,14 @@ export default function CartPage() {
                           className="accent-black"
                         />
                         <div className="flex-1">
-                          <span className="text-[16px] sm:text-[16px] sm:text-base font-bold">
+                          <span className="text-[16px] font-bold">
                             {m.label}
                           </span>
                           <span className="text-[10px] text-gray-400 ml-2">
                             {m.time}
                           </span>
                         </div>
-                        <span className="text-[16px] sm:text-[16px] sm:text-base font-bold">
+                        <span className="text-[16px] font-bold">
                           {m.cost === 0 ? (
                             <span className="text-black">FREE</span>
                           ) : (
@@ -557,32 +616,52 @@ export default function CartPage() {
                   </div>
                 </div>
 
+                {/* Feedback banner */}
+                {shippingMsg && (
+                  <div
+                    className={`flex items-center gap-1.5 text-[11px] font-semibold px-3 py-2 rounded-lg ${shippingMsg.type === 'ok' ? 'bg-gray-50 text-black' : 'bg-red-50 text-red-600'}`}
+                  >
+                    {shippingMsg.type === 'ok' ? (
+                      <FiCheckCircle size={12} />
+                    ) : (
+                      <FiAlertCircle size={12} />
+                    )}
+                    {shippingMsg.text}
+                  </div>
+                )}
+
                 <div className="flex gap-2 pt-2">
                   <button
                     onClick={() => setStep('cart')}
-                    className="px-5 h-10 border border-gray-200 rounded-full text-[16px] sm:text-[16px] sm:text-base font-bold hover:border-black transition-colors"
+                    className="px-5 h-10 border border-gray-200 rounded-full text-[16px] font-bold hover:border-black transition-colors"
                   >
                     ← Back
                   </button>
                   <button
-                    onClick={() => shippingValid && setStep('payment')}
-                    disabled={!shippingValid}
-                    className="flex-1 h-10 bg-black text-white rounded-full text-[16px] sm:text-[16px] sm:text-base font-bold hover:bg-gray-800 disabled:opacity-40 active:scale-[0.98] transition-all"
+                    onClick={handleContinueToPayment}
+                    disabled={!shippingValid || savingShipping}
+                    className="flex-1 h-10 bg-black text-white rounded-full text-[16px] font-bold hover:bg-gray-800 disabled:opacity-40 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
                   >
-                    Continue to Payment
+                    {savingShipping ? (
+                      <>
+                        <span className="w-3.5 h-3.5 border-2 border-white/40 border-t-white rounded-full animate-spin" />{' '}
+                        Saving…
+                      </>
+                    ) : (
+                      'Continue to Payment'
+                    )}
                   </button>
                 </div>
               </div>
             )}
 
-            {/* ── STEP: PAYMENT ───────────────────── */}
+            {/* STEP: PAYMENT */}
             {step === 'payment' && (
               <div className="bg-white rounded-xl border border-gray-200 p-4 sm:p-5 space-y-4">
                 <h2 className="text-[16px] sm:text-base font-black text-gray-900 flex items-center gap-1.5">
                   <FiCreditCard size={14} /> Payment
                 </h2>
-                {/* Shipping summary */}
-                <div className="bg-gray-50 rounded-lg p-3 text-[16px] sm:text-[16px] sm:text-base space-y-1">
+                <div className="bg-gray-50 rounded-lg p-3 text-[16px] space-y-1">
                   <div className="flex justify-between">
                     <span className="text-gray-400">Ship to</span>
                     <button
@@ -599,7 +678,6 @@ export default function CartPage() {
                     {shipping.address}, {shipping.city} {shipping.zip}
                   </p>
                 </div>
-                {/* Order items summary */}
                 <div className="space-y-2">
                   {allItems.map(item => (
                     <div key={item.id} className="flex items-center gap-3">
@@ -619,22 +697,21 @@ export default function CartPage() {
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-[16px] sm:text-[16px] sm:text-base font-semibold line-clamp-1">
+                        <p className="text-[16px] font-semibold line-clamp-1">
                           {item.name}
                         </p>
                         <p className="text-[10px] text-gray-400">
                           ×{item.quantity}
                         </p>
                       </div>
-                      <span className="text-[16px] sm:text-[16px] sm:text-base font-bold">
+                      <span className="text-[16px] font-bold">
                         {formatPrice(item.price * item.quantity)}
                       </span>
                     </div>
                   ))}
                 </div>
-                {/* Payment methods */}
                 <div>
-                  <p className="text-[16px] sm:text-[16px] sm:text-base font-bold text-gray-500 mb-2">
+                  <p className="text-[16px] font-bold text-gray-500 mb-2">
                     Pay with
                   </p>
                   <div className="flex flex-wrap gap-2">
@@ -669,11 +746,10 @@ export default function CartPage() {
                     ))}
                   </div>
                 </div>
-
                 <div className="flex gap-2 pt-2">
                   <button
                     onClick={() => setStep('shipping')}
-                    className="px-5 h-10 border border-gray-200 rounded-full text-[16px] sm:text-[16px] sm:text-base font-bold hover:border-black transition-colors"
+                    className="px-5 h-10 border border-gray-200 rounded-full text-[16px] font-bold hover:border-black transition-colors"
                   >
                     ← Back
                   </button>
@@ -694,7 +770,7 @@ export default function CartPage() {
                   ) : (
                     <Link
                       href="/login"
-                      className="flex-1 h-10 bg-black text-white rounded-full text-[16px] sm:text-[16px] sm:text-base font-bold flex items-center justify-center hover:bg-gray-800 transition-colors"
+                      className="flex-1 h-10 bg-black text-white rounded-full text-[16px] font-bold flex items-center justify-center hover:bg-gray-800 transition-colors"
                     >
                       Sign in to Pay
                     </Link>
@@ -704,15 +780,14 @@ export default function CartPage() {
             )}
           </div>
 
-          {/* ═══ RIGHT: ORDER SUMMARY ═══ */}
+          {/* RIGHT: ORDER SUMMARY */}
           <div className="lg:w-80 xl:w-[340px] shrink-0">
             <div className="bg-white rounded-xl border border-gray-200 sticky top-24 overflow-hidden">
               <div className="p-4 sm:p-5">
                 <h2 className="text-[16px] sm:text-base font-black text-gray-900 mb-3">
                   Order Summary
                 </h2>
-
-                <div className="space-y-2 text-[16px] sm:text-[16px] sm:text-base">
+                <div className="space-y-2 text-[16px]">
                   <div className="flex justify-between">
                     <span className="text-gray-500">
                       Subtotal ({totalItems} items)
@@ -724,7 +799,7 @@ export default function CartPage() {
                   <div className="flex justify-between">
                     <span className="text-gray-500">Shipping</span>
                     <span
-                      className={`font-semibold ${shippingCost === 0 ? 'text-black' : ''}`}
+                      className={`font-semibold ${shippingCost === 0 ? 'text-green-500' : ''}`}
                     >
                       {shippingCost === 0 ? 'FREE' : formatPrice(shippingCost)}
                     </span>
@@ -732,18 +807,20 @@ export default function CartPage() {
                   {appliedPromo && discountAmount > 0 && (
                     <div className="flex justify-between text-black font-medium">
                       <span>Promo ({appliedPromo.code})</span>
-                      <span>−{formatPrice(discountAmount)}</span>
+                      <span className="text-red-500">
+                        −{formatPrice(discountAmount)}
+                      </span>
                     </div>
                   )}
                   {totalSavings > 0 && (
                     <div className="flex justify-between text-black font-medium">
-                      <span>🎉 Total Savings</span>
-                      <span>−{formatPrice(totalSavings)}</span>
+                      <span>Total Savings</span>
+                      <span className="text-red-500">
+                        −{formatPrice(totalSavings)}
+                      </span>
                     </div>
                   )}
                 </div>
-
-                {/* Total */}
                 <div className="mt-3 pt-3 border-t border-gray-100 flex justify-between items-center">
                   <span className="text-[16px] sm:text-base font-bold">
                     Total
@@ -752,20 +829,17 @@ export default function CartPage() {
                     {formatPrice(grandTotal)}
                   </span>
                 </div>
-
-                {/* CTA */}
                 {step === 'cart' && (
-                  <button
+                  <Button
+                    showIcon={false}
                     onClick={() => totalItems > 0 && setStep('shipping')}
                     disabled={totalItems === 0}
-                    className="w-full mt-4 h-11 bg-black text-white font-bold text-[16px] sm:text-[16px] sm:text-base uppercase tracking-wide rounded-full hover:bg-gray-800 active:scale-[0.98] transition-all disabled:opacity-40 flex items-center justify-center gap-2"
+                    className="w-full mt-5"
                   >
-                    <FiLock size={12} /> Secure Checkout ·{' '}
+                    Secure Checkout ·{' '}
                     {formatPrice(grandTotal)}
-                  </button>
+                  </Button>
                 )}
-
-                {/* Promo */}
                 <div className="mt-3 pt-3 border-t border-gray-100">
                   <PromoCodeInput
                     subtotal={subtotal}
@@ -774,8 +848,6 @@ export default function CartPage() {
                   />
                 </div>
               </div>
-
-              {/* Trust badges */}
               <div className="border-t border-gray-100 px-4 py-3 space-y-2">
                 <div className="flex items-center justify-center gap-4 text-[10px] text-gray-500 font-bold">
                   <span className="flex items-center gap-1">
@@ -788,14 +860,11 @@ export default function CartPage() {
                     <FiLock size={11} /> SSL Secure
                   </span>
                 </div>
-
-                {/* Payment logos */}
                 <div className="flex items-center justify-center gap-2 pt-1">
                   {[
                     {
                       name: 'bKash',
                       color: 'bg-gray-200 border border-gray-400 text-black',
-                      icon: '',
                     },
                     { name: 'Nagad', color: 'bg-gray-200 text-black' },
                     { name: 'Visa', color: 'bg-gray-200 text-black' },
@@ -815,7 +884,7 @@ export default function CartPage() {
         </div>
       </div>
 
-      {/* ═══ MOBILE STICKY CHECKOUT BAR ═══ */}
+      {/* MOBILE STICKY BAR */}
       <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-[0_-2px_12px_rgba(0,0,0,0.06)] z-50 lg:hidden">
         <div className="flex items-center gap-3 px-4 py-2.5 max-w-lg mx-auto">
           <div className="flex-1 min-w-0">
@@ -832,17 +901,17 @@ export default function CartPage() {
             <button
               onClick={() => totalItems > 0 && setStep('shipping')}
               disabled={totalItems === 0}
-              className="flex-1 h-10 bg-black text-white font-bold text-[16px] sm:text-[16px] sm:text-base uppercase tracking-wide rounded-full flex items-center justify-center gap-1.5 disabled:opacity-40 active:scale-95 transition-all"
+              className="flex-1 h-10 bg-black text-white font-bold text-[16px] uppercase tracking-wide rounded-full flex items-center justify-center gap-1.5 disabled:opacity-40 active:scale-95 transition-all"
             >
               <FiLock size={12} /> Checkout
             </button>
           ) : step === 'shipping' ? (
             <button
-              onClick={() => shippingValid && setStep('payment')}
-              disabled={!shippingValid}
-              className="flex-1 h-10 bg-black text-white font-bold text-[16px] sm:text-[16px] sm:text-base uppercase tracking-wide rounded-full flex items-center justify-center disabled:opacity-40 active:scale-95 transition-all"
+              onClick={handleContinueToPayment}
+              disabled={!shippingValid || savingShipping}
+              className="flex-1 h-10 bg-black text-white font-bold text-[16px] uppercase tracking-wide rounded-full flex items-center justify-center disabled:opacity-40 active:scale-95 transition-all"
             >
-              Continue →
+              {savingShipping ? '…' : 'Continue →'}
             </button>
           ) : userEmail ? (
             <div className="flex-1">
@@ -855,13 +924,13 @@ export default function CartPage() {
                 sellerName={SHOP_NAME}
                 sellerEmail={SHOP_EMAIL}
                 label="Pay Now"
-                className="w-full justify-center text-[16px] sm:text-[16px] sm:text-base py-2.5 font-bold rounded-full"
+                className="w-full justify-center text-[16px] py-2.5 font-bold rounded-full"
               />
             </div>
           ) : (
             <Link
               href="/login"
-              className="flex-1 h-10 bg-black text-white font-bold text-[16px] sm:text-[16px] sm:text-base uppercase rounded-full flex items-center justify-center"
+              className="flex-1 h-10 bg-black text-white font-bold text-[16px] uppercase rounded-full flex items-center justify-center"
             >
               Sign in
             </Link>
@@ -872,9 +941,7 @@ export default function CartPage() {
   );
 }
 
-/* ═══════════════════════════════════════════════ */
-/* SAVED FOR LATER SECTION                        */
-/* ═══════════════════════════════════════════════ */
+/* ─── Saved For Later ─────────────────────────────────────── */
 function SavedForLater({ items, moveToCart, removeSavedItem, formatPrice }) {
   if (!items.length) return null;
   return (
@@ -907,11 +974,11 @@ function SavedForLater({ items, moveToCart, removeSavedItem, formatPrice }) {
             <div className="flex-1 min-w-0">
               <Link
                 href={`/products/${item.productId}`}
-                className="text-[16px] sm:text-[16px] sm:text-base font-semibold text-gray-900 line-clamp-1"
+                className="text-[16px] font-semibold text-gray-900 line-clamp-1"
               >
                 {item.name}
               </Link>
-              <p className="text-[16px] sm:text-[16px] sm:text-base font-black mt-0.5">
+              <p className="text-[16px] font-black mt-0.5">
                 {formatPrice(item.price)}
               </p>
               <div className="flex gap-2 mt-1.5">
@@ -936,9 +1003,7 @@ function SavedForLater({ items, moveToCart, removeSavedItem, formatPrice }) {
   );
 }
 
-/* ═══════════════════════════════════════════════ */
-/* REUSABLE INPUT                                 */
-/* ═══════════════════════════════════════════════ */
+/* ─── Input ───────────────────────────────────────────────── */
 function Input({ label, name, value, onChange, type = 'text' }) {
   return (
     <div>

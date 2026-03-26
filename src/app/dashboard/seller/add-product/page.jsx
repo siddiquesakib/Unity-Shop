@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react"; // useEffect যোগ করা হয়েছে
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/hooks/useAuth";
@@ -18,7 +18,9 @@ import {
   Loader2,
   Sparkles,
   Calendar,
+  Truck,
 } from "lucide-react";
+import Image from "next/image";
 
 export default function AddProductPage() {
   const { user } = useAuth();
@@ -31,9 +33,17 @@ export default function AddProductPage() {
     description: "",
     price: "",
     originalPrice: "",
-    stock: "1", // Default 1
+    stock: "1",
     image: "",
     endAt: "",
+    weight: "",
+    originCountry: "",
+    isInternational: "false",
+    length: "",
+    width: "",
+    height: "",
+    shippingType: "paid",
+    hsCode: "",
   });
 
   const [tags, setTags] = useState([]);
@@ -41,8 +51,9 @@ export default function AddProductPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
+  const [isGeneratingDesc, setIsGeneratingDesc] = useState(false); // AI description state
 
-  // Auction সিলেক্ট করলে স্টক অটোমেটিক ১ করে দেওয়ার লজিক
+  // Auction stock fix
   useEffect(() => {
     if (formData.category === "auction") {
       setFormData((prev) => ({ ...prev, stock: "1" }));
@@ -52,18 +63,12 @@ export default function AddProductPage() {
   const handleChange = (e) => {
     const { name, value } = e.target;
 
-    // প্রাইস ভ্যালিডেশন: মাইনাস ইনপুট দেওয়া যাবে না
     if (name === "price" || name === "originalPrice") {
-      if (value !== "" && Number(value) < 0) {
-        return; // নেগেটিভ হলে আপডেট হবে না
-      }
+      if (value !== "" && Number(value) < 0) return;
     }
 
-    // স্টক ভ্যালিডেশন: মাইনাস বা ০ ইনপুট দেওয়া যাবে না
     if (name === "stock") {
-      if (formData.category === "auction") {
-        return; // অকশন হলে চেঞ্জ করতে দেবে না
-      }
+      if (formData.category === "auction") return;
       if (value !== "" && Number(value) < 1) {
         setFormData((prev) => ({ ...prev, [name]: "1" }));
         return;
@@ -126,7 +131,18 @@ export default function AddProductPage() {
         reviews: 0,
         sellerName: user?.name || "Unknown Seller",
         sellerEmail: user?.email || "",
+        tags,
         endAt: isAuction ? formData.endAt : null,
+        weight: formData.weight ? parseFloat(formData.weight) : 0,
+        dimensions: {
+          length: formData.length ? parseFloat(formData.length) : 0,
+          width: formData.width ? parseFloat(formData.width) : 0,
+          height: formData.height ? parseFloat(formData.height) : 0,
+        },
+        originCountry: formData.originCountry || "Local",
+        isInternational: formData.isInternational === "true",
+        shippingType: formData.shippingType,
+        hsCode: formData.hsCode,
       };
 
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/products`, {
@@ -148,6 +164,64 @@ export default function AddProductPage() {
       setError(err.message);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  // AI Description Generation
+  const generateDescription = async () => {
+    if (!formData.name) {
+      setError("Please enter a product name first");
+      return;
+    }
+
+    setIsGeneratingDesc(true);
+    setError("");
+
+    try {
+      const token =
+        typeof window !== "undefined" ? localStorage.getItem("token") : null;
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/ai/generate-description`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            name: formData.name,
+            category: formData.category,
+            brand: formData.brand,
+            price: formData.price,
+            imageUrl: formData.image,
+          }),
+        },
+      );
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        // Handle rate limit specifically
+        if (res.status === 429) {
+          setError(
+            "AI service is busy (rate limit). Please try again in a few minutes.",
+          );
+          // Optionally set a fallback description
+          setFormData((prev) => ({
+            ...prev,
+            description: `${prev.name} – a high-quality product from our collection. Perfect for your needs.`,
+          }));
+        } else {
+          throw new Error(data.error || "Generation failed");
+        }
+        return;
+      }
+
+      setFormData((prev) => ({ ...prev, description: data.description }));
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setIsGeneratingDesc(false);
     }
   };
 
@@ -280,15 +354,35 @@ export default function AddProductPage() {
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">
-                  Product Description
-                </label>
+                <div className="flex items-center justify-between">
+                  <label className="text-sm font-medium text-gray-700">
+                    Product Description
+                  </label>
+                  <button
+                    type="button"
+                    onClick={generateDescription}
+                    disabled={isGeneratingDesc || !formData.name}
+                    className="inline-flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-purple-700 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors disabled:opacity-50"
+                  >
+                    {isGeneratingDesc ? (
+                      <>
+                        <Loader2 size={14} className="animate-spin" />
+                        Generating...
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles size={14} />
+                        Generate with AI
+                      </>
+                    )}
+                  </button>
+                </div>
                 <textarea
                   rows={5}
                   name="description"
                   value={formData.description}
                   onChange={handleChange}
-                  placeholder="Description..."
+                  placeholder="Describe your product features, materials, and benefits... or click 'Generate with AI' to auto-write a description."
                   className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 outline-none resize-none"
                 />
               </div>
@@ -312,9 +406,11 @@ export default function AddProductPage() {
                 className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 outline-none"
               />
               {formData.image && (
-                <img
+                <Image
                   src={formData.image}
                   alt="Preview"
+                  width={160}
+                  height={160}
                   className="w-40 h-40 object-cover rounded-xl border"
                 />
               )}
@@ -412,6 +508,129 @@ export default function AddProductPage() {
                     * Auction stock is fixed to 1.
                   </p>
                 )}
+              </div>
+            </div>
+          </section>
+
+
+          <section className="p-6 rounded-2xl bg-white border border-gray-200 space-y-6">
+            <div className="flex items-center gap-3 border-b border-gray-200 pb-4">
+              <div className="p-2 rounded-lg bg-blue-50 text-blue-500">
+                <Truck size={20} />
+              </div>
+              <h2 className="text-lg font-bold text-gray-900">Shipping Info</h2>
+            </div>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                  Weight (Kg) <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="number"
+                  name="weight"
+                  step="0.1"
+                  min="0"
+                  value={formData.weight}
+                  onChange={handleChange}
+                  placeholder="e.g. 0.5"
+                  className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 outline-none"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                  Dimensions (cm)
+                </label>
+                <div className="grid grid-cols-3 gap-2">
+                  <input
+                    type="number"
+                    name="length"
+                    placeholder="L"
+                    value={formData.length}
+                    onChange={handleChange}
+                    className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 outline-none"
+                  />
+                  <input
+                    type="number"
+                    name="width"
+                    placeholder="W"
+                    value={formData.width}
+                    onChange={handleChange}
+                    className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 outline-none"
+                  />
+                  <input
+                    type="number"
+                    name="height"
+                    placeholder="H"
+                    value={formData.height}
+                    onChange={handleChange}
+                    className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 outline-none"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                  Shipping Type
+                </label>
+                <select
+                  name="shippingType"
+                  value={formData.shippingType}
+                  onChange={handleChange}
+                  className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 outline-none"
+                >
+                  <option value="paid">Paid Shipping</option>
+                  <option value="free">Free Shipping</option>
+                </select>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                  HS Code (Optional)
+                </label>
+                <input
+                  type="text"
+                  name="hsCode"
+                  value={formData.hsCode}
+                  onChange={handleChange}
+                  placeholder="Customs HS Code"
+                  className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 outline-none"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                  Origin Country
+                </label>
+                <input
+                  type="text"
+                  name="originCountry"
+                  value={formData.originCountry}
+                  onChange={handleChange}
+                  placeholder="e.g. Bangladesh"
+                  className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 outline-none"
+                />
+              </div>
+
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="isInternational"
+                  checked={formData.isInternational === "true"}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      isInternational: e.target.checked ? "true" : "false",
+                    }))
+                  }
+                  className="w-4 h-4 accent-black"
+                />
+                <label
+                  htmlFor="isInternational"
+                  className="text-sm text-gray-700"
+                >
+                  Available for International Shipping
+                </label>
               </div>
             </div>
           </section>

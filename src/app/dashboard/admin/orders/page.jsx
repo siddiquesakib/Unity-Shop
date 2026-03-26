@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
 import {
   Search,
   Package,
@@ -14,54 +14,54 @@ import {
   MapPin,
   RefreshCw,
   AlertCircle,
-} from 'lucide-react';
-import OrderTrackingModal from '@/components/common/OrderTrackingModal';
+} from "lucide-react";
+import OrderTrackingModal from "@/components/common/OrderTrackingModal";
 
 const API_BASE =
-  process.env.NEXT_PUBLIC_API_URL || 'https://unity-shop-server.vercel.app';
-const STATUS_STEPS = ['New', 'Processing', 'Shipped', 'Delivered', 'Cancelled'];
+  process.env.NEXT_PUBLIC_API_URL || "https://unity-shop-server.vercel.app";
+const STATUS_STEPS = ["New", "Processing", "Shipped", "Delivered", "Cancelled"];
 
 const STATUS_COLOR = {
-  New: 'bg-purple-50 text-purple-600 border-purple-200',
-  Processing: 'bg-amber-50 text-amber-600 border-amber-200',
-  Shipped: 'bg-blue-50 text-blue-600 border-blue-200',
-  Delivered: 'bg-emerald-50 text-emerald-600 border-emerald-200',
-  Cancelled: 'bg-red-50 text-red-600 border-red-200',
+  New: "bg-purple-50 text-purple-600 border-purple-200",
+  Processing: "bg-amber-50 text-amber-600 border-amber-200",
+  Shipped: "bg-blue-50 text-blue-600 border-blue-200",
+  Delivered: "bg-emerald-50 text-emerald-600 border-emerald-200",
+  Cancelled: "bg-red-50 text-red-600 border-red-200",
 };
 const STATUS_DOT = {
-  New: 'bg-purple-500',
-  Processing: 'bg-amber-500',
-  Shipped: 'bg-blue-500',
-  Delivered: 'bg-emerald-500',
-  Cancelled: 'bg-red-500',
+  New: "bg-purple-500",
+  Processing: "bg-amber-500",
+  Shipped: "bg-blue-500",
+  Delivered: "bg-emerald-500",
+  Cancelled: "bg-red-500",
 };
 const STATUS_ICON = {
-  New: 'Clock',
-  Processing: 'Package',
-  Shipped: 'Truck',
-  Delivered: 'CheckCircle',
-  Cancelled: 'XCircle',
+  New: "Clock",
+  Processing: "Package",
+  Shipped: "Truck",
+  Delivered: "CheckCircle",
+  Cancelled: "XCircle",
 };
 
 function getIcon(status) {
-  const s = status || 'New';
-  if (s === 'New') return <Clock size={13} />;
-  if (s === 'Processing') return <Package size={13} />;
-  if (s === 'Shipped') return <Truck size={13} />;
-  if (s === 'Delivered') return <CheckCircle size={13} />;
-  if (s === 'Cancelled') return <XCircle size={13} />;
+  const s = status || "New";
+  if (s === "New") return <Clock size={13} />;
+  if (s === "Processing") return <Package size={13} />;
+  if (s === "Shipped") return <Truck size={13} />;
+  if (s === "Delivered") return <CheckCircle size={13} />;
+  if (s === "Cancelled") return <XCircle size={13} />;
   return <Clock size={13} />;
 }
 
 function StatusDropdown({ order, onStatusChange, updating }) {
   const [open, setOpen] = useState(false);
-  const current = order.status || 'New';
+  const current = order.status || "New";
   return (
     <div className="relative">
       <button
-        onClick={() => setOpen(v => !v)}
+        onClick={() => setOpen((v) => !v)}
         disabled={updating}
-        className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium border transition-all ${STATUS_COLOR[current] || 'bg-gray-50 text-gray-600 border-gray-200'} ${updating ? 'opacity-50 cursor-not-allowed' : 'hover:opacity-80 cursor-pointer'}`}
+        className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium border transition-all ${STATUS_COLOR[current] || "bg-gray-50 text-gray-600 border-gray-200"} ${updating ? "opacity-50 cursor-not-allowed" : "hover:opacity-80 cursor-pointer"}`}
       >
         {updating ? (
           <RefreshCw size={11} className="animate-spin" />
@@ -72,7 +72,7 @@ function StatusDropdown({ order, onStatusChange, updating }) {
         {!updating && (
           <ChevronDown
             size={11}
-            className={`transition-transform ${open ? 'rotate-180' : ''}`}
+            className={`transition-transform ${open ? "rotate-180" : ""}`}
           />
         )}
       </button>
@@ -80,17 +80,17 @@ function StatusDropdown({ order, onStatusChange, updating }) {
         <>
           <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} />
           <div className="absolute left-0 top-full mt-1 z-20 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden min-w-[150px]">
-            {STATUS_STEPS.map(status => (
+            {STATUS_STEPS.map((status) => (
               <button
                 key={status}
                 onClick={() => {
                   setOpen(false);
                   if (status !== current) onStatusChange(order._id, status);
                 }}
-                className={`w-full flex items-center gap-2 px-3 py-2 text-xs font-medium text-left transition-colors ${status === current ? 'bg-gray-50 text-gray-400 cursor-default' : 'hover:bg-gray-50 text-gray-700'}`}
+                className={`w-full flex items-center gap-2 px-3 py-2 text-xs font-medium text-left transition-colors ${status === current ? "bg-gray-50 text-gray-400 cursor-default" : "hover:bg-gray-50 text-gray-700"}`}
               >
                 <span
-                  className={`w-1.5 h-1.5 rounded-full ${STATUS_DOT[status] || 'bg-gray-400'}`}
+                  className={`w-1.5 h-1.5 rounded-full ${STATUS_DOT[status] || "bg-gray-400"}`}
                 />
                 {status}
                 {status === current && (
@@ -110,12 +110,17 @@ function StatusDropdown({ order, onStatusChange, updating }) {
 export default function AdminOrdersPage() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState('All');
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("All");
   const [updatingId, setUpdatingId] = useState(null);
   const [updateError, setUpdateError] = useState(null);
   const [updateSuccess, setUpdateSuccess] = useState(null);
   const [trackingOrderId, setTrackingOrderId] = useState(null);
+
+  // Delivery Man Assignment States
+  const [deliveryMen, setDeliveryMen] = useState([]);
+  const [assigningId, setAssigningId] = useState(null);
+  const [selectedDeliveryMan, setSelectedDeliveryMan] = useState("");
 
   const fetchOrders = async () => {
     setLoading(true);
@@ -128,9 +133,36 @@ export default function AdminOrdersPage() {
       setLoading(false);
     }
   };
+
+  // Fetch Delivery Men
   useEffect(() => {
+    fetch(`${API_BASE}/users/role/delivery`)
+      .then((res) => res.json())
+      .then((data) => setDeliveryMen(data))
+      .catch((err) => console.error("Failed to load delivery men", err));
+
     fetchOrders();
   }, []);
+
+  const handleAssignDelivery = async (orderId) => {
+    if (!selectedDeliveryMan) return;
+
+    try {
+      const res = await fetch(`${API_BASE}/orders/assign/${orderId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ deliveryManId: selectedDeliveryMan }),
+      });
+
+      if (res.ok) {
+        setAssigningId(null);
+        setSelectedDeliveryMan("");
+        fetchOrders(); // Refresh to show updated status
+      }
+    } catch (error) {
+      console.error("Assignment failed", error);
+    }
+  };
 
   const handleStatusChange = async (orderId, newStatus) => {
     setUpdatingId(orderId);
@@ -138,16 +170,16 @@ export default function AdminOrdersPage() {
     setUpdateSuccess(null);
     try {
       const res = await fetch(`${API_BASE}/orders/track/${orderId}/status`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status: newStatus }),
       });
       if (!res.ok) {
         const e = await res.json();
-        throw new Error(e.error || 'Failed');
+        throw new Error(e.error || "Failed");
       }
-      setOrders(prev =>
-        prev.map(o => (o._id === orderId ? { ...o, status: newStatus } : o)),
+      setOrders((prev) =>
+        prev.map((o) => (o._id === orderId ? { ...o, status: newStatus } : o)),
       );
       setUpdateSuccess(`Order updated to "${newStatus}"`);
       setTimeout(() => setUpdateSuccess(null), 3000);
@@ -160,19 +192,19 @@ export default function AdminOrdersPage() {
   };
 
   const stats = STATUS_STEPS.reduce((acc, s) => {
-    acc[s] = orders.filter(o => (o.status || 'New') === s).length;
+    acc[s] = orders.filter((o) => (o.status || "New") === s).length;
     return acc;
   }, {});
 
-  const filteredOrders = orders.filter(order => {
+  const filteredOrders = orders.filter((order) => {
     const q = search.toLowerCase();
     const m =
-      (order.productName || '').toLowerCase().includes(q) ||
-      (order.customerEmail || '').toLowerCase().includes(q) ||
-      (order.customerName || '').toLowerCase().includes(q) ||
-      (order.transitionId || '').toLowerCase().includes(q);
+      (order.productName || "").toLowerCase().includes(q) ||
+      (order.customerEmail || "").toLowerCase().includes(q) ||
+      (order.customerName || "").toLowerCase().includes(q) ||
+      (order.transitionId || "").toLowerCase().includes(q);
     return (
-      m && (statusFilter === 'All' || (order.status || 'New') === statusFilter)
+      m && (statusFilter === "All" || (order.status || "New") === statusFilter)
     );
   });
 
@@ -192,7 +224,7 @@ export default function AdminOrdersPage() {
           disabled={loading}
           className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-xl text-sm font-medium hover:border-black transition-colors disabled:opacity-50"
         >
-          <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
+          <RefreshCw size={14} className={loading ? "animate-spin" : ""} />
           Refresh
         </button>
       </div>
@@ -205,9 +237,9 @@ export default function AdminOrdersPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.05 }}
             onClick={() =>
-              setStatusFilter(statusFilter === status ? 'All' : status)
+              setStatusFilter(statusFilter === status ? "All" : status)
             }
-            className={`bg-white border rounded-xl px-4 py-3 text-left transition-all ${statusFilter === status ? 'border-black shadow-sm' : 'border-gray-200 hover:border-gray-300'}`}
+            className={`bg-white border rounded-xl px-4 py-3 text-left transition-all ${statusFilter === status ? "border-black shadow-sm" : "border-gray-200 hover:border-gray-300"}`}
           >
             <p className="text-xl font-black text-gray-900">
               {stats[status] || 0}
@@ -241,6 +273,68 @@ export default function AdminOrdersPage() {
         </motion.div>
       )}
 
+      {/* Assignment Modal */}
+      {assigningId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-sm overflow-hidden">
+            <div className="p-4 border-b border-gray-100 flex justify-between items-center">
+              <h3 className="font-semibold text-gray-900">Assign Delivery</h3>
+              <button
+                onClick={() => setAssigningId(null)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <XCircle size={20} />
+              </button>
+            </div>
+            <div className="p-4">
+              <p className="text-sm text-gray-500 mb-4">
+                Select a delivery partner for Order #{assigningId.slice(-6)}.
+              </p>
+
+              <div className="space-y-2 mb-6">
+                {deliveryMen.length === 0 ? (
+                  <p className="text-sm text-red-500">
+                    No delivery personnel found. Create a user with 'delivery'
+                    role first.
+                  </p>
+                ) : (
+                  deliveryMen.map((man) => (
+                    <label
+                      key={man._id}
+                      className="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-gray-50 transition-colors has-[:checked]:bg-blue-50 has-[:checked]:border-blue-200"
+                    >
+                      <input
+                        type="radio"
+                        name="deliveryMan"
+                        value={man._id}
+                        onChange={(e) => setSelectedDeliveryMan(e.target.value)}
+                        className="accent-blue-600 w-4 h-4"
+                      />
+                      <div>
+                        <p className="text-sm font-medium text-gray-900">
+                          {man.name}
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          {man.phone || "No phone"}
+                        </p>
+                      </div>
+                    </label>
+                  ))
+                )}
+              </div>
+
+              <button
+                onClick={() => handleAssignDelivery(assigningId)}
+                disabled={!selectedDeliveryMan}
+                className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white rounded-lg font-medium text-sm transition-colors"
+              >
+                Confirm Assignment
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -256,17 +350,17 @@ export default function AdminOrdersPage() {
               type="text"
               placeholder="Search by product, customer, or transaction ID..."
               value={search}
-              onChange={e => setSearch(e.target.value)}
+              onChange={(e) => setSearch(e.target.value)}
               className="w-full pl-9 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-gray-400"
             />
           </div>
           <div className="flex items-center gap-2 flex-wrap">
             <Filter size={16} className="text-gray-400" />
-            {['All', ...STATUS_STEPS].map(status => (
+            {["All", ...STATUS_STEPS].map((status) => (
               <button
                 key={status}
                 onClick={() => setStatusFilter(status)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${statusFilter === status ? 'bg-black text-white' : 'bg-gray-100 text-gray-500 hover:text-gray-900'}`}
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${statusFilter === status ? "bg-black text-white" : "bg-gray-100 text-gray-500 hover:text-gray-900"}`}
               >
                 {status}
               </button>
@@ -321,13 +415,16 @@ export default function AdminOrdersPage() {
                   <th className="py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
                     Update Status
                   </th>
+                  <th className="py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                    Assign Delivery
+                  </th>
                   <th className="py-3 pr-6 text-xs font-semibold text-gray-500 uppercase tracking-wider text-right">
                     Track
                   </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
-                {filteredOrders.map(order => (
+                {filteredOrders.map((order) => (
                   <tr
                     key={order._id}
                     className="hover:bg-gray-50/50 transition-colors"
@@ -335,34 +432,39 @@ export default function AdminOrdersPage() {
                     <td className="py-4 pl-6">
                       <span className="text-sm font-mono text-gray-700">
                         #
-                        {(order.transitionId || order._id)
-                          .slice(-8)
+                        {(order._id || order.transitionId)
+                          .slice(-6)
                           .toUpperCase()}
                       </span>
                     </td>
                     <td className="py-4">
                       <span className="text-sm text-gray-700 truncate max-w-[160px] block">
-                        {order.productName || 'N/A'}
+                        {order.cartItems
+                          ? `${order.cartItems.length} items`
+                          : order.productName || "Order"}
                       </span>
                     </td>
                     <td className="py-4">
                       <p className="text-sm text-gray-700 font-medium">
-                        {order.customerName || '—'}
+                        {order.userName || order.name || "—"}
                       </p>
                       <p className="text-xs text-gray-400">
-                        {order.customerEmail || '—'}
+                        {order.email || "—"}
                       </p>
                     </td>
                     <td className="py-4 text-sm font-semibold text-emerald-600">
-                      ${Number(order.amountPaid || 0).toFixed(2)}
+                      $
+                      {Number(
+                        order.totalAmount || order.amountPaid || 0,
+                      ).toFixed(2)}
                     </td>
                     <td className="py-4 text-sm text-gray-500">
                       {order.createdAt
                         ? new Date(order.createdAt).toLocaleDateString(
-                            'en-US',
-                            { month: 'short', day: 'numeric', year: 'numeric' },
+                            "en-US",
+                            { month: "short", day: "numeric", year: "numeric" },
                           )
-                        : 'N/A'}
+                        : "N/A"}
                     </td>
                     <td className="py-4">
                       <StatusDropdown
@@ -370,6 +472,24 @@ export default function AdminOrdersPage() {
                         onStatusChange={handleStatusChange}
                         updating={updatingId === order._id}
                       />
+                    </td>
+                    <td className="py-4">
+                      {order.deliveryManId ? (
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                          Assigned
+                        </span>
+                      ) : (
+                        <button
+                          onClick={() => setAssigningId(order._id)}
+                          disabled={
+                            order.status === "Cancelled" ||
+                            order.status === "Delivered"
+                          }
+                          className="text-xs font-medium text-blue-600 hover:text-blue-900 disabled:opacity-50 disabled:cursor-not-allowed bg-blue-50 px-3 py-1.5 rounded-lg hover:bg-blue-100 transition-colors"
+                        >
+                          Assign
+                        </button>
+                      )}
                     </td>
                     <td className="py-4 pr-6 text-right">
                       <button

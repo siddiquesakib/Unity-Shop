@@ -38,9 +38,12 @@ import {
 import { useCart } from "@/contexts/CartContext";
 import { useCurrency } from "@/contexts/CurrencyContext";
 import { useAuth } from "@/contexts/AuthContext";
-import AINegoBot from "@/components/ai/AINegoBot"; // 🚀 AI Negotiation Bot
-import { number } from "motion-dom";
+import AINegoBot from "@/components/ai/AINegoBot";
+import AISupportBot from "@/components/ai/AISupportBot";
 import GroupBuyUI from "@/components/product/GroupBuyUI";
+import PostaBId from "../bidrelatedComponents/postForBid";
+import ProductLiveStats from "./ProductLiveStats";
+import DOMPurify from "dompurify";
 
 /* ──────────────────── Helpers ──────────────────── */
 const PLACEHOLDER = "https://via.placeholder.com/800x800?text=Product+Image";
@@ -141,7 +144,6 @@ const compressImage = (file) =>
       const img = new window.Image();
       img.onload = () => {
         const canvas = document.createElement("canvas");
-        // Scale down proportionally so the longer side ≤ 1600px
         let { width, height } = img;
         const maxDim = 1600;
         if (width > maxDim || height > maxDim) {
@@ -153,7 +155,6 @@ const compressImage = (file) =>
         canvas.height = height;
         canvas.getContext("2d").drawImage(img, 0, 0, width, height);
 
-        // Binary search for quality that yields ≤ 2 MB
         let lo = 0.1,
           hi = 0.92,
           bestBlob = null;
@@ -222,11 +223,6 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
   const videoRef = useRef(null);
 
   /* ── Local state ─────────────────────────────────── */
-  const [timeLeft, setTimeLeft] = useState("");
-  const [bidAmount, setBidAmount] = useState(
-    product.currentHighestBId || product.price,
-  );
-  const [bidError, setBidError] = useState("");
   const [selImg, setSelImg] = useState(0);
   const [qty, setQty] = useState(1);
   const [wish, setWish] = useState(false);
@@ -251,16 +247,16 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
   const [myComment, setMyComment] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [editingId, setEditingId] = useState(null);
-  const [userReview, setUserReview] = useState(null); // existing review by current user
-  const [reviewImages, setReviewImages] = useState([]); // File objects for new upload
-  const [reviewPreviews, setReviewPreviews] = useState([]); // data URLs
-  const [keepImages, setKeepImages] = useState([]); // existing URLs to keep on edit
-  const [replyingTo, setReplyingTo] = useState(null); // review _id being replied to
+  const [userReview, setUserReview] = useState(null);
+  const [reviewImages, setReviewImages] = useState([]);
+  const [reviewPreviews, setReviewPreviews] = useState([]);
+  const [keepImages, setKeepImages] = useState([]);
+  const [replyingTo, setReplyingTo] = useState(null);
   const [replyText, setReplyText] = useState("");
   const [replySubmitting, setReplySubmitting] = useState(false);
-  const [expandedReplies, setExpandedReplies] = useState({}); // { reviewId: true }
-  const [reviewSort, setReviewSort] = useState("newest"); // newest | top
-  const [openMenuId, setOpenMenuId] = useState(null); // review _id for 3-dot menu
+  const [expandedReplies, setExpandedReplies] = useState({});
+  const [reviewSort, setReviewSort] = useState("newest");
+  const [openMenuId, setOpenMenuId] = useState(null);
   const [lightbox, setLightbox] = useState({
     open: false,
     images: [],
@@ -341,31 +337,6 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
 
   /* ── Effects ─────────────────────────────────────── */
   useEffect(() => {
-    const calculateTime = () => {
-      const now = new Date().getTime();
-      const end = new Date(product.endAt).getTime();
-
-      const gap = end - now;
-      console.log({ now: new Date(now), end: new Date(end), gap });
-      if (gap <= 0) {
-        setTimeLeft("AUCTION ENDED");
-        return;
-      }
-
-      const d = Math.floor(gap / (1000 * 60 * 60 * 24));
-      const h = Math.floor((gap % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-      const m = Math.floor((gap % (1000 * 60 * 60)) / (1000 * 60));
-      const s = Math.floor((gap % (1000 * 60)) / 1000);
-
-      setTimeLeft(`${d > 0 ? d + "d " : ""}${h}h ${m}m ${s}s`);
-    };
-
-    const timer = setInterval(calculateTime, 1000);
-    calculateTime();
-
-    return () => clearInterval(timer);
-  }, [product.endAt]);
-  useEffect(() => {
     saveRV(product);
     setRv(getRV(pid));
   }, [pid]);
@@ -388,7 +359,6 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
           );
           setReviewMeta(data.pagination);
           setReviewPage(page);
-          // find current user's review
           if (user?._id) {
             const mine = data.reviews.find((r) => r.userId === user._id);
             if (mine) setUserReview(mine);
@@ -404,7 +374,6 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
 
   useEffect(() => {
     fetchReviews(1);
-    // also check if user already reviewed (search all pages)
     if (user?._id) {
       fetch(`${API}/reviews/${pid}?page=1&limit=100`)
         .then((r) => r.json())
@@ -641,6 +610,10 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
         <span className="text-gray-700 font-medium truncate max-w-48">
           {product.name}
         </span>
+        <ProductLiveStats
+          productId={product._id}
+          initialViews={product.views ?? 0}
+        />
       </nav>
 
       {/* ══════ MAIN 2-COL ══════ */}
@@ -942,212 +915,10 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
           </div>
 
           {/* Buttons */}
-          {/* ── Bidding or Purchase Buttons ── */}
           <div className="pt-2">
             {product.category?.toLowerCase() === "auction" ? (
-              /* ───── AUCTION INTERFACE ───── */
-              <div className="p-4 bg-amber-50 rounded-2xl border-2 border-amber-200 space-y-4 shadow-sm">
-                <div className="flex items-center justify-between px-2 mb-2">
-                  <div className="flex items-center gap-2">
-                    <FiClock
-                      className="text-amber-600 animate-pulse"
-                      size={16}
-                    />
-                    <span className="text-[11px] font-bold text-amber-800 uppercase tracking-tighter">
-                      Auction Ends In:
-                    </span>
-                  </div>
-                  <div className="font-mono font-black text-amber-700 text-sm">
-                    {timeLeft || "Calculating..."}
-                  </div>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="flex items-center gap-1.5 text-amber-700 font-black text-xs uppercase tracking-widest">
-                    <FiZap className="fill-amber-500 text-amber-500 animate-pulse" />{" "}
-                    Live Auction
-                  </span>
-                  <span className="text-[10px] font-bold bg-amber-200 text-amber-800 px-2 py-0.5 rounded-full">
-                    Lot Size: 1 Pcs
-                  </span>
-                </div>
-
-                {/* <div className="space-y-2">
-                  <label className="text-[11px] font-bold text-gray-500 uppercase ml-1">
-                    Place Your Bid (Min: {formatPrice(product.price)})
-                  </label>
-
-                  <div className="flex gap-2">
-                    <div className="relative flex-1">
-                      <span className="absolute left-4 top-1/2 -translate-y-1/2 font-bold text-gray-400 pointer-events-none">
-                        {formatPrice(0).replace(/[0-9.,\s]/g, "")}
-                      </span>
-                      <input
-                        type="number"
-                        value={parseInt(bidAmount)}
-                        onChange={(e) => {
-                          const val = e.target.value;
-                          setBidAmount(val);
-
-                          // টাইপ করার সময় সাথে সাথে এরর চেক
-                          if (val && parseInt(val) >= parseInt(product.price)) {
-                            setBidError("");
-                          }
-                        }}
-                        placeholder="Enter amount"
-                        className={`w-full h-12 pl-10 pr-4 rounded-xl border-2 outline-none font-bold text-lg transition-all ${
-                          bidError
-                            ? "border-red-500 bg-red-50"
-                            : "border-gray-200 focus:border-amber-500 focus:ring-4 focus:ring-amber-100"
-                        }`}
-                      />
-                    </div>
-                    <button
-                      onClick={() => {
-                        // ইনপুট এবং প্রাইস দুটোকেই পূর্ণসংখ্যায় কনভার্ট করা হলো
-                        const userBidValue = parseInt(bidAmount);
-                        const minimumRequired = parseFloat(
-                          formatPrice(product.price).replace(/[^0-9 .]/g, ""),
-                        ); // এখানে প্রোডাক্টের দামই মিনিমাম রিকোয়ার্ড
-                        // console.log(
-                        //   "User Bid:",
-                        //   userBidValue,
-                        //   "Minimum Required:",
-                        //   minimumRequired,
-                        // );
-
-                        if (!bidAmount || isNaN(userBidValue)) {
-                          setBidError("Please enter a valid amount");
-                        } else if (userBidValue < minimumRequired) {
-                          // এখানে আর ভুল হওয়ার সুযোগ নেই
-                          setBidError(
-                            `Minimum bid is ${formatPrice(0).replace(/[0-9.,\s]/g, "")}${minimumRequired}`,
-                          );
-                        } else {
-                          setBidError("");
-                          alert(
-                            `Success! Bid of ${formatPrice(0).replace(/[0-9.,\s]/g, "")}${userBidValue} placed.`,
-                          );
-                          setBidAmount("");
-                        }
-                      }}
-                      className="px-6 bg-amber-500 hover:bg-amber-600 text-white font-black rounded-xl transition-all active:scale-95 shadow-lg shadow-amber-200 flex items-center gap-2"
-                    >
-                      BID <FiChevronRight />
-                    </button>
-                  </div>
-
-                  {bidError && (
-                    <p className="text-red-600 text-[11px] font-bold flex items-center gap-1 ml-1">
-                      <FiX
-                        size={14}
-                        className="bg-red-500 text-white rounded-full p-0.5"
-                      />
-                      {bidError}
-                    </p>
-                  )}
-                </div> */}
-                <div className="space-y-2">
-                  {timeLeft !== "AUCTION ENDED" ? (
-                    /* ───── নিলাম চলাকালীন ইনপুট ফিল্ড ───── */
-                    <>
-                      <label className="text-[11px] font-bold text-gray-500 uppercase ml-1">
-                        Place Your Bid (Min:{" "}
-                        {formatPrice(product.currentHighestBId + 1)})
-                      </label>
-
-                      <div className="flex gap-2">
-                        <div className="relative flex-1">
-                          <span className="absolute left-4 top-1/2 -translate-y-1/2 font-bold text-gray-400 pointer-events-none">
-                            {formatPrice(0).replace(/[0-9.,\s]/g, "")}
-                          </span>
-                          <input
-                            type="number"
-                            value={bidAmount}
-                            onChange={(e) => {
-                              const val = e.target.value;
-                              setBidAmount(val);
-
-                              // টাইপ করার সময় সাথে সাথে এরর চেক
-                              if (
-                                val &&
-                                parseInt(val) >= parseInt(product.price)
-                              ) {
-                                setBidError("");
-                              }
-                            }}
-                            placeholder="Enter amount"
-                            className={`w-full h-12 pl-10 pr-4 rounded-xl border-2 outline-none font-bold text-lg transition-all ${
-                              bidError
-                                ? "border-red-500 bg-red-50"
-                                : "border-gray-200 focus:border-amber-500"
-                            }`}
-                          />
-                        </div>
-                        <button
-                          onClick={() => {
-                            // ইনপুট এবং প্রাইস দুটোকেই পূর্ণসংখ্যায় কনভার্ট করা হলো
-                            const userBidValue = parseInt(bidAmount);
-                            const minimumRequired = parseFloat(
-                              formatPrice(product.price).replace(
-                                /[^0-9 .]/g,
-                                "",
-                              ),
-                            );
-                            if (!bidAmount || isNaN(userBidValue)) {
-                              setBidError("Please enter a valid amount");
-                            } else if (userBidValue < minimumRequired) {
-                              setBidError(
-                                `Minimum bid is ${formatPrice(0).replace(/[0-9.,\s]/g, "")}${minimumRequired}`,
-                              );
-                            } else {
-                              setBidError("");
-                              alert(
-                                `Success! Bid of ${formatPrice(0).replace(/[0-9.,\s]/g, "")}${userBidValue} placed.`,
-                              );
-                              setBidAmount("");
-                            }
-                          }}
-                          className="px-6 bg-amber-500 hover:bg-amber-600 text-white font-black rounded-xl transition-all active:scale-95 shadow-lg flex items-center gap-2"
-                        >
-                          BID <FiChevronRight />
-                        </button>
-                      </div>
-                      {bidError && (
-                        <p className="text-red-600 text-[11px] font-bold flex items-center gap-1 ml-1">
-                          <FiX
-                            size={14}
-                            className="bg-red-500 text-white rounded-full p-0.5"
-                          />
-                          {bidError}
-                        </p>
-                      )}
-                    </>
-                  ) : (
-                    /* ───── নিলাম শেষ হওয়ার পর UI ───── */
-                    <div className="p-4 bg-emerald-50 border-2 border-emerald-200 rounded-xl text-center space-y-2">
-                      <div className="flex justify-center">
-                        <div className="bg-emerald-500 text-white p-2 rounded-full shadow-lg animate-bounce">
-                          <FiCheck size={24} strokeWidth={3} />
-                        </div>
-                      </div>
-                      <h3 className="text-emerald-800 font-black text-lg uppercase tracking-tight">
-                        Auction Completed
-                      </h3>
-                      <p className="text-emerald-600 text-xs font-bold bg-white/50 py-1 px-3 rounded-full inline-block border border-emerald-100">
-                        Sold for: {formatPrice(product.currentHighestBId)}
-                      </p>
-
-                      {/* উইনারের নাম দেখানোর জন্য (যদি ব্যাকএন্ডে winnerName থাকে) */}
-                      <div className="pt-2 text-[11px] text-emerald-700 font-bold">
-                        Winner:{" "}
-                        {product.highestBidderName || "Anonymous Bidder"} 🎉
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
+              <PostaBId product={product} />
             ) : (
-              /* ───── NORMAL SHOPPING ───── */
               <div className="flex gap-3">
                 <button
                   onClick={addCart}
@@ -1173,10 +944,12 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
               </div>
             )}
           </div>
-          {/* NEGOTIATION BOT (only for logged-in buyers who are not the seller) */}
+
+          {/* AI Bots (only for logged-in buyers who are not the seller) */}
           {user && user._id !== product.seller?._id && (
-            <div className="flex justify-center pt-2">
-              <AINegoBot product={product} sellerId={product.sellerEmail} />
+            <div className="flex justify-center gap-3 pt-2">
+              <AINegoBot product={product} sellerId={product.seller?._id} />
+              <AISupportBot product={product} />
             </div>
           )}
 
@@ -1282,7 +1055,7 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
           {/* ── REVIEWS TAB ──────── */}
           {tab === "reviews" && (
             <div className="space-y-6">
-              {/* ── Header: "Comments" + sort ── */}
+              {/* Header */}
               <div className="flex items-center justify-between">
                 <h3 className="text-lg sm:text-xl font-extrabold text-gray-900">
                   Comments
@@ -1300,7 +1073,7 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
                 </div>
               </div>
 
-              {/* ── Comment input box ── */}
+              {/* Comment input box */}
               {(!userReview || editingId) && (
                 <div className="bg-gray-50 rounded-2xl p-4 border border-gray-100">
                   <div className="flex items-start gap-3">
@@ -1347,7 +1120,6 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
                             className="w-full text-sm bg-transparent border-none outline-none resize-none placeholder:text-gray-400 text-gray-800"
                           />
 
-                          {/* Star rating selector */}
                           <div className="flex items-center gap-2 mt-1 mb-2">
                             <span className="text-xs text-gray-400">
                               Rating:
@@ -1365,7 +1137,6 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
                             )}
                           </div>
 
-                          {/* Image previews */}
                           {(keepImages.length > 0 ||
                             reviewPreviews.length > 0) && (
                             <div className="flex gap-1.5 flex-wrap mb-2">
@@ -1414,7 +1185,6 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
                             </div>
                           )}
 
-                          {/* Bottom toolbar */}
                           <div className="flex items-center justify-between pt-2 border-t border-gray-200">
                             <div className="flex items-center gap-1">
                               <input
@@ -1472,7 +1242,7 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
                 </div>
               )}
 
-              {/* ── Comments list ── */}
+              {/* Comments list */}
               <div className="space-y-0 divide-y divide-gray-100">
                 {sortedReviews.map((r) => {
                   const isLiked = (r.likes || []).includes(user?._id);
@@ -1505,7 +1275,6 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
                             <span className="text-sm font-bold text-gray-900">
                               {r.userName || "Anonymous"}
                             </span>
-                            {/* Rating badge */}
                             <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-gray-100 rounded text-[10px] font-bold text-gray-500">
                               <FiStar
                                 size={10}
@@ -1516,7 +1285,6 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
                             <span className="text-xs text-gray-400">
                               · {timeAgo(r.createdAt)}
                             </span>
-                            {/* 3-dot menu for own review */}
                             {isOwn && (
                               <div className="relative ml-auto">
                                 <button
@@ -1555,14 +1323,12 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
                             )}
                           </div>
 
-                          {/* Comment text */}
                           {r.comment && (
                             <p className="text-sm text-gray-700 leading-relaxed mt-1.5">
                               {r.comment}
                             </p>
                           )}
 
-                          {/* Review images */}
                           {r.images && r.images.length > 0 && (
                             <div className="flex gap-1.5 flex-wrap mt-2.5">
                               {r.images.map((img, i) => (
@@ -1583,7 +1349,7 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
                             </div>
                           )}
 
-                          {/* Action bar: Like · Reply · Share */}
+                          {/* Action bar */}
                           <div className="flex items-center gap-4 mt-3">
                             <button
                               onClick={() => toggleLike(r._id)}
@@ -1909,9 +1675,12 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
           {/* ── DESC TAB ──────── */}
           {tab === "desc" && product.description && (
             <div className="max-w-2xl">
-              <p className="text-[16px] sm:text-base text-gray-600 leading-relaxed whitespace-pre-line">
-                {product.description}
-              </p>
+              <div
+                className="product-description text-gray-600 [&_strong]:font-bold [&_ul]:list-disc [&_ul]:pl-5 [&_li]:mb-1"
+                dangerouslySetInnerHTML={{
+                  __html: DOMPurify.sanitize(product.description),
+                }}
+              />
               <div className="mt-4 space-y-0">
                 {[
                   product.brand && { l: "Brand", v: product.brand },
@@ -2090,18 +1859,15 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
           className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm"
           onClick={closeLightbox}
         >
-          {/* Close */}
           <button
             onClick={closeLightbox}
             className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors z-10"
           >
             <FiX size={20} />
           </button>
-          {/* Counter */}
           <span className="absolute top-5 left-1/2 -translate-x-1/2 text-white/70 text-[16px] sm:text-[16px] sm:text-base font-bold">
             {lightbox.index + 1} / {lightbox.images.length}
           </span>
-          {/* Prev */}
           {lightbox.images.length > 1 && (
             <button
               onClick={(e) => {
@@ -2113,7 +1879,6 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
               <FiChevronRight size={20} className="rotate-180" />
             </button>
           )}
-          {/* Image */}
           <div
             className="relative max-w-[90vw] max-h-[85vh] w-full h-full flex items-center justify-center"
             onClick={(e) => e.stopPropagation()}
@@ -2126,7 +1891,6 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
               sizes="90vw"
             />
           </div>
-          {/* Next */}
           {lightbox.images.length > 1 && (
             <button
               onClick={(e) => {
@@ -2138,7 +1902,6 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
               <FiChevronRight size={20} />
             </button>
           )}
-          {/* Thumbnail strip */}
           {lightbox.images.length > 1 && (
             <div
               className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1.5 bg-black/40 rounded-lg p-1.5"

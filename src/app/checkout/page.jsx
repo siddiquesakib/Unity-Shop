@@ -18,9 +18,11 @@ import { useCart } from "@/contexts/CartContext";
 import { useSession } from "next-auth/react";
 import PaymentButton from "@/components/common/payment-button/PaymentButton";
 import PromoCodeInput from "@/components/promoCode/PromoCodeInput";
+import ShippingForm from "@/components/checkout/ShippingForm"; // Import ShippingForm
 
 const SHOP_EMAIL = process.env.NEXT_PUBLIC_SHOP_EMAIL || "shop@unityshop.com";
 const SHOP_NAME = process.env.NEXT_PUBLIC_SHOP_NAME || "UnityShop";
+
 
 export default function CheckoutPage() {
   const { checkoutGroups, checkoutPromo } = useCart();
@@ -38,6 +40,8 @@ export default function CheckoutPage() {
 
   // ── Local promo state (pre-filled from cart if available) ──────────────
   const [appliedPromo, setAppliedPromo] = useState(checkoutPromo || null);
+  const [shippingInfo, setShippingInfo] = useState(null); // Added Shipping Info State
+
 
   // ── Compute totals ────────────────────────────────────────────────────────
   const subtotal = checkoutGroups.reduce(
@@ -50,7 +54,29 @@ export default function CheckoutPage() {
     ? Math.min(appliedPromo.discount, subtotal)
     : 0;
 
-  const grandTotal = Math.max(0, subtotal - discountAmount);
+  // ── Calculate International Costs (Phase 2) ─────────────────────────────
+  // Assumes all items are international for now or checks flags if available
+  const totalWeight = checkoutGroups.reduce(
+    (w, group) =>
+      w +
+      group.items.reduce(
+        (wg, i) => wg + (Number(i.weight) || 0.5) * i.quantity,
+        0,
+      ),
+    0,
+  );
+
+  // Simple Shipping Model: $15 base + $10/kg over 1kg
+  const shippingCost =
+    totalWeight > 0 ? 15 + Math.max(0, Math.ceil(totalWeight - 1)) * 10 : 0;
+
+  const customsFee = subtotal * 0.15; // 15% Estimated
+  const platformFee = subtotal * 0.05; // 5% Platform Fee
+
+  const grandTotal = Math.max(
+    0,
+    subtotal - discountAmount + shippingCost + customsFee + platformFee,
+  );
 
   const totalQty = checkoutGroups.reduce(
     (total, group) => total + group.items.reduce((s, i) => s + i.quantity, 0),
@@ -137,8 +163,44 @@ export default function CheckoutPage() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="flex flex-col lg:flex-row gap-10">
-          {/* ── LEFT: Order breakdown ──────────────────────────────────── */}
-          <div className="flex-1 space-y-4">
+          {/* ── LEFT: Order breakdown & Shipping ──────────────────────────────────── */}
+          <div className="flex-1 space-y-8">
+            {/* Shipping Information Section */}
+            <div className={`p-6 bg-white rounded-2xl border transition-all ${shippingInfo ? "border-green-200 ring-1 ring-green-100" : "border-gray-200"}`}>
+                {!shippingInfo ? (
+                    <ShippingForm onSubmit={setShippingInfo} />
+                ) : (
+                    <div className="flex justify-between items-start">
+                        <div className="space-y-1">
+                            <h2 className="text-lg font-bold text-black flex items-center gap-2 mb-3">
+                                <span className="flex items-center justify-center w-6 h-6 rounded-full bg-green-500 text-white text-xs">
+                                    <FiCheck />
+                                </span>
+                                Shipping Address Confirmed
+                            </h2>
+                            <p className="font-semibold text-gray-900">{shippingInfo.fullName}</p>
+                            <p className="text-gray-600">{shippingInfo.addressLine1}</p>
+                            {shippingInfo.addressLine2 && <p className="text-gray-600">{shippingInfo.addressLine2}</p>}
+                            <p className="text-gray-600">
+                                {shippingInfo.city}, {shippingInfo.state} {shippingInfo.zipCode}
+                            </p>
+                            <p className="text-gray-600">{shippingInfo.country}</p>
+                            <p className="text-gray-600 text-sm mt-2 flex items-center gap-2">
+                                📞 {shippingInfo.phone}
+                            </p>
+                        </div>
+                        <button
+                            onClick={() => setShippingInfo(null)}
+                            className="text-sm font-bold text-gray-500 hover:text-black underline"
+                        >
+                            Edit
+                        </button>
+                    </div>
+                )}
+            </div>
+
+            <h2 className="text-xl font-black text-black px-1">Review Items</h2>
+            <div className="space-y-4">
             {checkoutGroups.map((group) => {
               const groupSubtotal = group.items.reduce(
                 (s, i) => s + i.price * i.quantity,
@@ -376,9 +438,17 @@ export default function CheckoutPage() {
                     userEmail={userEmail}
                     sellerName={SHOP_NAME}
                     sellerEmail={SHOP_EMAIL}
-                    label="Pay Now"
+                    label={shippingInfo ? "Pay Now" : "Fill Shipping Info"}
                     className="w-full justify-center text-base py-4 font-bold rounded-xl"
+                    disabled={!shippingInfo}
+                    shippingAddress={shippingInfo}
+                    phoneNumber={shippingInfo?.phone}
                   />
+                  {!shippingInfo && (
+                      <p className="text-xs text-center text-gray-500 mt-2">
+                        Complete the shipping details to proceed.
+                      </p>
+                  )}
                 )}
 
                 {/* Trust badges */}
