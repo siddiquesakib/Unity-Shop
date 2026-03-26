@@ -4,6 +4,7 @@ import SellerStats from "@/components/dashboard/seller/SellerStats";
 import SalesChart from "@/components/dashboard/seller/SalesChart";
 import ProductsTable from "@/components/dashboard/seller/ProductsTable";
 import SellerOrders from "@/components/dashboard/seller/SellerOrders";
+import SellerNegotiations from "@/components/dashboard/seller/SellerNegotiations";
 import { ShoppingBag } from "lucide-react";
 
 export default function SellerDashboard() {
@@ -23,7 +24,8 @@ export default function SellerDashboard() {
             Seller <span className="text-gray-200">Suite</span>
           </h1>
           <p className="text-base text-gray-500 font-medium max-w-md">
-            Manage your inventory, monitor sales velocity, and scale your digital presence.
+            Manage your inventory, monitor sales velocity, and scale your
+            digital presence.
           </p>
         </div>
         <div className="px-5 py-2.5 rounded-2xl bg-white border border-gray-100 flex items-center gap-4 shadow-[0_8px_30px_rgb(0,0,0,0.02)] self-start transition-all hover:border-black/20 group cursor-default">
@@ -48,6 +50,11 @@ export default function SellerDashboard() {
       {/* Products Table */}
       <div className="p-2 rounded-[2.5rem] bg-gray-50/50 border border-gray-100">
         <ProductsTable />
+      </div>
+
+      {/* 🆕 Negotiations Section */}
+      <div>
+        <SellerNegotiations />
       </div>
     </div>
   );

@@ -101,6 +101,7 @@ export default function CheckoutPage() {
     { label: 'Confirmation', done: false },
   ];
 
+<<<<<<< HEAD
   return (
     <div className="min-h-screen bg-[#f7f6f3]">
       {/* Header */}
@@ -479,4 +480,7 @@ export default function CheckoutPage() {
       </div>
     </div>
   );
+=======
+  return (<div />);
+>>>>>>> e0248059f80fa50f757bff6e67a361325ac5534b
 }
