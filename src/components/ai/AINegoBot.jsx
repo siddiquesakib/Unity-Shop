@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { useAuth } from "@/hooks/useAuth";
+import { useSocket } from "@/contexts/SocketContext";
 import {
   FiMessageCircle,
   FiX,
@@ -13,14 +14,93 @@ import {
   FiLoader,
 } from "react-icons/fi";
 
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+
+const statusToChatMessage = {
+  accepted: "Seller accepted your offer! You can proceed to checkout.",
+  rejected: "Seller declined this offer. You can submit a new offer.",
+};
+
 const AINegoBot = ({ product, sellerId }) => {
-  const { user } = useAuth();
+  const { user, token } = useAuth();
+  const socket = useSocket();
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [negotiationStatus, setNegotiationStatus] = useState(null);
   const chatEndRef = useRef(null);
+  const lastStatusRef = useRef(null);
+
+  const appendStatusMessage = useCallback((status, overrideMessage) => {
+    if (!status || status === "pending") return;
+
+    const content = overrideMessage || statusToChatMessage[status];
+    if (!content) return;
+
+    setMessages((prev) => {
+      const alreadyAdded = prev.some(
+        (msg) =>
+          msg?.metaType === "negotiation_status" && msg?.status === status,
+      );
+      if (alreadyAdded) return prev;
+
+      return [
+        ...prev,
+        {
+          role: "assistant",
+          content,
+          timestamp: new Date(),
+          metaType: "negotiation_status",
+          status,
+        },
+      ];
+    });
+  }, []);
+
+  const fetchNegotiationStatus = useCallback(async () => {
+    if (!product?._id || !token) return;
+
+    try {
+      const res = await fetch(
+        `${API_BASE}/api/negotiations/user-product?productId=${product._id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+
+      if (!res.ok) {
+        console.warn("[AINegoBot] Status fetch failed", {
+          status: res.status,
+          productId: product._id,
+        });
+        return;
+      }
+
+      const data = await res.json();
+      if (!data?.status) return;
+
+      setNegotiationStatus(data.status);
+
+      const latestSystemStatusMessage = [...(data.messages || [])]
+        .reverse()
+        .find((m) => m?.system && typeof m.message === "string");
+
+      if (data.status !== lastStatusRef.current) {
+        appendStatusMessage(data.status, latestSystemStatusMessage?.message);
+        lastStatusRef.current = data.status;
+      }
+
+      console.log("[AINegoBot] Synced negotiation status", {
+        productId: product._id,
+        status: data.status,
+      });
+    } catch (err) {
+      console.error("Failed to fetch negotiation status:", err);
+    }
+  }, [appendStatusMessage, product?._id, token]);
 
   // Initialize welcome message
   useEffect(() => {
@@ -37,25 +117,70 @@ const AINegoBot = ({ product, sellerId }) => {
 
   // Fetch existing negotiation status when modal opens
   useEffect(() => {
-    if (isOpen && product?._id && user?._id) {
-      const fetchNegotiation = async () => {
-        try {
-          const res = await fetch(
-            `${process.env.NEXT_PUBLIC_API_URL}/api/negotiations/user-product?productId=${product._id}&buyerId=${user._id}`,
-          );
-          if (res.ok) {
-            const data = await res.json();
-            if (data?.status) {
-              setNegotiationStatus(data.status);
-            }
-          }
-        } catch (err) {
-          console.error("Failed to fetch negotiation status:", err);
-        }
-      };
-      fetchNegotiation();
-    }
-  }, [isOpen, product?._id, user?._id]);
+    if (!isOpen) return;
+    fetchNegotiationStatus();
+  }, [fetchNegotiationStatus, isOpen]);
+
+  // Keep status in sync while waiting for seller response.
+  useEffect(() => {
+    if (!isOpen || negotiationStatus !== "pending") return;
+
+    const interval = setInterval(() => {
+      fetchNegotiationStatus();
+    }, 15000);
+
+    return () => clearInterval(interval);
+  }, [fetchNegotiationStatus, isOpen, negotiationStatus]);
+
+  // Real-time updates for this product's negotiation.
+  useEffect(() => {
+    if (!socket || !isOpen || !product?._id) return;
+
+    const productId = product._id.toString();
+
+    const handleNegotiationStatusEvent = (payload) => {
+      const payloadProductId = payload?.productId?.toString?.();
+      if (!payloadProductId || payloadProductId !== productId) return;
+
+      if (!payload?.status) return;
+      setNegotiationStatus(payload.status);
+
+      if (payload.status !== lastStatusRef.current) {
+        appendStatusMessage(payload.status, payload.message);
+        lastStatusRef.current = payload.status;
+      }
+
+      console.log("[AINegoBot] negotiation_status_updated received", payload);
+    };
+
+    const handleNotificationEvent = (notification) => {
+      if (!["offer_accepted", "offer_rejected"].includes(notification?.type)) {
+        return;
+      }
+
+      const notifProductId = notification?.meta?.productId?.toString?.();
+      if (notifProductId && notifProductId !== productId) return;
+
+      const nextStatus =
+        notification.type === "offer_accepted" ? "accepted" : "rejected";
+      setNegotiationStatus(nextStatus);
+
+      if (nextStatus !== lastStatusRef.current) {
+        appendStatusMessage(nextStatus, notification.message);
+        lastStatusRef.current = nextStatus;
+      }
+
+      console.log("[AINegoBot] offer notification received", notification);
+    };
+
+    socket.on("negotiation_status_updated", handleNegotiationStatusEvent);
+    socket.on("notification", handleNotificationEvent);
+
+    return () => {
+      socket.off("negotiation_status_updated", handleNegotiationStatusEvent);
+      socket.off("notification", handleNotificationEvent);
+    };
+  }, [appendStatusMessage, isOpen, product?._id, socket]);
 
   // Auto-scroll to bottom on new messages
   useEffect(() => {
@@ -118,6 +243,7 @@ const AINegoBot = ({ product, sellerId }) => {
 
         if (data.offerSent) {
           setNegotiationStatus("pending");
+          lastStatusRef.current = "pending";
         }
       } else {
         throw new Error(data.error || "Failed to process");
@@ -282,7 +408,7 @@ const AINegoBot = ({ product, sellerId }) => {
                       )}
 
                       <p className="text-[10px] mt-2 opacity-70">
-                        {msg.timestamp.toLocaleTimeString([], {
+                        {new Date(msg.timestamp).toLocaleTimeString([], {
                           hour: "2-digit",
                           minute: "2-digit",
                         })}
@@ -320,8 +446,8 @@ const AINegoBot = ({ product, sellerId }) => {
                     size={14}
                   />
                   <p className="text-xs text-blue-700">
-                    Your offer will be sent to the seller for review. You'll be
-                    notified of their response.
+                    Your offer will be sent to the seller for review.
+                    You&apos;ll be notified of their response.
                   </p>
                 </div>
               </div>

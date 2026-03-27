@@ -1,17 +1,17 @@
 //src/components/common/Navbar.jsx
 
-'use client';
+"use client";
 
-import { useState, useEffect, useRef, useCallback } from 'react';
-import Link from 'next/link';
-import Image from 'next/image';
-import { useRouter, usePathname } from 'next/navigation';
-import { useAuth } from '@/hooks/useAuth';
-import { useCart } from '@/hooks/useCart';
-import { useClickOutside } from '@/hooks/useClickOutside';
-import { useCurrency } from '@/contexts/CurrencyContext';
-import { useLanguage } from '@/contexts/LanguageContext';
-import { useNotifications } from '@/contexts/NotificationContext';
+import { useState, useEffect, useRef, useCallback } from "react";
+import Link from "next/link";
+import Image from "next/image";
+import { useRouter, usePathname } from "next/navigation";
+import { useAuth } from "@/hooks/useAuth";
+import { useCart } from "@/hooks/useCart";
+import { useClickOutside } from "@/hooks/useClickOutside";
+import { useCurrency } from "@/contexts/CurrencyContext";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { useNotifications } from "@/contexts/NotificationContext";
 import {
   FiMenu,
   FiX,
@@ -38,16 +38,16 @@ import {
   FiTrash2,
   FiMic,
   FiLayers,
-} from 'react-icons/fi';
-import CustomLanguageSwitcher from '@/components/CustomLanguageSwitcher';
-import VoiceSearch from '../search/VoiceSearch';
+} from "react-icons/fi";
+import CustomLanguageSwitcher from "@/components/CustomLanguageSwitcher";
+import VoiceSearch from "../search/VoiceSearch";
 
 // ─── Time ago helper ────────────────────────────────────────────────────────
 function timeAgo(date) {
   const now = new Date();
   const d = new Date(date);
   const seconds = Math.floor((now - d) / 1000);
-  if (seconds < 60) return 'just now';
+  if (seconds < 60) return "just now";
   const minutes = Math.floor(seconds / 60);
   if (minutes < 60) return `${minutes}m ago`;
   const hours = Math.floor(minutes / 60);
@@ -61,124 +61,136 @@ function timeAgo(date) {
 const NOTIF_CONFIG = {
   cart_add: {
     icon: FiShoppingCart,
-    bg: 'bg-gray-100',
-    iconColor: 'text-gray-700',
-    label: 'Cart',
+    bg: "bg-gray-100",
+    iconColor: "text-gray-700",
+    label: "Cart",
   },
   payment_success: {
     icon: FiCreditCard,
-    bg: 'bg-gray-100',
-    iconColor: 'text-gray-700',
-    label: 'Payment',
+    bg: "bg-gray-100",
+    iconColor: "text-gray-700",
+    label: "Payment",
   },
   order_confirmed: {
     icon: FiCheckCircle,
-    bg: 'bg-gray-100',
-    iconColor: 'text-gray-700',
-    label: 'Order',
+    bg: "bg-gray-100",
+    iconColor: "text-gray-700",
+    label: "Order",
   },
   order_status: {
     icon: FiTruck,
-    bg: 'bg-gray-100',
-    iconColor: 'text-gray-700',
-    label: 'Order',
+    bg: "bg-gray-100",
+    iconColor: "text-gray-700",
+    label: "Order",
   },
   product_approved: {
     icon: FiCheckCircle,
-    bg: 'bg-gray-100',
-    iconColor: 'text-gray-700',
-    label: 'Product',
+    bg: "bg-gray-100",
+    iconColor: "text-gray-700",
+    label: "Product",
   },
   product_rejected: {
     icon: FiX,
-    bg: 'bg-gray-100',
-    iconColor: 'text-gray-500',
-    label: 'Product',
+    bg: "bg-gray-100",
+    iconColor: "text-gray-500",
+    label: "Product",
   },
   seller_approved: {
     icon: FiStar,
-    bg: 'bg-gray-100',
-    iconColor: 'text-gray-700',
-    label: 'Seller',
+    bg: "bg-gray-100",
+    iconColor: "text-gray-700",
+    label: "Seller",
   },
   seller_rejected: {
     icon: FiX,
-    bg: 'bg-gray-100',
-    iconColor: 'text-gray-500',
-    label: 'Seller',
+    bg: "bg-gray-100",
+    iconColor: "text-gray-500",
+    label: "Seller",
   },
   coupon: {
     icon: FiTag,
-    bg: 'bg-gray-100',
-    iconColor: 'text-gray-700',
-    label: 'Promo',
+    bg: "bg-gray-100",
+    iconColor: "text-gray-700",
+    label: "Promo",
+  },
+  offer_accepted: {
+    icon: FiCheckCircle,
+    bg: "bg-gray-100",
+    iconColor: "text-gray-700",
+    label: "Negotiation",
+  },
+  offer_rejected: {
+    icon: FiX,
+    bg: "bg-gray-100",
+    iconColor: "text-gray-500",
+    label: "Negotiation",
   },
 };
 const DEFAULT_NOTIF = {
   icon: FiBell,
-  bg: 'bg-gray-100',
-  iconColor: 'text-gray-500',
-  label: '',
+  bg: "bg-gray-100",
+  iconColor: "text-gray-500",
+  label: "",
 };
 
 const navLinks = [
-  { name: 'Home', href: '/', icon: FiHome },
-  { name: 'Products', href: '/products', icon: FiShoppingBag },
-  { name: 'About', href: '/about', icon: FiInfo },
-  { name: 'Contact', href: '/contact', icon: FiPhone },
+  { name: "Home", href: "/", icon: FiHome },
+  { name: "Products", href: "/products", icon: FiShoppingBag },
+  { name: "About", href: "/about", icon: FiInfo },
+  { name: "Contact", href: "/contact", icon: FiPhone },
 ];
 
 const categoryLinks = [
-  'Electronics',
-  'Fashion',
-  'Home & Living',
-  'Kitchen',
-  'Bedroom',
-  'Office',
-  'Mobiles',
-  'Watches',
-  'Audio',
-  'Cameras',
-  'Gaming',
-  'Lighting',
-  'Beauty',
-  'Health',
-  'Sports',
-  'Outdoor',
-  'Books',
-  'Stationery',
-  'Toys & Baby',
-  'Grocery',
-  'Tools',
-  'Automotive',
+  "Electronics",
+  "Fashion",
+  "Home & Living",
+  "Kitchen",
+  "Bedroom",
+  "Office",
+  "Mobiles",
+  "Watches",
+  "Audio",
+  "Cameras",
+  "Gaming",
+  "Lighting",
+  "Beauty",
+  "Health",
+  "Sports",
+  "Outdoor",
+  "Books",
+  "Stationery",
+  "Toys & Baby",
+  "Grocery",
+  "Tools",
+  "Automotive",
 ];
 
 const categoryChips = [
   {
-    label: 'ইলেকট্রনিক্স',
-    labelEn: 'Electronics',
-    value: 'Electronics',
-    icon: '💻',
+    label: "ইলেকট্রনিক্স",
+    labelEn: "Electronics",
+    value: "Electronics",
+    icon: "💻",
   },
-  { label: 'ফ্যাশন', labelEn: 'Fashion', value: 'Fashion', icon: '👗' },
+  { label: "ফ্যাশন", labelEn: "Fashion", value: "Fashion", icon: "👗" },
   {
-    label: 'হোম',
-    labelEn: 'Home & Living',
-    value: 'Home & Living',
-    icon: '🏠',
+    label: "হোম",
+    labelEn: "Home & Living",
+    value: "Home & Living",
+    icon: "🏠",
   },
-  { label: 'বিউটি', labelEn: 'Beauty', value: 'Beauty', icon: '💄' },
-  { label: 'গ্রোসারি', labelEn: 'Grocery', value: 'Grocery', icon: '🛒' },
-  { label: 'বেবি', labelEn: 'Toys & Baby', value: 'Toys & Baby', icon: '🧸' },
-  { label: 'স্পোর্টস', labelEn: 'Sports', value: 'Sports', icon: '⚽' },
-  { label: 'মোবাইল', labelEn: 'Mobiles', value: 'Mobiles', icon: '📱' },
-  { label: 'ওয়াচ', labelEn: 'Watches', value: 'Watches', icon: '⌚' },
-  { label: 'গেমিং', labelEn: 'Gaming', value: 'Gaming', icon: '🎮' },
-  { label: 'বুকস', labelEn: 'Books', value: 'Books', icon: '📚' },
-  { label: 'অটো', labelEn: 'Automotive', value: 'Automotive', icon: '🚗' },
+  { label: "বিউটি", labelEn: "Beauty", value: "Beauty", icon: "💄" },
+  { label: "গ্রোসারি", labelEn: "Grocery", value: "Grocery", icon: "🛒" },
+  { label: "বেবি", labelEn: "Toys & Baby", value: "Toys & Baby", icon: "🧸" },
+  { label: "স্পোর্টস", labelEn: "Sports", value: "Sports", icon: "⚽" },
+  { label: "মোবাইল", labelEn: "Mobiles", value: "Mobiles", icon: "📱" },
+  { label: "ওয়াচ", labelEn: "Watches", value: "Watches", icon: "⌚" },
+  { label: "গেমিং", labelEn: "Gaming", value: "Gaming", icon: "🎮" },
+  { label: "বুকস", labelEn: "Books", value: "Books", icon: "📚" },
+  { label: "অটো", labelEn: "Automotive", value: "Automotive", icon: "🚗" },
 ];
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
 // ─── Autocomplete Search Hook ───────────────────────────────────────────────
 function useAutocomplete(query) {
@@ -217,8 +229,8 @@ function useAutocomplete(query) {
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [searchCategory, setSearchCategory] = useState('all');
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchCategory, setSearchCategory] = useState("all");
   const [showSearchCatMenu, setShowSearchCatMenu] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showCurrencyMenu, setShowCurrencyMenu] = useState(false);
@@ -240,7 +252,7 @@ const Navbar = () => {
   } = useNotifications() || {};
 
   const { results: autocompleteResults, loading: autocompleteLoading } =
-    useAutocomplete(showAutocomplete ? searchQuery : '');
+    useAutocomplete(showAutocomplete ? searchQuery : "");
 
   const router = useRouter();
   const pathname = usePathname();
@@ -259,19 +271,19 @@ const Navbar = () => {
   useClickOutside(searchCatMenuRef, () => setShowSearchCatMenu(false));
 
   useEffect(() => {
-    document.body.style.overflow = isOpen || showMobileSearch ? 'hidden' : '';
+    document.body.style.overflow = isOpen || showMobileSearch ? "hidden" : "";
     return () => {
-      document.body.style.overflow = '';
+      document.body.style.overflow = "";
     };
   }, [isOpen, showMobileSearch]);
 
-  const handleSearch = e => {
+  const handleSearch = (e) => {
     e.preventDefault();
     if (searchQuery.trim()) {
       const catParam =
-        searchCategory !== 'all'
+        searchCategory !== "all"
           ? `&category=${encodeURIComponent(searchCategory)}`
-          : '';
+          : "";
       router.push(
         `/products?q=${encodeURIComponent(searchQuery.trim())}${catParam}`,
       );
@@ -281,22 +293,22 @@ const Navbar = () => {
     }
   };
 
-  const isActive = href => {
-    if (href === '/') return pathname === '/';
+  const isActive = (href) => {
+    if (href === "/") return pathname === "/";
     return pathname.startsWith(href);
   };
 
-  const formatPrice = price => {
+  const formatPrice = (price) => {
     return `৳${price?.toLocaleString() || 0}`;
   };
 
-  const getSafeImage = product => {
+  const getSafeImage = (product) => {
     const img = Array.isArray(product.image) ? product.image[0] : product.image;
     if (
       img &&
-      typeof img === 'string' &&
+      typeof img === "string" &&
       img.trim() &&
-      !img.startsWith('data:')
+      !img.startsWith("data:")
     ) {
       try {
         new URL(img);
@@ -347,7 +359,7 @@ const Navbar = () => {
                         className="h-full px-3 flex items-center justify-between gap-2 text-xs font-medium bg-transparent text-gray-700 cursor-pointer hover:bg-gray-50 transition-colors min-w-[60px]"
                       >
                         <span className="truncate max-w-[80px]">
-                          {searchCategory === 'all' ? 'All' : searchCategory}
+                          {searchCategory === "all" ? "All" : searchCategory}
                         </span>
                         <FiChevronDown size={12} className="text-gray-500" />
                       </button>
@@ -357,18 +369,18 @@ const Navbar = () => {
                           <button
                             type="button"
                             onClick={() => {
-                              setSearchCategory('all');
+                              setSearchCategory("all");
                               setShowSearchCatMenu(false);
                             }}
                             className={`flex items-center w-full px-3 py-2 text-xs transition-colors ${
-                              searchCategory === 'all'
-                                ? 'bg-gray-800 text-[#fcfbf7] font-semibold'
-                                : 'text-gray-300 hover:bg-gray-900 hover:text-[#fcfbf7]'
+                              searchCategory === "all"
+                                ? "bg-gray-800 text-[#fcfbf7] font-semibold"
+                                : "text-gray-300 hover:bg-gray-900 hover:text-[#fcfbf7]"
                             }`}
                           >
                             All
                           </button>
-                          {categoryLinks.map(cat => (
+                          {categoryLinks.map((cat) => (
                             <button
                               key={cat}
                               type="button"
@@ -378,8 +390,8 @@ const Navbar = () => {
                               }}
                               className={`flex items-center w-full px-3 py-2 text-xs transition-colors ${
                                 searchCategory === cat
-                                  ? 'bg-gray-800 text-[#fcfbf7] font-medium'
-                                  : 'text-gray-300 hover:bg-gray-900 hover:text-[#fcfbf7]'
+                                  ? "bg-gray-800 text-[#fcfbf7] font-medium"
+                                  : "text-gray-300 hover:bg-gray-900 hover:text-[#fcfbf7]"
                               }`}
                             >
                               {cat}
@@ -394,7 +406,7 @@ const Navbar = () => {
                       <input
                         type="text"
                         value={searchQuery}
-                        onChange={e => {
+                        onChange={(e) => {
                           setSearchQuery(e.target.value);
                           setShowAutocomplete(true);
                         }}
@@ -431,7 +443,7 @@ const Navbar = () => {
                         </div>
                       ) : autocompleteResults.length > 0 ? (
                         <>
-                          {autocompleteResults.map(product => {
+                          {autocompleteResults.map((product) => {
                             const img = getSafeImage(product);
                             return (
                               <Link
@@ -439,7 +451,7 @@ const Navbar = () => {
                                 href={`/products/${product._id}`}
                                 onClick={() => {
                                   setShowAutocomplete(false);
-                                  setSearchQuery('');
+                                  setSearchQuery("");
                                 }}
                                 className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 transition-colors"
                               >
@@ -507,7 +519,7 @@ const Navbar = () => {
                       <FiBell size={20} />
                       {unreadCount > 0 && (
                         <span className="absolute -top-1.5 -right-1.5 min-w-4.5 h-4.5 px-1 bg-red-500 text-[#fcfbf7] text-[9px] font-bold rounded-full flex items-center justify-center ring-2 ring-black">
-                          {unreadCount > 99 ? '99+' : unreadCount}
+                          {unreadCount > 99 ? "99+" : unreadCount}
                         </span>
                       )}
                     </div>
@@ -538,17 +550,17 @@ const Navbar = () => {
                       </div>
                       <div className="max-h-105 overflow-y-auto divide-y divide-gray-800">
                         {notifications.length > 0 ? (
-                          notifications.map(n => {
+                          notifications.map((n) => {
                             const cfg = NOTIF_CONFIG[n.type] || DEFAULT_NOTIF;
                             const Icon = cfg.icon;
                             return (
                               <div
                                 key={n._id}
-                                className={`group relative flex items-start gap-3 px-5 py-3.5 transition-all cursor-pointer ${!n.read ? 'bg-gray-900 hover:bg-gray-800 text-[#fcfbf7]' : 'hover:bg-gray-900 text-gray-300'}`}
+                                className={`group relative flex items-start gap-3 px-5 py-3.5 transition-all cursor-pointer ${!n.read ? "bg-gray-900 hover:bg-gray-800 text-[#fcfbf7]" : "hover:bg-gray-900 text-gray-300"}`}
                                 onClick={() => markAsRead(n._id)}
                               >
                                 <button
-                                  onClick={e => {
+                                  onClick={(e) => {
                                     e.stopPropagation();
                                     deleteNotification(n._id);
                                   }}
@@ -558,14 +570,14 @@ const Navbar = () => {
                                   <FiTrash2 size={13} />
                                 </button>
                                 <div
-                                  className={`mt-0.5 w-9 h-9 rounded-xl ${!n.read ? 'bg-[#fcfbf7] text-black' : 'bg-gray-800 text-[#fcfbf7]'} flex items-center justify-center shrink-0`}
+                                  className={`mt-0.5 w-9 h-9 rounded-xl ${!n.read ? "bg-[#fcfbf7] text-black" : "bg-gray-800 text-[#fcfbf7]"} flex items-center justify-center shrink-0`}
                                 >
                                   <Icon size={16} />
                                 </div>
                                 <div className="flex-1 min-w-0 pr-6">
                                   <div className="flex items-center gap-2">
                                     <p
-                                      className={`text-sm leading-snug ${!n.read ? 'font-bold text-[#fcfbf7]' : 'font-medium text-gray-300'}`}
+                                      className={`text-sm leading-snug ${!n.read ? "font-bold text-[#fcfbf7]" : "font-medium text-gray-300"}`}
                                     >
                                       {n.title || n.text}
                                     </p>
@@ -647,7 +659,7 @@ const Navbar = () => {
                     <FiShoppingCart size={20} />
                     {totalItems > 0 && (
                       <span className="absolute -top-2 -right-2.5 min-w-4.5 h-4.5 px-1 bg-black text-white text-[9px] font-bold rounded-full flex items-center justify-center ring-2 ring-white">
-                        {totalItems > 99 ? '99+' : totalItems}
+                        {totalItems > 99 ? "99+" : totalItems}
                       </span>
                     )}
                   </div>
@@ -663,14 +675,14 @@ const Navbar = () => {
                   <div className="relative group h-full flex items-center">
                     <button className="flex items-center gap-2 px-2 py-1.5 text-black hover:text-gray-600 rounded-md transition-colors cursor-pointer">
                       <div className="w-8 h-8 rounded-full bg-black flex items-center justify-center text-[#fcfbf7] text-xs font-bold ring-2 ring-gray-300">
-                        {user.name?.charAt(0)?.toUpperCase() || 'U'}
+                        {user.name?.charAt(0)?.toUpperCase() || "U"}
                       </div>
                       <div className="hidden xl:block text-left">
                         <p className="text-[10px] text-gray-500 leading-none">
                           Welcome
                         </p>
                         <p className="text-sm font-semibold text-black max-w-20 truncate leading-tight">
-                          {user.name?.split(' ')[0]}
+                          {user.name?.split(" ")[0]}
                         </p>
                       </div>
                       <FiChevronDown
@@ -691,21 +703,21 @@ const Navbar = () => {
                         </div>
                         {[
                           {
-                            href: '/dashboard',
+                            href: "/dashboard",
                             icon: FiGrid,
-                            label: 'Dashboard',
+                            label: "Dashboard",
                           },
                           {
-                            href: '/dashboard/orders',
+                            href: "/dashboard/orders",
                             icon: FiPackage,
-                            label: 'My Orders',
+                            label: "My Orders",
                           },
                           {
-                            href: '/dashboard/wishlist',
+                            href: "/dashboard/wishlist",
                             icon: FiHeart,
-                            label: 'Wishlist',
+                            label: "Wishlist",
                           },
-                        ].map(item => (
+                        ].map((item) => (
                           <Link
                             key={item.href}
                             href={item.href}
@@ -752,22 +764,22 @@ const Navbar = () => {
             <div className="flex items-center h-9 justify-between">
               {/* Nav Links */}
               <div className="flex items-center h-full">
-                {navLinks.map(link => (
+                {navLinks.map((link) => (
                   <Link
                     key={link.href}
                     href={link.href}
                     className={`relative h-full px-4 flex items-center text-sm font-medium transition-colors group ${
                       isActive(link.href)
-                        ? 'text-black'
-                        : 'text-black hover:text-black'
+                        ? "text-black"
+                        : "text-black hover:text-black"
                     }`}
                   >
                     {link.name}
                     <span
                       className={`absolute bottom-[6px] left-4 right-4 h-[2px] bg-black transition-transform duration-300 origin-left ${
                         isActive(link.href)
-                          ? 'scale-x-100'
-                          : 'scale-x-0 group-hover:scale-x-100'
+                          ? "scale-x-100"
+                          : "scale-x-0 group-hover:scale-x-100"
                       }`}
                     ></span>
                   </Link>
@@ -789,7 +801,7 @@ const Navbar = () => {
                   <div className="absolute top-full left-0 w-64 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 bg-black shadow-2xl border border-gray-800 rounded-md z-50 overflow-hidden mt-1">
                     <div className="py-2 flex flex-col">
                       <div className="grid grid-cols-2 gap-x-2 gap-y-1 px-2">
-                        {categoryLinks.map(cat => (
+                        {categoryLinks.map((cat) => (
                           <Link
                             key={cat}
                             href={`/products?category=${encodeURIComponent(cat)}`}
@@ -819,14 +831,14 @@ const Navbar = () => {
 
                   <div className="absolute top-full right-0 w-40 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 bg-black shadow-2xl border border-gray-800 rounded-md z-50 overflow-hidden mt-1">
                     <div className="py-2 flex flex-col">
-                      {currencies.map(curr => (
+                      {currencies.map((curr) => (
                         <button
                           key={curr.code}
                           onClick={() => setCurrency(curr.code)}
                           className={`flex items-center gap-3 w-full px-4 py-2.5 text-sm font-medium transition-colors ${
                             currency === curr.code
-                              ? 'bg-gray-900 text-[#fcfbf7]'
-                              : 'text-gray-300 hover:bg-gray-900 hover:text-[#fcfbf7]'
+                              ? "bg-gray-900 text-[#fcfbf7]"
+                              : "text-gray-300 hover:bg-gray-900 hover:text-[#fcfbf7]"
                           }`}
                         >
                           <span className="text-lg leading-none">
@@ -890,7 +902,7 @@ const Navbar = () => {
                 <FiBell size={20} />
                 {unreadCount > 0 && (
                   <span className="absolute -top-0.5 -right-0.5 min-w-4 h-4 px-0.5 bg-black text-white text-[8px] font-bold rounded-full flex items-center justify-center">
-                    {unreadCount > 9 ? '9+' : unreadCount}
+                    {unreadCount > 9 ? "9+" : unreadCount}
                   </span>
                 )}
               </button>
@@ -904,7 +916,7 @@ const Navbar = () => {
               <FiShoppingCart size={20} />
               {totalItems > 0 && (
                 <span className="absolute -top-0.5 -right-0.5 min-w-4 h-4 px-1 bg-black text-white text-[9px] font-bold rounded-full flex items-center justify-center">
-                  {totalItems > 99 ? '99+' : totalItems}
+                  {totalItems > 99 ? "99+" : totalItems}
                 </span>
               )}
             </Link>
@@ -927,7 +939,7 @@ const Navbar = () => {
                 ref={mobileSearchRef}
                 type="text"
                 value={searchQuery}
-                onChange={e => {
+                onChange={(e) => {
                   setSearchQuery(e.target.value);
                   setShowAutocomplete(true);
                 }}
@@ -938,7 +950,7 @@ const Navbar = () => {
               <button
                 type="button"
                 onClick={startVoiceSearch}
-                className={`h-10 px-3 bg-gray-100 border-l border-gray-200 ${isListening ? 'text-red-500 animate-pulse' : 'text-gray-400'}`}
+                className={`h-10 px-3 bg-gray-100 border-l border-gray-200 ${isListening ? "text-red-500 animate-pulse" : "text-gray-400"}`}
               >
                 <FiMic size={18} />
               </button>
@@ -960,7 +972,7 @@ const Navbar = () => {
             ) : searchQuery.trim().length >= 2 &&
               autocompleteResults.length > 0 ? (
               <div className="divide-y divide-gray-100">
-                {autocompleteResults.map(product => {
+                {autocompleteResults.map((product) => {
                   const img = getSafeImage(product);
                   return (
                     <Link
@@ -968,7 +980,7 @@ const Navbar = () => {
                       href={`/products/${product._id}`}
                       onClick={() => {
                         setShowMobileSearch(false);
-                        setSearchQuery('');
+                        setSearchQuery("");
                       }}
                       className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50"
                     >
@@ -1017,7 +1029,7 @@ const Navbar = () => {
                   Popular Categories
                 </p>
                 <div className="flex flex-wrap gap-2">
-                  {categoryChips.map(cat => (
+                  {categoryChips.map((cat) => (
                     <Link
                       key={cat.value}
                       href={`/products?category=${encodeURIComponent(cat.value)}`}
@@ -1037,14 +1049,14 @@ const Navbar = () => {
 
       {/* ── Mobile Slide Menu ── */}
       <div
-        className={`lg:hidden fixed inset-0 z-70 transition-all duration-300 ${isOpen ? 'visible' : 'invisible pointer-events-none'}`}
+        className={`lg:hidden fixed inset-0 z-70 transition-all duration-300 ${isOpen ? "visible" : "invisible pointer-events-none"}`}
       >
         <div
-          className={`absolute inset-0 bg-black/50 transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'opacity-0'}`}
+          className={`absolute inset-0 bg-black/50 transition-opacity duration-300 ${isOpen ? "opacity-100" : "opacity-0"}`}
           onClick={() => setIsOpen(false)}
         />
         <div
-          className={`absolute top-0 right-0 bottom-0 w-70 bg-[#fcfbf7] shadow-xl transform transition-transform duration-300 ease-out ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}
+          className={`absolute top-0 right-0 bottom-0 w-70 bg-[#fcfbf7] shadow-xl transform transition-transform duration-300 ease-out ${isOpen ? "translate-x-0" : "translate-x-full"}`}
         >
           <div className="flex flex-col h-full">
             {/* Header */}
@@ -1069,7 +1081,7 @@ const Navbar = () => {
             {/* Nav Links */}
             <div className="flex-1 overflow-y-auto">
               <div className="px-3 py-3 space-y-0.5">
-                {navLinks.map(link => {
+                {navLinks.map((link) => {
                   const Icon = link.icon;
                   const active = isActive(link.href);
                   return (
@@ -1077,7 +1089,7 @@ const Navbar = () => {
                       key={link.href}
                       href={link.href}
                       onClick={() => setIsOpen(false)}
-                      className={`flex items-center gap-3 px-3 py-2.5 rounded-sm text-sm font-bold transition-colors ${active ? 'bg-black text-[#fcfbf7]' : 'text-black hover:bg-black hover:text-[#fcfbf7]'}`}
+                      className={`flex items-center gap-3 px-3 py-2.5 rounded-sm text-sm font-bold transition-colors ${active ? "bg-black text-[#fcfbf7]" : "text-black hover:bg-black hover:text-[#fcfbf7]"}`}
                     >
                       <Icon size={16} />
                       {link.name}
@@ -1092,7 +1104,7 @@ const Navbar = () => {
                   Categories
                 </p>
                 <div className="space-y-0.5">
-                  {categoryLinks.slice(0, 12).map(cat => (
+                  {categoryLinks.slice(0, 12).map((cat) => (
                     <Link
                       key={cat}
                       href={`/products?category=${encodeURIComponent(cat)}`}
@@ -1112,18 +1124,18 @@ const Navbar = () => {
                   </p>
                   <div className="space-y-0.5">
                     {[
-                      { href: '/dashboard', icon: FiGrid, label: 'Dashboard' },
+                      { href: "/dashboard", icon: FiGrid, label: "Dashboard" },
                       {
-                        href: '/dashboard/orders',
+                        href: "/dashboard/orders",
                         icon: FiPackage,
-                        label: 'My Orders',
+                        label: "My Orders",
                       },
                       {
-                        href: '/dashboard/wishlist',
+                        href: "/dashboard/wishlist",
                         icon: FiHeart,
-                        label: 'Wishlist',
+                        label: "Wishlist",
                       },
-                    ].map(item => (
+                    ].map((item) => (
                       <Link
                         key={item.href}
                         href={item.href}
@@ -1144,11 +1156,11 @@ const Navbar = () => {
                   Currency
                 </p>
                 <div className="grid grid-cols-2 gap-1.5">
-                  {currencies.map(curr => (
+                  {currencies.map((curr) => (
                     <button
                       key={curr.code}
                       onClick={() => setCurrency(curr.code)}
-                      className={`flex items-center gap-2 px-3 py-2 rounded-sm text-sm font-bold transition-colors ${currency === curr.code ? 'bg-black text-[#fcfbf7]' : 'text-black hover:bg-black hover:text-[#fcfbf7]'}`}
+                      className={`flex items-center gap-2 px-3 py-2 rounded-sm text-sm font-bold transition-colors ${currency === curr.code ? "bg-black text-[#fcfbf7]" : "text-black hover:bg-black hover:text-[#fcfbf7]"}`}
                     >
                       <span>{curr.flag}</span>
                       <span className="truncate">{curr.code}</span>
@@ -1172,14 +1184,14 @@ const Navbar = () => {
                 <div className="space-y-3">
                   <div className="flex items-center gap-2.5">
                     <div className="w-9 h-9 rounded-full bg-black flex items-center justify-center text-white text-sm font-bold ring-2 ring-gray-200">
-                      {user.name?.charAt(0)?.toUpperCase() || 'U'}
+                      {user.name?.charAt(0)?.toUpperCase() || "U"}
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-semibold text-black truncate">
                         {user.name}
                       </p>
                       <p className="text-xs text-gray-500 capitalize">
-                        {user.role || 'Customer'}
+                        {user.role || "Customer"}
                       </p>
                     </div>
                   </div>
@@ -1223,42 +1235,42 @@ const Navbar = () => {
       <div className="fixed bottom-0 left-0 right-0 z-50 lg:hidden bg-white border-t border-gray-200 safe-area-bottom">
         <div className="flex items-center justify-around h-14">
           {[
-            { href: '/', icon: FiHome, label: 'Home' },
+            { href: "/", icon: FiHome, label: "Home" },
             {
-              href: '/products',
+              href: "/products",
               icon: FiLayers,
-              label: 'Categories',
+              label: "Categories",
               action: null,
             },
             {
-              href: '/cart',
+              href: "/cart",
               icon: FiShoppingCart,
-              label: 'Cart',
+              label: "Cart",
               badge: totalItems,
             },
             {
-              href: user ? '/dashboard' : '/login',
+              href: user ? "/dashboard" : "/login",
               icon: FiUser,
-              label: user ? 'Account' : 'Login',
+              label: user ? "Account" : "Login",
             },
-          ].map(item => {
+          ].map((item) => {
             const active = isActive(item.href);
             return (
               <Link
                 key={item.label}
                 href={item.href}
-                className={`flex flex-col items-center justify-center gap-0.5 w-16 py-1.5 transition-colors ${active ? 'text-black' : 'text-gray-400'}`}
+                className={`flex flex-col items-center justify-center gap-0.5 w-16 py-1.5 transition-colors ${active ? "text-black" : "text-gray-400"}`}
               >
                 <div className="relative">
                   <item.icon size={20} strokeWidth={active ? 2.5 : 1.8} />
                   {item.badge > 0 && (
                     <span className="absolute -top-1.5 -right-2.5 min-w-4 h-4 px-1 bg-black text-white text-[9px] font-bold rounded-full flex items-center justify-center">
-                      {item.badge > 99 ? '99+' : item.badge}
+                      {item.badge > 99 ? "99+" : item.badge}
                     </span>
                   )}
                 </div>
                 <span
-                  className={`text-[10px] ${active ? 'font-bold' : 'font-medium'}`}
+                  className={`text-[10px] ${active ? "font-bold" : "font-medium"}`}
                 >
                   {item.label}
                 </span>

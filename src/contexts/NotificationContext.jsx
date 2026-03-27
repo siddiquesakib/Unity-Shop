@@ -3,9 +3,10 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 import { useSocket } from "@/contexts/SocketContext";
 import { useAuth } from "@/hooks/useAuth";
 import axios from "axios";
-import toast from "react-hot-toast";
 
 const NotificationContext = createContext();
+const DEBUG_NOTIFICATIONS =
+  process.env.NEXT_PUBLIC_DEBUG_NOTIFICATIONS === "true";
 
 export const useNotifications = () => {
   return useContext(NotificationContext);
@@ -77,6 +78,35 @@ export const NotificationProvider = ({ children }) => {
   useEffect(() => {
     if (!socket) return;
 
+    if (DEBUG_NOTIFICATIONS) {
+      console.log("[NotificationContext] Socket listener attached", {
+        connected: socket.connected,
+        socketId: socket.id,
+        userEmail: user?.email,
+      });
+    }
+
+    const handleConnect = () => {
+      if (DEBUG_NOTIFICATIONS) {
+        console.log("[NotificationContext] Socket connected", {
+          socketId: socket.id,
+          userEmail: user?.email,
+        });
+      }
+
+      // Re-sync on reconnect in case events were missed while offline.
+      fetchNotifications();
+    };
+
+    const handleDisconnect = (reason) => {
+      if (DEBUG_NOTIFICATIONS) {
+        console.log("[NotificationContext] Socket disconnected", {
+          reason,
+          userEmail: user?.email,
+        });
+      }
+    };
+
     const handleNotification = (newNotification) => {
       // Optimistically add to state
       console.log("Context received notification:", newNotification);
@@ -93,12 +123,32 @@ export const NotificationProvider = ({ children }) => {
       setUnreadCount((prev) => (prev || 0) + 1);
     };
 
+    const handleNegotiationStatusUpdate = (payload) => {
+      if (DEBUG_NOTIFICATIONS) {
+        console.log(
+          "[NotificationContext] negotiation_status_updated",
+          payload,
+        );
+      }
+
+      // Safety net: ensure bell count/list matches DB even if one emit was missed.
+      fetchNotifications();
+    };
+
+    socket.on("connect", handleConnect);
+    socket.on("disconnect", handleDisconnect);
+
     socket.on("notification", handleNotification);
+    socket.on("negotiation_status_updated", handleNegotiationStatusUpdate);
 
     return () => {
+      socket.off("connect", handleConnect);
+      socket.off("disconnect", handleDisconnect);
       socket.off("notification", handleNotification);
+      socket.off("negotiation_status_updated", handleNegotiationStatusUpdate);
     };
-  }, [socket]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [socket, user?.email]);
 
   // ─── Mark a single notification as read ──────────────────────────────────────────
   const markAsRead = async (id) => {

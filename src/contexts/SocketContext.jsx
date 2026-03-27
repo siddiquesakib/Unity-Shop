@@ -4,6 +4,8 @@ import { io } from "socket.io-client";
 import { useSession } from "next-auth/react";
 
 const SocketContext = createContext();
+const DEBUG_NOTIFICATIONS =
+  process.env.NEXT_PUBLIC_DEBUG_NOTIFICATIONS === "true";
 
 export const useSocket = () => {
   return useContext(SocketContext);
@@ -36,7 +38,25 @@ export const SocketProvider = ({ children }) => {
           console.log("Joining room:", session.user._id);
           newSocket.emit("join", session.user._id);
         }
+
+        if (session?.user?.id) {
+          console.log("Joining room:", session.user.id);
+          newSocket.emit("join", session.user.id);
+        }
       });
+
+      if (DEBUG_NOTIFICATIONS) {
+        newSocket.on("notification", (payload) => {
+          console.log("[SocketContext] notification event", payload);
+        });
+
+        newSocket.on("negotiation_status_updated", (payload) => {
+          console.log(
+            "[SocketContext] negotiation_status_updated event",
+            payload,
+          );
+        });
+      }
 
       newSocket.on("connect_error", (err) => {
         console.error("Socket connection error:", err);
