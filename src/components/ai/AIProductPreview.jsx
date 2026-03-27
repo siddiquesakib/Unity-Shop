@@ -1,10 +1,8 @@
 "use client";
 // src/components/ai/AIProductPreview.jsx
 
-
 import { useAuth } from "@/hooks/useAuth";
 // src/components/ai/AIProductPreview.jsx
-
 
 import { useState, useRef } from "react";
 import Image from "next/image";
@@ -44,7 +42,9 @@ import {
  */
 
 const AIProductPreview = ({ onImageGenerated, existingImages = [] }) => {
+  const { token } = useAuth();
   const [originalImage, setOriginalImage] = useState(null);
+  const [originalFile, setOriginalFile] = useState(null);
   const [enhancedImage, setEnhancedImage] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -103,6 +103,7 @@ const AIProductPreview = ({ onImageGenerated, existingImages = [] }) => {
     const reader = new FileReader();
     reader.onload = (event) => {
       setOriginalImage(event.target.result);
+      setOriginalFile(file);
       setEnhancedImage(null);
       setError(null);
     };
@@ -111,20 +112,26 @@ const AIProductPreview = ({ onImageGenerated, existingImages = [] }) => {
 
   // Enhance image with AI
   const handleEnhance = async () => {
-    if (!originalImage) return;
+    if (!originalFile) return;
 
     setLoading(true);
     setError(null);
 
     try {
       // Call AI API
+      const formData = new FormData();
+      formData.append("image", originalFile);
+      formData.append("style", selectedStyle);
+
+      const headers = {};
+      if (token) {
+        headers.Authorization = `Bearer ${token}`;
+      }
+
       const response = await fetch("/api/ai/enhance-product-image", {
         method: "POST",
-        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
-        body: JSON.stringify({
-          image: originalImage,
-          style: selectedStyle,
-        }),
+        headers,
+        body: formData,
       });
 
       const data = await response.json();
@@ -150,6 +157,7 @@ const AIProductPreview = ({ onImageGenerated, existingImages = [] }) => {
       setIsOpen(false);
       // Reset state
       setOriginalImage(null);
+      setOriginalFile(null);
       setEnhancedImage(null);
       setShowComparison(false);
     }
@@ -260,6 +268,7 @@ const AIProductPreview = ({ onImageGenerated, existingImages = [] }) => {
                       <button
                         onClick={() => {
                           setOriginalImage(null);
+                          setOriginalFile(null);
                           setEnhancedImage(null);
                           setShowComparison(false);
                         }}
