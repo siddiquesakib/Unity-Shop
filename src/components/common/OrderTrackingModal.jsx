@@ -1,7 +1,7 @@
 // components/dashboard/OrderTrackingModal.jsx
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   X,
@@ -15,7 +15,6 @@ import {
   RefreshCw,
 } from 'lucide-react';
 import { getOrderStatusLabel, normalizeToWorkflowStatus } from '@/utils/orderLifecycle';
-import { useSocket } from '@/contexts/SocketContext';
 
 const API_BASE =
   process.env.NEXT_PUBLIC_API_URL || 'https://unity-shop-server.vercel.app';
@@ -110,7 +109,6 @@ function formatDateShort(dateStr) {
 }
 
 export default function OrderTrackingModal({ orderId, onClose }) {
-  const socket = useSocket();
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -118,7 +116,7 @@ export default function OrderTrackingModal({ orderId, onClose }) {
   const getToken = () =>
     typeof window !== 'undefined' ? localStorage.getItem('token') : null;
 
-  const fetchOrder = useCallback(async () => {
+  const fetchOrder = async () => {
     setLoading(true);
     setError(null);
     try {
@@ -146,27 +144,11 @@ export default function OrderTrackingModal({ orderId, onClose }) {
     } finally {
       setLoading(false);
     }
-  }, [orderId]);
+  };
 
   useEffect(() => {
     if (orderId) fetchOrder();
-  }, [orderId, fetchOrder]);
-
-  useEffect(() => {
-    if (!socket || !orderId) return;
-
-    const handleTrackingUpdate = (payload) => {
-      const updatedOrderId = String(payload?.orderId || '');
-      if (updatedOrderId && updatedOrderId === String(orderId)) {
-        fetchOrder();
-      }
-    };
-
-    socket.on('orderTrackingUpdated', handleTrackingUpdate);
-    return () => {
-      socket.off('orderTrackingUpdated', handleTrackingUpdate);
-    };
-  }, [socket, orderId, fetchOrder]);
+  }, [orderId]);
 
   const isCancelled = normalizeToWorkflowStatus(order?.workflowStatus || order?.status) === 'cancelled';
   const currentStepIndex = isCancelled

@@ -75,10 +75,10 @@ export function CartProvider({ children }) {
                     name: item.sellerName || "UnityShop Seller",
                     email: item.sellerEmail || "",
                     verified: item.sellerVerified || false,
-                  },
+                  }
                   items: [],
                 };
-              }
+              }, [user, hydrated, getAuthToken]);
               groups[sellerId].items.push({
                 id: `${item.productId}-${sellerId}`,
                 productId: item.productId,

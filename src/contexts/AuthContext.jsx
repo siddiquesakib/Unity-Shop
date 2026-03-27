@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import { signIn, signOut, useSession } from 'next-auth/react';
 
 const AuthContext = createContext();
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
@@ -14,13 +13,6 @@ export const AuthProvider = ({ children }) => {
 
   const router = useRouter();
   const { data: session, status, update } = useSession();
-
-  const resolveAuthToken = () => {
-    if (token) return token;
-    if (session?.backendToken) return session.backendToken;
-    if (typeof window !== 'undefined') return localStorage.getItem('token');
-    return null;
-  };
 
   // ✅ Sync user state with NextAuth session
   useEffect(() => {
@@ -63,7 +55,7 @@ export const AuthProvider = ({ children }) => {
     const syncLocation = async () => {
       try {
         const res = await fetch(
-          `${API_BASE}/users/location/active`,
+          `${process.env.NEXT_PUBLIC_API_URL}/users/location/active`,
           {
             headers: {
               Authorization: `Bearer ${session.backendToken}`,
@@ -134,7 +126,7 @@ export const AuthProvider = ({ children }) => {
   const register = async (name, email, password, location = null) => {
     try {
       const res = await fetch(
-        `${API_BASE}/auth/register`,
+        `${process.env.NEXT_PUBLIC_API_URL}/auth/register`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -162,20 +154,18 @@ export const AuthProvider = ({ children }) => {
   };
 
   const updateActiveLocation = async ({ country, city, source = 'navbar' }) => {
-    const authToken = resolveAuthToken();
-
-    if (!authToken) {
+    if (!token) {
       return { success: false, error: 'Please log in again' };
     }
 
     try {
       const res = await fetch(
-        `${API_BASE}/users/location/active`,
+        `${process.env.NEXT_PUBLIC_API_URL}/users/location/active`,
         {
           method: 'PATCH',
           headers: {
             'Content-Type': 'application/json',
-            Authorization: `Bearer ${authToken}`,
+            Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({ country, city, source }),
         },
@@ -224,7 +214,7 @@ export const AuthProvider = ({ children }) => {
 
     try {
       const res = await fetch(
-        `${API_BASE}/seller-requests`,
+        `${process.env.NEXT_PUBLIC_API_URL}/seller-requests`,
         {
           method: 'POST',
           headers: {
@@ -264,7 +254,7 @@ export const AuthProvider = ({ children }) => {
 
     try {
       const res = await fetch(
-        `${API_BASE}/users/profile/${user.email}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/users/profile/${user.email}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,

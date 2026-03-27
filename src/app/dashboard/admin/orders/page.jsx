@@ -95,7 +95,7 @@ function StatusDropdown({ order, onStatusChange, updating }) {
       {open && (
         <>
           <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} />
-          <div className="absolute left-0 top-full mt-1 z-20 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden min-w-36">
+          <div className="absolute left-0 top-full mt-1 z-20 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden min-w-[150px]">
             {STATUS_STEPS.map((status) => (
               <button
                 key={status}
@@ -364,14 +364,14 @@ export default function AdminOrdersPage() {
               <div className="space-y-2 mb-6">
                 {deliveryMen.length === 0 ? (
                   <p className="text-sm text-red-500">
-                    No delivery personnel found. Create a user with &apos;delivery&apos;
+                    No delivery personnel found. Create a user with 'delivery'
                     role first.
                   </p>
                 ) : (
                   deliveryMen.map((man) => (
                     <label
                       key={man._id}
-                      className="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-gray-50 transition-colors has-checked:bg-blue-50 has-checked:border-blue-200"
+                      className="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-gray-50 transition-colors has-[:checked]:bg-blue-50 has-[:checked]:border-blue-200"
                     >
                       <input
                         type="radio"
@@ -508,7 +508,7 @@ export default function AdminOrdersPage() {
                       </span>
                     </td>
                     <td className="py-4">
-                      <span className="text-sm text-gray-700 truncate max-w-40 block">
+                      <span className="text-sm text-gray-700 truncate max-w-[160px] block">
                         {order.cartItems
                           ? `${order.cartItems.length} items`
                           : order.productName || "Order"}

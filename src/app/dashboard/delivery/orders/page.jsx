@@ -1,6 +1,6 @@
 "use client";
 import { useAuth } from "@/hooks/useAuth";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Truck, MapPin, CheckCircle, Clock, Route } from "lucide-react";
 import { toast } from "react-hot-toast";
 import { getOrderStatusLabel, normalizeToWorkflowStatus } from "@/utils/orderLifecycle";
@@ -19,7 +19,7 @@ export default function DeliveryOrders() {
   const [loading, setLoading] = useState(true);
   const [updatingId, setUpdatingId] = useState("");
 
-  const fetchOrders = useCallback(async () => {
+  const fetchOrders = async () => {
     if (!user?._id) return;
     const token = getToken();
     if (!token) return;
@@ -41,11 +41,11 @@ export default function DeliveryOrders() {
     } finally {
       setLoading(false);
     }
-  }, [user?._id]);
+  };
 
   useEffect(() => {
     fetchOrders();
-  }, [fetchOrders]);
+  }, [user?._id]);
 
   const updateStatus = async (orderId, newStatus) => {
     setUpdatingId(orderId);
