@@ -5,6 +5,8 @@ import { useSession } from "next-auth/react";
 import { useAuth } from "@/hooks/useAuth";
 
 const SocketContext = createContext();
+const DEBUG_NOTIFICATIONS =
+  process.env.NEXT_PUBLIC_DEBUG_NOTIFICATIONS === "true";
 
 export const useSocket = () => {
   return useContext(SocketContext);
