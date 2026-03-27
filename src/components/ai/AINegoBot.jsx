@@ -1,8 +1,11 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
+import { useSocket } from "@/contexts/SocketContext";
+import { useCart } from "@/contexts/CartContext";
 import {
   FiMessageCircle,
   FiX,
@@ -11,16 +14,107 @@ import {
   FiAlertCircle,
   FiCheck,
   FiLoader,
+  FiShoppingCart,
 } from "react-icons/fi";
 
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+const DEBUG_NEGOTIATION = process.env.NEXT_PUBLIC_DEBUG_NEGOTIATION === "true";
+
+const statusToChatMessage = {
+  accepted: "Seller accepted your offer! You can proceed to checkout.",
+  rejected: "Seller declined this offer. You can submit a new offer.",
+};
+
+const normalizeObjectId = (value) => {
+  if (!value) return null;
+  if (typeof value === "string") return value;
+  if (typeof value === "object") {
+    if (typeof value.$oid === "string") return value.$oid;
+    if (typeof value.toString === "function") {
+      const stringified = value.toString();
+      if (stringified && stringified !== "[object Object]") return stringified;
+    }
+  }
+  return null;
+};
+
 const AINegoBot = ({ product, sellerId }) => {
-  const { user } = useAuth();
+  const { user, token } = useAuth();
+  const socket = useSocket();
+  const router = useRouter();
+  const { addToCart, cartGroups, removeItem } = useCart();
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [negotiationStatus, setNegotiationStatus] = useState(null);
+  const [negotiationData, setNegotiationData] = useState(null);
   const chatEndRef = useRef(null);
+  const lastStatusRef = useRef(null);
+
+  const acceptedOfferPrice =
+    negotiationStatus === "accepted" &&
+    Number.isFinite(Number(negotiationData?.offerPrice))
+      ? Number(negotiationData.offerPrice)
+      : null;
+
+  const appendStatusMessage = useCallback((status, overrideMessage) => {
+    if (!status || status === "pending") return;
+    const content = overrideMessage || statusToChatMessage[status];
+    if (!content) return;
+    setMessages((prev) => {
+      const alreadyAdded = prev.some(
+        (msg) =>
+          msg?.metaType === "negotiation_status" && msg?.status === status,
+      );
+      if (alreadyAdded) return prev;
+      return [
+        ...prev,
+        {
+          role: "assistant",
+          content,
+          timestamp: new Date(),
+          metaType: "negotiation_status",
+          status,
+        },
+      ];
+    });
+  }, []);
+
+  const fetchNegotiationStatus = useCallback(async () => {
+    if (!product?._id || !user?._id || !token) return;
+
+    try {
+      const url = `${API_BASE}/api/negotiations/user-product?productId=${product._id}&buyerId=${user._id}`;
+      const res = await fetch(url, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (!res.ok) return;
+
+      const data = await res.json();
+      if (DEBUG_NEGOTIATION) {
+        console.log("📡 Fetched negotiation data:", data);
+      }
+      setNegotiationData(data || null);
+      if (!data?.status) return;
+
+      setNegotiationStatus(data.status);
+
+      const latestSystemStatusMessage = [...(data.messages || [])]
+        .reverse()
+        .find((m) => m?.system && typeof m.message === "string");
+
+      if (data.status !== lastStatusRef.current) {
+        appendStatusMessage(data.status, latestSystemStatusMessage?.message);
+        lastStatusRef.current = data.status;
+      }
+    } catch (err) {
+      if (DEBUG_NEGOTIATION) {
+        console.error("Failed to fetch negotiation status:", err);
+      }
+    }
+  }, [appendStatusMessage, product?._id, user?._id, token]);
 
   // Initialize welcome message
   useEffect(() => {
@@ -35,6 +129,75 @@ const AINegoBot = ({ product, sellerId }) => {
     }
   }, [isOpen, messages.length, product]);
 
+  // Fetch existing negotiation status when modal opens
+  useEffect(() => {
+    if (!isOpen) return;
+    fetchNegotiationStatus();
+  }, [fetchNegotiationStatus, isOpen]);
+
+  // Poll for status only in debug mode.
+  useEffect(() => {
+    if (!isOpen || !DEBUG_NEGOTIATION) return;
+    const interval = setInterval(() => {
+      fetchNegotiationStatus();
+    }, 10000);
+    return () => clearInterval(interval);
+  }, [fetchNegotiationStatus, isOpen]);
+
+  // Real-time updates
+  useEffect(() => {
+    if (!socket || !isOpen || !product?._id) return;
+
+    const productId = normalizeObjectId(product._id);
+
+    const handleNegotiationStatusEvent = (payload) => {
+      const payloadProductId = normalizeObjectId(payload?.productId);
+      if (!payloadProductId || payloadProductId !== productId) return;
+      if (!payload?.status) return;
+      setNegotiationStatus(payload.status);
+      setNegotiationData((prev) => ({
+        ...(prev || {}),
+        status: payload.status,
+        offerPrice: payload.offerPrice ?? prev?.offerPrice,
+        updatedAt: payload.updatedAt || new Date().toISOString(),
+      }));
+      if (payload.status !== lastStatusRef.current) {
+        appendStatusMessage(payload.status, payload.message);
+        lastStatusRef.current = payload.status;
+      }
+    };
+
+    const handleNotificationEvent = (notification) => {
+      if (!["offer_accepted", "offer_rejected"].includes(notification?.type))
+        return;
+      const notifProductId = normalizeObjectId(notification?.meta?.productId);
+      if (notifProductId && notifProductId !== productId) return;
+      const nextStatus =
+        notification.type === "offer_accepted" ? "accepted" : "rejected";
+      setNegotiationStatus(nextStatus);
+      setNegotiationData((prev) => ({ ...(prev || {}), status: nextStatus }));
+      if (nextStatus !== lastStatusRef.current) {
+        appendStatusMessage(nextStatus, notification.message);
+        lastStatusRef.current = nextStatus;
+      }
+      fetchNegotiationStatus(); // pull latest to get offerPrice
+    };
+
+    socket.on("negotiation_status_updated", handleNegotiationStatusEvent);
+    socket.on("notification", handleNotificationEvent);
+
+    return () => {
+      socket.off("negotiation_status_updated", handleNegotiationStatusEvent);
+      socket.off("notification", handleNotificationEvent);
+    };
+  }, [
+    appendStatusMessage,
+    fetchNegotiationStatus,
+    isOpen,
+    product?._id,
+    socket,
+  ]);
+
   // Auto-scroll
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -47,9 +210,7 @@ const AINegoBot = ({ product, sellerId }) => {
     } else {
       document.body.style.overflow = "";
     }
-    return () => {
-      document.body.style.overflow = "";
-    };
+    return () => (document.body.style.overflow = "");
   }, [isOpen]);
 
   const handleSendMessage = async () => {
@@ -60,7 +221,6 @@ const AINegoBot = ({ product, sellerId }) => {
       content: input,
       timestamp: new Date(),
     };
-
     setMessages((prev) => [...prev, userMessage]);
     setInput("");
     setLoading(true);
@@ -79,9 +239,7 @@ const AINegoBot = ({ product, sellerId }) => {
           sellerId,
         }),
       });
-
       const data = await response.json();
-
       if (data.success) {
         setMessages((prev) => [
           ...prev,
@@ -93,9 +251,9 @@ const AINegoBot = ({ product, sellerId }) => {
             offerPrice: data.offerPrice,
           },
         ]);
-
         if (data.offerSent) {
           setNegotiationStatus("pending");
+          lastStatusRef.current = "pending";
         }
       } else {
         throw new Error(data.error || "Failed to process");
@@ -114,6 +272,37 @@ const AINegoBot = ({ product, sellerId }) => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleBuyNow = () => {
+    if (!acceptedOfferPrice || !Number.isFinite(acceptedOfferPrice)) return;
+
+    const sellerKey = product.sellerId || product.sellerName || "general";
+    const sellerName = product.sellerName || "UnityShop Seller";
+    const productId = product._id || product.id;
+    const productImage = Array.isArray(product.image)
+      ? product.image[0] || ""
+      : product.image || "";
+
+    const existingItems = (cartGroups || []).flatMap((group) => group.items);
+    existingItems
+      .filter((item) => item.productId === productId)
+      .filter((item) => Number(item.price) !== Number(acceptedOfferPrice))
+      .forEach((item) => removeItem(item.id));
+
+    addToCart(
+      {
+        ...product,
+        image: productImage,
+        sellerId: sellerKey,
+        sellerName,
+      },
+      1,
+      acceptedOfferPrice,
+    );
+
+    setIsOpen(false);
+    router.push("/cart");
   };
 
   if (!user) return null;
@@ -135,7 +324,7 @@ const AINegoBot = ({ product, sellerId }) => {
       {isOpen &&
         createPortal(
           <div
-            className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm"
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center"
             onClick={() => setIsOpen(false)}
           >
             <div
@@ -178,6 +367,16 @@ const AINegoBot = ({ product, sellerId }) => {
                     </div>
                   </div>
                 </div>
+
+                {DEBUG_NEGOTIATION && (
+                  <button
+                    onClick={fetchNegotiationStatus}
+                    className="mt-3 text-[10px] text-purple-100 underline hover:text-white"
+                    type="button"
+                  >
+                    Check Status
+                  </button>
+                )}
               </div>
 
               {/* Status Banner */}
@@ -214,6 +413,20 @@ const AINegoBot = ({ product, sellerId }) => {
                 </div>
               )}
 
+              {/* Buy Now Button for Accepted Offers */}
+              {negotiationStatus === "accepted" && acceptedOfferPrice && (
+                <div className="px-5 py-3 border-b border-green-200 bg-green-50/70">
+                  <button
+                    type="button"
+                    onClick={handleBuyNow}
+                    className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-green-600 text-white text-sm font-semibold hover:bg-green-700 transition-colors"
+                  >
+                    <FiShoppingCart size={16} />
+                    Buy Now at ${acceptedOfferPrice}
+                  </button>
+                </div>
+              )}
+
               {/* Chat Messages */}
               <div className="flex-1 overflow-y-auto p-5 space-y-4 bg-gray-50">
                 {messages.map((msg, idx) => (
@@ -233,7 +446,6 @@ const AINegoBot = ({ product, sellerId }) => {
                       }`}
                     >
                       <p className="text-sm leading-relaxed">{msg.content}</p>
-
                       {msg.suggestion && (
                         <div className="mt-3 p-3 bg-purple-50 border border-purple-200 rounded-xl">
                           <div className="flex items-start gap-2">
@@ -258,9 +470,8 @@ const AINegoBot = ({ product, sellerId }) => {
                           </div>
                         </div>
                       )}
-
                       <p className="text-[10px] mt-2 opacity-70">
-                        {msg.timestamp.toLocaleTimeString([], {
+                        {new Date(msg.timestamp).toLocaleTimeString([], {
                           hour: "2-digit",
                           minute: "2-digit",
                         })}
@@ -286,7 +497,6 @@ const AINegoBot = ({ product, sellerId }) => {
                     </div>
                   </div>
                 )}
-
                 <div ref={chatEndRef} />
               </div>
 
@@ -298,8 +508,8 @@ const AINegoBot = ({ product, sellerId }) => {
                     size={14}
                   />
                   <p className="text-xs text-blue-700">
-                    Your offer will be sent to the seller for review. You'll be
-                    notified of their response.
+                    Your offer will be sent to the seller for review.
+                    You&apos;ll be notified of their response.
                   </p>
                 </div>
               </div>

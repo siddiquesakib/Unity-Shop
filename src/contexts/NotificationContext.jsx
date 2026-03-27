@@ -1,11 +1,18 @@
 "use client";
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useCallback,
+} from "react";
 import { useSocket } from "@/contexts/SocketContext";
 import { useAuth } from "@/hooks/useAuth";
 import axios from "axios";
-import toast from "react-hot-toast";
 
 const NotificationContext = createContext();
+const DEBUG_NOTIFICATIONS =
+  process.env.NEXT_PUBLIC_DEBUG_NOTIFICATIONS === "true";
 
 export const useNotifications = () => {
   return useContext(NotificationContext);
@@ -21,7 +28,7 @@ export const NotificationProvider = ({ children }) => {
   const [loading, setLoading] = useState(false);
 
   // Fetch notifications from API
-  const fetchNotifications = async () => {
+  const fetchNotifications = useCallback(async () => {
     if (!user?.email) return;
     try {
       setLoading(true);
@@ -30,24 +37,17 @@ export const NotificationProvider = ({ children }) => {
       );
       if (Array.isArray(res.data)) {
         setNotifications((prev) => {
-          // Merge: combine fetch results with any very new notifications we might have received via socket
-          // Note: This is tricky. simpler to just set, but let's try to be smart.
-          // Usually fetch is authoritative for history.
-          // But if we received a notification via socket while fetching, we should keep it.
-          // Since socket is mostly for "new" stuff.
-          // A simple strategy: check if the first item in prev is NEWER than first item in res.
-          // Or just prefer socket data if it has ID?
-          // Actually, simplest fix: just trust fetch?
-          // No, race condition exists.
-          // Let's just blindly push? No duplicates?
+          // Merge: combine fetch results with any very new notifications we might have received via socket.
           const fetched = res.data;
-          const existingIds = new Set(fetched.map((n) => n._id));
-          const news = prev.filter((n) => !existingIds.has(n._id));
+          const existingIds = new Set(
+            fetched.map((n) => n?._id?.toString?.() || n?._id),
+          );
+          const news = prev.filter(
+            (n) => !existingIds.has(n?._id?.toString?.() || n?._id),
+          );
           const combined = [...news, ...fetched];
 
-          // Calculate unread count synchronously based on new state.
-          // Since we are inside setNotifications, we shouldn't really call another setState.
-          // But we can defer it.
+          // Defer unread count update to avoid nested state updates.
           setTimeout(() => {
             setUnreadCount(combined.filter((n) => !n.read).length);
           }, 0);
@@ -60,7 +60,7 @@ export const NotificationProvider = ({ children }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user?.email]);
 
   // Initial fetch when user logs in
   useEffect(() => {
@@ -77,28 +77,88 @@ export const NotificationProvider = ({ children }) => {
   useEffect(() => {
     if (!socket) return;
 
+    if (DEBUG_NOTIFICATIONS) {
+      console.log("[NotificationContext] Socket listener attached", {
+        connected: socket.connected,
+        socketId: socket.id,
+        userEmail: user?.email,
+      });
+    }
+
+    const handleConnect = () => {
+      if (DEBUG_NOTIFICATIONS) {
+        console.log("[NotificationContext] Socket connected", {
+          socketId: socket.id,
+          userEmail: user?.email,
+        });
+      }
+
+      // Re-sync on reconnect in case events were missed while offline.
+      fetchNotifications();
+    };
+
+    const handleDisconnect = (reason) => {
+      if (DEBUG_NOTIFICATIONS) {
+        console.log("[NotificationContext] Socket disconnected", {
+          reason,
+          userEmail: user?.email,
+        });
+      }
+    };
+
     const handleNotification = (newNotification) => {
-      // Optimistically add to state
-      console.log("Context received notification:", newNotification);
+      if (DEBUG_NOTIFICATIONS) {
+        console.log("Context received notification:", newNotification);
+      }
+
+      const incomingEmail = newNotification?.email?.toLowerCase?.();
+      const userEmail = user?.email?.toLowerCase?.();
+      if (incomingEmail && userEmail && incomingEmail !== userEmail) {
+        return;
+      }
+
       setNotifications((prev) => {
         const list = Array.isArray(prev) ? prev : [];
-        // Prevent duplicate based on _id if it exists
-        if (
-          newNotification._id &&
-          list.some((n) => n._id === newNotification._id)
-        )
+        const incomingId = newNotification?._id?.toString?.();
+        const isDuplicate = incomingId
+          ? list.some((n) => n?._id?.toString?.() === incomingId)
+          : false;
+
+        if (isDuplicate) {
           return list;
+        }
+
+        setUnreadCount((count) => (count || 0) + 1);
         return [newNotification, ...list];
       });
-      setUnreadCount((prev) => (prev || 0) + 1);
     };
+
+    const handleNegotiationStatusUpdate = (payload) => {
+      if (DEBUG_NOTIFICATIONS) {
+        console.log(
+          "[NotificationContext] negotiation_status_updated",
+          payload,
+        );
+      }
+
+      // Safety net: ensure bell count/list matches DB even if one emit was missed.
+      fetchNotifications();
+    };
+
+    socket.on("connect", handleConnect);
+    socket.on("disconnect", handleDisconnect);
 
     socket.on("notification", handleNotification);
+    socket.on("negotiation_status_updated", handleNegotiationStatusUpdate);
 
     return () => {
+      socket.off("connect", handleConnect);
+      socket.off("disconnect", handleDisconnect);
       socket.off("notification", handleNotification);
+      socket.off("negotiation_status_updated", handleNegotiationStatusUpdate);
     };
-  }, [socket]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [socket, user?.email]);
 
   // ─── Mark a single notification as read ──────────────────────────────────────────
   const markAsRead = async (id) => {
