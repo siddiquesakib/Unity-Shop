@@ -194,7 +194,7 @@ const teamMembers = [
     location: 'Rajshahi, Bangladesh',
     skills: ['API', 'SQL'],
     social: {
-      portfolio: '#',
+      portfolio: 'https://arifulislam.iam.bd',
       linkedin: 'https://www.linkedin.com/in/arifulislam-dev',
       github: 'https://github.com/ArifulIslam016',
       email: 'arifulq234@gmail.com',
