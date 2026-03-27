@@ -4,11 +4,19 @@ import sharp from "sharp";
 export async function POST(request) {
   try {
     // No authentication required
-    const { image, style } = await request.json();
+    const formData = await request.formData();
+    const file = formData.get("image");
+    const style = formData.get("style");
 
-    // Convert base64 to buffer
-    const base64Data = image.replace(/^data:image\/\w+;base64,/, "");
-    const buffer = Buffer.from(base64Data, "base64");
+    if (!file || typeof file === "string") {
+      return NextResponse.json(
+        { success: false, error: "No image uploaded" },
+        { status: 400 },
+      );
+    }
+
+    const arrayBuffer = await file.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
 
     // Apply enhancements based on style
     let enhancedBuffer;
