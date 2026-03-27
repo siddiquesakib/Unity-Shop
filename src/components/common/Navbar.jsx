@@ -38,9 +38,10 @@ import {
   FiTrash2,
   FiMic,
   FiLayers,
-} from "react-icons/fi";
-import CustomLanguageSwitcher from "@/components/CustomLanguageSwitcher";
-import VoiceSearch from "../search/VoiceSearch";
+} from 'react-icons/fi';
+import CustomLanguageSwitcher from '@/components/CustomLanguageSwitcher';
+import VoiceSearch from '../search/VoiceSearch';
+import { COUNTRY_OPTIONS, getCityOptions } from '@/lib/locationData';
 
 // ─── Time ago helper ────────────────────────────────────────────────────────
 function timeAgo(date) {
@@ -190,7 +191,8 @@ const categoryChips = [
   { label: "অটো", labelEn: "Automotive", value: "Automotive", icon: "🚗" },
 ];
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+const ACTIVE_LOCATION_CACHE_KEY = 'activeLocation';
 
 // ─── Autocomplete Search Hook ───────────────────────────────────────────────
 function useAutocomplete(query) {
@@ -238,8 +240,14 @@ const Navbar = () => {
   const [showMobileSearch, setShowMobileSearch] = useState(false);
   const [showAutocomplete, setShowAutocomplete] = useState(false);
   const [isListening, setIsListening] = useState(false);
+  const [showLocationMenu, setShowLocationMenu] = useState(false);
+  const [selectedCountry, setSelectedCountry] = useState('');
+  const [selectedCity, setSelectedCity] = useState('');
+  const [savingLocation, setSavingLocation] = useState(false);
+  const [locationError, setLocationError] = useState('');
+  const [locationNotice, setLocationNotice] = useState('');
 
-  const { user, logout } = useAuth();
+  const { user, logout, updateActiveLocation } = useAuth();
   const { totalUniqueItems: totalItems } = useCart();
   const { currency, setCurrency, currencies, currentCurrency } = useCurrency();
   const { language, setLanguage, t, languages } = useLanguage();
@@ -263,12 +271,59 @@ const Navbar = () => {
   const searchRef = useRef(null);
   const mobileSearchRef = useRef(null);
   const searchCatMenuRef = useRef(null);
+  const locationMenuRef = useRef(null);
 
   useClickOutside(userMenuRef, () => setShowUserMenu(false));
   useClickOutside(currencyMenuRef, () => setShowCurrencyMenu(false));
   useClickOutside(notifRef, () => setShowNotifications(false));
   useClickOutside(searchRef, () => setShowAutocomplete(false));
   useClickOutside(searchCatMenuRef, () => setShowSearchCatMenu(false));
+  useClickOutside(locationMenuRef, () => setShowLocationMenu(false));
+
+  const activeLocation = user?.activeLocation || null;
+  const activeCountry = activeLocation?.country || '';
+  const activeCity = activeLocation?.city || '';
+
+  useEffect(() => {
+    if (!user) {
+      setSelectedCountry('');
+      setSelectedCity('');
+      return;
+    }
+
+    if (activeCountry) {
+      setSelectedCountry(activeCountry);
+      setSelectedCity(activeCity || '');
+      if (typeof window !== 'undefined') {
+        localStorage.setItem(
+          ACTIVE_LOCATION_CACHE_KEY,
+          JSON.stringify({ country: activeCountry, city: activeCity || '' }),
+        );
+      }
+      return;
+    }
+
+    if (typeof window !== 'undefined') {
+      try {
+        const cached = localStorage.getItem(ACTIVE_LOCATION_CACHE_KEY);
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          if (parsed?.country) {
+            setSelectedCountry(parsed.country);
+            setSelectedCity(parsed.city || '');
+          }
+        }
+      } catch {
+        // Ignore malformed cache.
+      }
+    }
+  }, [user, activeCountry, activeCity]);
+
+  useEffect(() => {
+    if (user?.needsLocationSelection) {
+      setShowLocationMenu(true);
+    }
+  }, [user?.needsLocationSelection]);
 
   useEffect(() => {
     document.body.style.overflow = isOpen || showMobileSearch ? "hidden" : "";
@@ -302,7 +357,48 @@ const Navbar = () => {
     return `৳${price?.toLocaleString() || 0}`;
   };
 
-  const getSafeImage = (product) => {
+  const locationLabel = activeCountry && activeCity
+    ? `${activeCity}, ${activeCountry}`
+    : 'Set location';
+
+  const handleSaveLocation = async () => {
+    if (!selectedCountry || !selectedCity) {
+      setLocationError('Select both country and city');
+      return;
+    }
+
+    setSavingLocation(true);
+    setLocationError('');
+    setLocationNotice('');
+
+    const result = await updateActiveLocation({
+      country: selectedCountry,
+      city: selectedCity,
+      source: 'navbar-picker',
+    });
+
+    if (!result.success) {
+      setLocationError(result.error || 'Failed to save location');
+      setSavingLocation(false);
+      return;
+    }
+
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(
+        ACTIVE_LOCATION_CACHE_KEY,
+        JSON.stringify({ country: selectedCountry, city: selectedCity }),
+      );
+    }
+
+    setLocationNotice('Location updated');
+    setSavingLocation(false);
+    setTimeout(() => {
+      setShowLocationMenu(false);
+      setLocationNotice('');
+    }, 700);
+  };
+
+  const getSafeImage = product => {
     const img = Array.isArray(product.image) ? product.image[0] : product.image;
     if (
       img &&
@@ -818,6 +914,81 @@ const Navbar = () => {
 
               {/* Right: Currency */}
               <div className="flex items-center h-full">
+                {user && (
+                  <div className="relative h-full flex items-center" ref={locationMenuRef}>
+                    <button
+                      type="button"
+                      onClick={() => setShowLocationMenu(prev => !prev)}
+                      className="relative h-full px-4 flex items-center gap-2 text-sm font-bold text-black hover:text-black transition-colors cursor-pointer"
+                    >
+                      <FiMapPin size={14} />
+                      <span className="max-w-[150px] truncate">{locationLabel}</span>
+                      <FiChevronDown size={14} className={`transition-transform ${showLocationMenu ? 'rotate-180' : ''}`} />
+                      {user?.needsLocationSelection && (
+                        <span className="w-2 h-2 rounded-full bg-red-500" />
+                      )}
+                      <span className="absolute bottom-[6px] left-4 right-4 h-[2px] bg-black transition-transform duration-300 origin-left scale-x-0 hover:scale-x-100"></span>
+                    </button>
+
+                    {showLocationMenu && (
+                      <div className="absolute top-full right-0 mt-1 w-72 bg-black shadow-2xl border border-gray-800 rounded-md z-50 overflow-hidden p-4 space-y-3">
+                        <p className="text-xs text-gray-300 font-semibold uppercase tracking-wide">Delivery Location</p>
+                        <select
+                          value={selectedCountry}
+                          onChange={e => {
+                            const nextCountry = e.target.value;
+                            setSelectedCountry(nextCountry);
+                            const cities = getCityOptions(nextCountry);
+                            if (!cities.includes(selectedCity)) {
+                              setSelectedCity('');
+                            }
+                            setLocationError('');
+                            setLocationNotice('');
+                          }}
+                          className="w-full bg-gray-900 border border-gray-700 text-gray-100 text-sm rounded-md px-3 py-2 outline-none"
+                        >
+                          <option value="">Select country</option>
+                          {COUNTRY_OPTIONS.map(country => (
+                            <option key={country} value={country}>{country}</option>
+                          ))}
+                        </select>
+
+                        <select
+                          value={selectedCity}
+                          onChange={e => {
+                            setSelectedCity(e.target.value);
+                            setLocationError('');
+                            setLocationNotice('');
+                          }}
+                          disabled={!selectedCountry}
+                          className="w-full bg-gray-900 border border-gray-700 text-gray-100 text-sm rounded-md px-3 py-2 outline-none disabled:opacity-60"
+                        >
+                          <option value="">Select city</option>
+                          {getCityOptions(selectedCountry).map(city => (
+                            <option key={city} value={city}>{city}</option>
+                          ))}
+                        </select>
+
+                        {locationError && (
+                          <p className="text-xs text-red-400">{locationError}</p>
+                        )}
+                        {!locationError && locationNotice && (
+                          <p className="text-xs text-green-400">{locationNotice}</p>
+                        )}
+
+                        <button
+                          type="button"
+                          onClick={handleSaveLocation}
+                          disabled={savingLocation}
+                          className="w-full bg-[#fcfbf7] text-black text-sm font-bold rounded-md py-2 disabled:opacity-70"
+                        >
+                          {savingLocation ? 'Saving...' : 'Save Location'}
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
+
                 <div className="relative group h-full flex items-center">
                   <button className="relative h-full px-4 flex items-center gap-2 text-sm font-bold text-black hover:text-black transition-colors cursor-pointer">
                     <span className="text-base">{currentCurrency?.flag}</span>

@@ -20,6 +20,11 @@ export const useNotifications = () => {
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
+function getToken() {
+  if (typeof window === "undefined") return null;
+  return localStorage.getItem("token");
+}
+
 export const NotificationProvider = ({ children }) => {
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -32,8 +37,14 @@ export const NotificationProvider = ({ children }) => {
     if (!user?.email) return;
     try {
       setLoading(true);
+      const token = getToken();
+      if (!token) return;
+
       const res = await axios.get(
         `${API_BASE}/notifications?email=${user.email}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        },
       );
       if (Array.isArray(res.data)) {
         setNotifications((prev) => {
@@ -167,6 +178,9 @@ export const NotificationProvider = ({ children }) => {
     if (notif && notif.read) return;
 
     try {
+      const token = getToken();
+      if (!token) return;
+
       // Optimistic update
       setNotifications((prev) =>
         prev.map((n) => (n._id === id ? { ...n, read: true } : n)),
@@ -174,7 +188,13 @@ export const NotificationProvider = ({ children }) => {
       setUnreadCount((prev) => Math.max(0, prev - 1));
 
       // Make the API call
-      const res = await axios.patch(`${API_BASE}/notifications/${id}/read`);
+      const res = await axios.patch(
+        `${API_BASE}/notifications/${id}/read`,
+        {},
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
 
       // If server returns error, revert (optional, but good practice)
       if (res.status !== 200) {
@@ -194,6 +214,9 @@ export const NotificationProvider = ({ children }) => {
   const markAllAsRead = async () => {
     if (!user?.email) return;
     try {
+      const token = getToken();
+      if (!token) return;
+
       // Optimistic update
       const previousState = [...notifications];
       const previousCount = unreadCount;
@@ -201,9 +224,15 @@ export const NotificationProvider = ({ children }) => {
       setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
       setUnreadCount(0);
 
-      const res = await axios.patch(`${API_BASE}/notifications/mark-all-read`, {
-        email: user.email,
-      });
+      const res = await axios.patch(
+        `${API_BASE}/notifications/mark-all-read`,
+        {
+          email: user.email,
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
 
       if (res.status !== 200) {
         throw new Error("Failed to mark all read");
@@ -218,6 +247,9 @@ export const NotificationProvider = ({ children }) => {
   // ─── Delete notification ───────────────────────────────────────────────────────
   const deleteNotification = async (id) => {
     try {
+      const token = getToken();
+      if (!token) return;
+
       // Check if it was unread before removing
       const wasUnread = notifications.find((n) => n._id === id && !n.read);
 
@@ -226,7 +258,9 @@ export const NotificationProvider = ({ children }) => {
         setUnreadCount((prev) => Math.max(0, prev - 1));
       }
 
-      await axios.delete(`${API_BASE}/notifications/${id}`);
+      await axios.delete(`${API_BASE}/notifications/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
     } catch (error) {
       console.error("Failed to delete notification", error);
     }
@@ -252,9 +286,14 @@ export const NotificationProvider = ({ children }) => {
     setUnreadCount((prev) => (prev || 0) + 1);
 
     try {
+      const token = getToken();
+      if (!token) return;
+
       const res = await axios.post(`${API_BASE}/notifications`, {
         email: user.email,
         ...notifData,
+      }, {
+        headers: { Authorization: `Bearer ${token}` },
       });
 
       if (res.data && res.data._id) {

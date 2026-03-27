@@ -8,6 +8,11 @@ import { DollarSign, Package, ShoppingBag, TrendingUp, Clock } from "lucide-reac
 const API_BASE =
   process.env.NEXT_PUBLIC_API_URL || "https://unity-shop-server.vercel.app";
 
+function getToken() {
+  if (typeof window === "undefined") return null;
+  return localStorage.getItem("token");
+}
+
 export default function SellerStats() {
   const { user } = useAuth();
   const [stats, setStats] = useState(null);
@@ -17,8 +22,14 @@ export default function SellerStats() {
     const fetchStats = async () => {
       if (!user?.email) return;
       try {
+        const token = getToken();
+        if (!token) return;
+
         const res = await fetch(
           `${API_BASE}/orders/seller-stats?sellerEmail=${encodeURIComponent(user.email)}`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          },
         );
         if (res.ok) {
           const data = await res.json();
@@ -51,7 +62,7 @@ export default function SellerStats() {
     },
     {
       label: "Pending Orders",
-      value: stats ? `${stats.statusCounts?.New || 0}` : "0",
+      value: stats ? `${stats.pendingCount || 0}` : "0",
       icon: Clock,
     },
   ];

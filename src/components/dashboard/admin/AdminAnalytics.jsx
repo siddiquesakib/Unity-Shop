@@ -8,6 +8,11 @@ import axios from "axios";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "https://unity-shop-server.vercel.app";
 
+function getToken() {
+    if (typeof window === "undefined") return null;
+    return localStorage.getItem("token");
+}
+
 export default function AdminAnalytics() {
     const [overviewData, setOverviewData] = useState(null);
     const [growthData, setGrowthData] = useState([]);
@@ -18,17 +23,37 @@ export default function AdminAnalytics() {
         const fetchAllData = async () => {
             try {
                 setLoading(true);
-                const [overviewRes, growthRes, dailyRes] = await Promise.all([
-                    axios.get(`${API_BASE}/api/admin/stats/overview`),
-                    axios.get(`${API_BASE}/api/admin/stats/growth`),
-                    axios.get(`${API_BASE}/api/admin/stats/daily-orders`)
+                const token = getToken();
+                if (!token) {
+                    setOverviewData(null);
+                    setGrowthData([]);
+                    setDailyData([]);
+                    return;
+                }
+
+                const [platformRes, monthlyRes] = await Promise.all([
+                    axios.get(`${API_BASE}/orders/platform-stats`, {
+                        headers: { Authorization: `Bearer ${token}` },
+                    }),
+                    axios.get(`${API_BASE}/orders/admin-monthly-stats`, {
+                        headers: { Authorization: `Bearer ${token}` },
+                    }),
                 ]);
 
-                setOverviewData(overviewRes.data);
-                setGrowthData(growthRes.data);
-                setDailyData(dailyRes.data);
+                const platform = platformRes.data || {};
+                const monthly = Array.isArray(monthlyRes.data) ? monthlyRes.data : [];
+                const daily = Array.isArray(platform.last7Days)
+                    ? platform.last7Days.map((d) => ({ date: d.day || d.date, count: d.orders || 0 }))
+                    : [];
+
+                setOverviewData(platform);
+                setGrowthData(monthly);
+                setDailyData(daily);
             } catch (error) {
                 console.error("Error fetching analytics data:", error);
+                setOverviewData(null);
+                setGrowthData([]);
+                setDailyData([]);
             } finally {
                 setLoading(false);
             }

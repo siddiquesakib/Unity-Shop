@@ -61,7 +61,16 @@ export default function AllUsers() {
   const fetchUsers = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${API_BASE}/users`);
+      const token =
+        typeof window !== "undefined" ? localStorage.getItem("token") : null;
+      if (!token) {
+        setUsers([]);
+        return;
+      }
+
+      const res = await fetch(`${API_BASE}/users`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       const data = await res.json();
       setUsers(data);
     } catch (error) {
@@ -81,9 +90,16 @@ export default function AllUsers() {
     setActionLoading(email);
     setConfirmModal(null);
     try {
+      const token =
+        typeof window !== "undefined" ? localStorage.getItem("token") : null;
+      if (!token) throw new Error("Missing auth token");
+
       const res = await fetch(`${API_BASE}/users/${userId}`, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
         body: JSON.stringify({ role: newRole }),
       });
       const data = await res.json();

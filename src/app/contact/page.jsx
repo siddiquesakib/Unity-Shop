@@ -7,260 +7,152 @@ import {
   FiMapPin,
   FiHeadphones,
   FiSend,
-  FiArrowRight,
+  FiArrowUpRight,
   FiMessageCircle,
 } from "react-icons/fi";
 
 const fadeUp = {
-  hidden: { opacity: 0, y: 20 },
+  hidden: { opacity: 0, y: 30 },
   visible: (i = 0) => ({
     opacity: 1,
     y: 0,
-    transition: { duration: 0.5, delay: i * 0.1 },
+    transition: { duration: 0.6, delay: i * 0.1, ease: [0.16, 1, 0.3, 1] },
   }),
 };
 
-const contactInfo = [
-  {
-    icon: FiPhone,
-    title: "Phone",
-    info: "+880 1234 567 890",
-    desc: "Mon-Fri, 9am-6pm",
-  },
-  {
-    icon: FiMail,
-    title: "Email",
-    info: "support@unityshop.com",
-    desc: "We reply within 24 hours",
-  },
-  {
-    icon: FiMapPin,
-    title: "Location",
-    info: "Dhaka, Bangladesh",
-    desc: "Head office",
-  },
-  {
-    icon: FiHeadphones,
-    title: "Live Support",
-    info: "24/7 Available",
-    desc: "Chat with our team",
-  },
-];
-
 const ContactPage = () => {
   return (
-    <div className="bg-[#f7f6f3] min-h-screen">
-      {/* Hero */}
-      <section className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-gray-50 via-white to-gray-100" />
-        <div className="absolute top-[-10%] left-[30%] w-96 h-96 bg-gray-200/30 rounded-full blur-[100px]" />
-        <div className="relative max-w-6xl mx-auto px-4 sm:px-6 pt-20 pb-14 text-center">
+    <div className="bg-[#f8f9fa] min-h-screen font-sans selection:bg-black selection:text-white">
+      
+      {/* ── HERO SECTION ── */}
+      <section className="relative pt-32 pb-20 px-6">
+        <div className="max-w-4xl mx-auto text-center">
           <motion.div initial="hidden" animate="visible" variants={fadeUp}>
-            <span className="inline-flex items-center gap-2 px-4 py-1.5 bg-black text-white text-xs font-bold rounded-full mb-5">
-              <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse" />
-              Get in Touch
-            </span>
+            <div className="inline-block px-4 py-1.5 rounded-full bg-white border border-gray-100 shadow-sm mb-8">
+              <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-gray-400 flex items-center gap-2">
+                <span className="w-1 h-1 bg-black rounded-full animate-ping" />
+                Available 24/7
+              </span>
+            </div>
+            
+            <h1 className="text-6xl md:text-8xl font-bold text-black tracking-tighter leading-[0.9] mb-8">
+              Let&apos;s build <br /> 
+              <span className="text-gray-300">something </span> 
+              <span className="italic font-medium">together.</span>
+            </h1>
+            
+            <p className="text-lg md:text-xl text-gray-500 max-w-xl mx-auto leading-relaxed">
+              Have a question or just want to say hi? We’re always open to new ideas and opportunities.
+            </p>
           </motion.div>
-
-          <motion.h1
-            initial="hidden"
-            animate="visible"
-            custom={1}
-            variants={fadeUp}
-            className="text-4xl sm:text-5xl md:text-6xl font-black text-black leading-[1.05] tracking-tight"
-          >
-            We&apos;d love to
-            <br />
-            <span className="relative inline-block">
-              <span className="relative z-10">hear from you</span>
-              <span className="absolute bottom-1.5 left-0 w-full h-3 sm:h-4 bg-gray-300/60 -skew-x-3 rounded-sm" />
-            </span>
-          </motion.h1>
-
-          <motion.p
-            initial="hidden"
-            animate="visible"
-            custom={2}
-            variants={fadeUp}
-            className="mt-5 max-w-2xl mx-auto text-gray-500 text-base sm:text-lg leading-relaxed"
-          >
-            Have a question, suggestion, or just want to say hello? Our team is
-            always here to help.
-          </motion.p>
         </div>
       </section>
 
-      {/* Contact Info Strip */}
-      <section className="border-y border-gray-100 bg-[#f7f6f3]">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
-            {contactInfo.map((item, i) => {
-              const Icon = item.icon;
-              return (
-                <motion.div
-                  key={item.title}
-                  initial="hidden"
-                  whileInView="visible"
-                  custom={i}
-                  variants={fadeUp}
-                  viewport={{ once: true }}
-                  className="flex items-center gap-3 sm:gap-4 py-6"
-                >
-                  <div className="w-10 h-10 sm:w-11 sm:h-11 bg-black rounded-xl flex items-center justify-center shrink-0">
-                    <Icon className="w-4.5 h-4.5 sm:w-5 sm:h-5 text-white" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-bold text-black leading-tight">
-                      {item.info}
-                    </p>
-                    <p className="text-[11px] sm:text-xs text-gray-400 mt-0.5">
-                      {item.desc}
-                    </p>
-                  </div>
-                </motion.div>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
-      {/* Contact Form + Side Info */}
-      <section className="py-14 sm:py-20">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6">
-          <div className="grid md:grid-cols-5 gap-10">
-            {/* Form — takes 3 cols */}
-            <motion.div
-              initial="hidden"
-              whileInView="visible"
+      {/* ── MAIN CONTENT ── */}
+      <section className="pb-32 px-6">
+        <div className="max-w-6xl mx-auto">
+          <div className="grid lg:grid-cols-12 gap-8 items-start">
+            
+            {/* CONTACT FORM CARD */}
+            <motion.div 
+              initial="hidden" 
+              whileInView="visible" 
               variants={fadeUp}
               viewport={{ once: true }}
-              className="md:col-span-3"
+              className="lg:col-span-7 bg-white rounded-[32px] p-8 md:p-12 shadow-xl shadow-black/[0.03] border border-gray-50"
             >
-              <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">
-                Send a Message
-              </span>
-              <h2 className="text-2xl sm:text-3xl font-black text-black mt-2 mb-8 tracking-tight">
-                Drop us a line
-              </h2>
-
-              <form className="space-y-5">
-                <div className="grid sm:grid-cols-2 gap-5">
-                  <div>
-                    <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
-                      Name
-                    </label>
+              <h2 className="text-2xl font-bold mb-10 tracking-tight">Send a message</h2>
+              
+              <form className="space-y-8" onSubmit={(e) => e.preventDefault()}>
+                <div className="grid md:grid-cols-2 gap-8">
+                  <div className="group space-y-2">
+                    <label className="text-[11px] font-bold uppercase tracking-widest text-gray-400 group-focus-within:text-black transition-colors">Name</label>
                     <input
                       type="text"
-                      placeholder="Your name"
-                      className="w-full px-4 py-3 text-sm rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:border-black focus:ring-1 focus:ring-black outline-none transition-all"
+                      placeholder="John Doe"
+                      className="w-full bg-gray-50 border-none rounded-2xl px-6 py-4 text-sm focus:bg-white focus:ring-2 focus:ring-black transition-all outline-none"
                     />
                   </div>
-                  <div>
-                    <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
-                      Email
-                    </label>
+                  <div className="group space-y-2">
+                    <label className="text-[11px] font-bold uppercase tracking-widest text-gray-400 group-focus-within:text-black transition-colors">Email</label>
                     <input
                       type="email"
-                      placeholder="you@email.com"
-                      className="w-full px-4 py-3 text-sm rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:border-black focus:ring-1 focus:ring-black outline-none transition-all"
+                      placeholder="john@example.com"
+                      className="w-full bg-gray-50 border-none rounded-2xl px-6 py-4 text-sm focus:bg-white focus:ring-2 focus:ring-black transition-all outline-none"
                     />
                   </div>
                 </div>
 
-                <div>
-                  <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
-                    Subject
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="How can we help?"
-                    className="w-full px-4 py-3 text-sm rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:border-black focus:ring-1 focus:ring-black outline-none transition-all"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
-                    Message
-                  </label>
+                <div className="group space-y-2">
+                  <label className="text-[11px] font-bold uppercase tracking-widest text-gray-400 group-focus-within:text-black transition-colors">Message</label>
                   <textarea
                     rows="5"
-                    placeholder="Tell us more..."
-                    className="w-full px-4 py-3 text-sm rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:border-black focus:ring-1 focus:ring-black outline-none transition-all resize-none"
+                    placeholder="Tell us about your project..."
+                    className="w-full bg-gray-50 border-none rounded-2xl px-6 py-4 text-sm focus:bg-white focus:ring-2 focus:ring-black transition-all outline-none resize-none"
                   ></textarea>
                 </div>
 
-                <button
-                  type="submit"
-                  className="inline-flex items-center gap-2 px-7 py-3 text-sm font-bold text-white bg-black rounded-xl hover:bg-gray-800 transition-colors"
-                >
-                  Send Message <FiSend size={14} />
+                <button className="w-full md:w-auto px-10 py-4 bg-black text-white rounded-2xl font-bold text-sm hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-3">
+                  Send Inquiry <FiSend className="opacity-50" />
                 </button>
               </form>
             </motion.div>
 
-            {/* Right Side — takes 2 cols */}
-            <motion.div
-              initial="hidden"
-              whileInView="visible"
-              custom={2}
-              variants={fadeUp}
-              viewport={{ once: true }}
-              className="md:col-span-2 flex flex-col gap-6"
-            >
-              {/* FAQ */}
-              <div className="bg-gray-50 rounded-2xl p-6 border border-gray-100 flex-1">
-                <h3 className="text-sm font-bold text-black mb-4 flex items-center gap-2">
-                  <FiMessageCircle size={16} /> Frequently Asked
-                </h3>
-                <div className="space-y-3">
+            {/* SIDEBAR INFO */}
+            <div className="lg:col-span-5 space-y-6">
+              
+              {/* CONTACT STRIP */}
+              <motion.div 
+                initial="hidden" whileInView="visible" variants={fadeUp} custom={1} viewport={{ once: true }}
+                className="bg-black rounded-[32px] p-10 text-white relative overflow-hidden group"
+              >
+                <div className="relative z-10">
+                  <h3 className="text-xl font-bold mb-8">Contact Details</h3>
+                  <div className="space-y-6">
+                    {[
+                      { icon: FiMail, label: "Email", val: "hi@unityshop.com" },
+                      { icon: FiPhone, label: "Phone", val: "+880 1234 567 89" },
+                      { icon: FiMapPin, label: "Location", val: "Dhaka, Bangladesh" }
+                    ].map((item, i) => (
+                      <div key={i} className="flex items-center gap-4 group/item cursor-pointer">
+                        <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center group-hover/item:bg-white group-hover/item:text-black transition-all">
+                          <item.icon size={16} />
+                        </div>
+                        <div>
+                          <p className="text-[10px] uppercase tracking-widest text-gray-500 font-bold">{item.label}</p>
+                          <p className="text-sm font-medium">{item.val}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-white/5 rounded-full group-hover:scale-150 transition-transform duration-700" />
+              </motion.div>
+
+              {/* QUICK FAQ / HELP */}
+              <motion.div 
+                initial="hidden" whileInView="visible" variants={fadeUp} custom={2} viewport={{ once: true }}
+                className="bg-white rounded-[32px] p-8 border border-gray-100"
+              >
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-sm font-bold uppercase tracking-widest text-gray-400">Quick Links</h3>
+                  <FiMessageCircle className="text-gray-300" />
+                </div>
+                <div className="space-y-2">
                   {[
-                    {
-                      q: "How long does shipping take?",
-                      a: "Most orders arrive within 3-5 business days.",
-                    },
-                    {
-                      q: "What is your return policy?",
-                      a: "30-day hassle-free returns on all items.",
-                    },
-                    {
-                      q: "How do I become a seller?",
-                      a: "Sign up and request seller access from your dashboard.",
-                    },
-                  ].map((faq, i) => (
-                    <div
-                      key={i}
-                      className="bg-white rounded-xl p-4 border border-gray-100"
-                    >
-                      <p className="text-xs font-semibold text-black">
-                        {faq.q}
-                      </p>
-                      <p className="text-xs text-gray-500 mt-1 leading-relaxed">
-                        {faq.a}
-                      </p>
-                    </div>
+                    "Track your order status",
+                    "Return & Exchange policy",
+                    "Become a verified seller"
+                  ].map((link, i) => (
+                    <a key={i} href="#" className="flex items-center justify-between p-4 rounded-2xl hover:bg-gray-50 transition-colors group">
+                      <span className="text-sm font-medium text-black/70 group-hover:text-black">{link}</span>
+                      <FiArrowUpRight className="text-gray-300 group-hover:text-black transition-colors" />
+                    </a>
                   ))}
                 </div>
-              </div>
+              </motion.div>
 
-              {/* Urgent Help CTA */}
-              <div className="bg-black rounded-2xl p-6 text-center">
-                <div className="w-11 h-11 rounded-xl bg-white/10 flex items-center justify-center mx-auto mb-3">
-                  <FiPhone className="w-5 h-5 text-white" />
-                </div>
-                <h3 className="text-base font-bold text-white mb-1">
-                  Need urgent help?
-                </h3>
-                <p className="text-xs text-gray-400 mb-4 leading-relaxed">
-                  Our support team is available around the clock
-                </p>
-                <a
-                  href="tel:+8801234567890"
-                  className="inline-flex items-center gap-2 px-5 py-2.5 bg-white text-black text-sm font-bold rounded-lg hover:bg-gray-100 transition-colors"
-                >
-                  Call us now <FiArrowRight size={14} />
-                </a>
-              </div>
-            </motion.div>
+            </div>
           </div>
         </div>
       </section>

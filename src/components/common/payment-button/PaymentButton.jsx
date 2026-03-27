@@ -25,12 +25,14 @@ export default function PaymentButton({
   productId,
   quantity = 1,
   productName,
+  userId = null,
   userEmail,
   sellerName,
   sellerEmail,
   shippingAddress = null,
   phoneNumber = "",
   breakdown = null,
+  items = [],
   label = "Buy Now",
   className = "",
   disabled = false,
@@ -56,23 +58,37 @@ export default function PaymentButton({
     setLoading(true);
     setError(null);
 
+    const token =
+      typeof window !== "undefined" ? localStorage.getItem("token") : null;
+
+    if (!token) {
+      setError("Please log in again to continue payment.");
+      setLoading(false);
+      return;
+    }
+
     try {
       const response = await fetch(
         `${API_BASE}/payment/create-checkout-session`,
         {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
           body: JSON.stringify({
             price,
             productId,
             quantity,
             productName,
+            userId,
             userEmail,
             sellerName,
             sellerEmail,
             shippingAddress,
             phoneNumber,
             breakdown,
+            items,
           }),
         },
       );

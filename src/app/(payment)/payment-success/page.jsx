@@ -6,7 +6,8 @@ import Link from "next/link";
 import { useCart } from "@/contexts/CartContext";
 import { useNotifications } from "@/contexts/NotificationContext";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL;
+const API_BASE =
+  process.env.NEXT_PUBLIC_API_URL || "https://unity-shop-server.vercel.app";
 
 export default function PaymentSuccess() {
   return (
@@ -36,12 +37,24 @@ function SuccessContent() {
 
     const fetchOrder = async () => {
       try {
+        const token =
+          typeof window !== "undefined" ? localStorage.getItem("token") : null;
+
+        if (!token) {
+          throw new Error("Please log in again to verify your payment.");
+        }
+
         const res = await fetch(
           `${API_BASE}/payment/retrivedsessionAfterPayment?session_id=${sessionId}`,
-          { method: "PATCH" },
+          {
+            method: "PATCH",
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          },
         );
 
-        const data = await res.json();
+        const data = await res.json().catch(() => ({}));
 
         if (data?.message === "Order already processed.") {
           setStatus("already");

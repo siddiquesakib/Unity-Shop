@@ -41,11 +41,17 @@ function getApiUrl() {
   return raw.replace(/\/$/, '');
 }
 
+function getAuthToken() {
+  if (typeof window === 'undefined') return null;
+  return localStorage.getItem('token');
+}
+
 const EMPTY_SHIPPING = {
   fullName: '',
   phone: '',
   address: '',
   city: '',
+  country: 'Bangladesh',
   zip: '',
   note: '',
 };
@@ -56,13 +62,16 @@ export default function CartPage() {
     savedItems,
     removeItem,
     updateQuantity,
+    prepareCheckout,
     hydrated,
     moveToSaved,
     moveToCart,
     removeSavedItem,
+    clearCheckoutItems,
   } = useCart();
   const { formatPrice } = useCurrency();
   const { data: session, status: sessionStatus } = useSession();
+  const router = useRouter(); // Added router
   const userEmail = session?.user?.email || '';
 
   const [removingId, setRemovingId] = useState(null);
@@ -70,9 +79,13 @@ export default function CartPage() {
   const [step, setStep] = useState('cart');
   const [shipping, setShipping] = useState(EMPTY_SHIPPING);
   const [shippingMethod, setShippingMethod] = useState('standard');
+  const [shippingOptions, setShippingOptions] = useState(null);
+  const [shippingOptionsLoading, setShippingOptionsLoading] = useState(false);
+  const [shippingOptionsError, setShippingOptionsError] = useState(null);
   const [savedBadge, setSavedBadge] = useState(false);
   const [savingShipping, setSavingShipping] = useState(false);
   const [shippingMsg, setShippingMsg] = useState(null); // { type:'ok'|'err', text }
+  const [placingCod, setPlacingCod] = useState(false);
 
   /* ── Auto-load saved shipping info ─────────────────────────────── */
   useEffect(() => {
@@ -88,9 +101,27 @@ export default function CartPage() {
     }
 
     const url = `${API_URL}/users/shipping/${encodeURIComponent(userEmail)}`;
+    const activeLocationUrl = `${API_URL}/users/location/active`;
+    const token = getAuthToken();
+
+    if (!token) {
+      console.warn('[Cart] Missing auth token — cannot load shipping info.');
+      return;
+    }
+
     console.log('[Cart] Loading shipping info →', url);
 
-    fetch(url)
+    fetch(url, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+      .then(res => {
+        if (res.status === 401 || res.status === 403) {
+          throw new Error('Unauthorized to load shipping profile');
+        }
+        return res;
+      })
       .then(res => {
         console.log('[Cart] GET shipping status:', res.status);
         return res.ok ? res.json() : null;
@@ -103,11 +134,28 @@ export default function CartPage() {
             phone: data.phone || '',
             address: data.address || '',
             city: data.city || '',
+            country: data.country || 'Bangladesh',
             zip: data.zip || '',
             note: data.note || '',
           });
           setSavedBadge(true);
+          return;
         }
+
+        return fetch(activeLocationUrl, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        })
+          .then(res => (res.ok ? res.json() : null))
+          .then(locationData => {
+            if (!locationData?.activeLocation) return;
+            setShipping(prev => ({
+              ...prev,
+              country: prev.country || locationData.activeLocation.country || 'Bangladesh',
+              city: prev.city || locationData.activeLocation.city || '',
+            }));
+          });
       })
       .catch(err => console.error('[Cart] Failed to load shipping info:', err));
   }, [userEmail, sessionStatus]);
@@ -130,8 +178,16 @@ export default function CartPage() {
   const discountAmount = appliedPromo
     ? Math.min(appliedPromo.discount, subtotal)
     : 0;
+  const dynamicShippingCost =
+    shippingOptions?.options?.[shippingMethod]?.cost ?? null;
   const shippingCost =
-    subtotal >= FREE_SHIP ? 0 : shippingMethod === 'express' ? 120 : 60;
+    dynamicShippingCost != null
+      ? Number(dynamicShippingCost)
+      : subtotal >= FREE_SHIP
+        ? 0
+        : shippingMethod === 'express'
+          ? 120
+          : 60;
   const grandTotal = Math.max(0, subtotal - discountAmount + shippingCost);
   const totalSavings = discountAmount + (subtotal >= FREE_SHIP ? 60 : 0);
 
@@ -157,7 +213,8 @@ export default function CartPage() {
     shipping.fullName.trim() &&
     shipping.phone.trim() &&
     shipping.address.trim() &&
-    shipping.city.trim();
+    shipping.city.trim() &&
+    shipping.country.trim();
 
   /* ── Save to DB then advance to payment ─────────────────────────── */
   const handleContinueToPayment = useCallback(async () => {
@@ -179,13 +236,23 @@ export default function CartPage() {
     setSavingShipping(true);
     setShippingMsg(null);
 
+    const token = getAuthToken();
+    if (!token) {
+      setShippingMsg({ type: 'err', text: 'Please log in again.' });
+      setSavingShipping(false);
+      return;
+    }
+
     const url = `${API_URL}/users/shipping/${encodeURIComponent(userEmail)}`;
     console.log('[Cart] Saving shipping info →', url, shipping);
 
     try {
       const res = await fetch(url, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
         body: JSON.stringify(shipping),
       });
       const data = await res.json();
@@ -218,7 +285,135 @@ export default function CartPage() {
   const productSummary = allItems
     .map(i => `${i.name} (×${i.quantity})`)
     .join(', ');
+  const productIdsArray = allItems
+    .map(i => i.productId)
+    .filter(Boolean);
   const allProductIds = allItems.map(i => i.productId).join(',');
+
+  const handleGoCheckout = useCallback(() => {
+    if (!allItems.length) return;
+
+    prepareCheckout(cartGroups, appliedPromo || null);
+    router.push('/checkout');
+  }, [allItems.length, appliedPromo, cartGroups, prepareCheckout, router]);
+
+  const handlePlaceCodOrder = async () => {
+    const API_URL = getApiUrl();
+    if (!API_URL) {
+      alert('API URL missing for COD order.');
+      return;
+    }
+    if (!userEmail) {
+      router.push('/login');
+      return;
+    }
+
+    setPlacingCod(true);
+    try {
+      const token = getAuthToken();
+      if (!token) {
+        throw new Error('Please log in again to place COD order');
+      }
+
+      const res = await fetch(`${API_URL}/payment/create-cod-order`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          userId: session?.user?._id || null,
+          userEmail,
+          customerName: shipping.fullName || userEmail,
+          shippingAddress: { ...shipping, shippingMethod },
+          shippingMethod,
+          breakdown: {
+            subtotal,
+            shipping: shippingCost,
+            discount: discountAmount,
+            grandTotal,
+          },
+          items: allItems.map(i => ({
+            productId: i.productId,
+            quantity: i.quantity,
+            unitPrice: i.price,
+            name: i.name,
+          })),
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data?.error || 'Failed to place COD order');
+      }
+
+      if (typeof clearCheckoutItems === 'function') {
+        clearCheckoutItems();
+      }
+      router.push('/dashboard/user/orders');
+    } catch (error) {
+      alert(error.message || 'Failed to place COD order');
+    } finally {
+      setPlacingCod(false);
+    }
+  };
+
+  useEffect(() => {
+    const API_URL = getApiUrl();
+    if (!API_URL) return;
+    if (step !== 'shipping') return;
+    if (!shipping.city?.trim() || !shipping.country?.trim()) return;
+    if (!productIdsArray.length) return;
+
+    const token = getAuthToken();
+    if (!token) {
+      setShippingOptionsError('Please log in again to get shipping options');
+      return;
+    }
+
+    setShippingOptionsLoading(true);
+    setShippingOptionsError(null);
+
+    fetch(`${API_URL}/payment/shipping-options`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        productIds: productIdsArray,
+        shippingAddress: {
+          city: shipping.city,
+          country: shipping.country,
+        },
+      }),
+    })
+      .then(async res => {
+        const data = await res.json();
+        if (!res.ok) {
+          throw new Error(data?.error || 'Failed to fetch shipping options');
+        }
+        return data;
+      })
+      .then(data => {
+        setShippingOptions(data);
+        const hasCurrentOption = !!data?.options?.[shippingMethod];
+        if (!hasCurrentOption && data?.recommended) {
+          setShippingMethod(data.recommended);
+        }
+      })
+      .catch(err => {
+        setShippingOptionsError(err.message);
+        setShippingOptions(null);
+      })
+      .finally(() => setShippingOptionsLoading(false));
+  }, [
+    step,
+    shipping.city,
+    shipping.country,
+    shippingMethod,
+    productIdsArray.join(','),
+  ]);
 
   /* ── Loading ────────────────────────────────────────────────────── */
   if (!hydrated) {
@@ -551,6 +746,14 @@ export default function CartPage() {
                     onChange={handleShippingChange}
                   />
                   <Input
+                    label="Country *"
+                    name="country"
+                    value={shipping.country}
+                    onChange={handleShippingChange}
+                  />
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <Input
                     label="ZIP Code"
                     name="zip"
                     value={shipping.zip}
@@ -569,21 +772,48 @@ export default function CartPage() {
                   <p className="text-[16px] font-bold text-gray-500 mb-2">
                     Shipping Method
                   </p>
+                  {shippingOptionsLoading && (
+                    <p className="text-[10px] text-gray-400 mb-2">
+                      Loading shipping options...
+                    </p>
+                  )}
+                  {shippingOptions?.type === 'international' && (
+                    <p className="text-[10px] text-blue-600 font-semibold mb-2">
+                      International delivery detected. Choose standard or express.
+                    </p>
+                  )}
+                  {shippingOptionsError && (
+                    <p className="text-[10px] text-red-500 mb-2">
+                      {shippingOptionsError}
+                    </p>
+                  )}
                   <div className="space-y-2">
-                    {[
-                      {
-                        id: 'standard',
-                        label: 'Standard',
-                        time: '5-7 days',
-                        cost: subtotal >= FREE_SHIP ? 0 : 60,
-                      },
-                      {
-                        id: 'express',
-                        label: 'Express',
-                        time: '2-3 days',
-                        cost: subtotal >= FREE_SHIP ? 0 : 120,
-                      },
-                    ].map(m => (
+                    {(
+                      shippingOptions?.options
+                        ? Object.entries(shippingOptions.options).map(([id, opt]) => ({
+                            id,
+                            label: id === 'express' ? 'Express' : 'Standard',
+                            time:
+                              opt.estimatedDays > 0
+                                ? `${opt.estimatedDays} day${opt.estimatedDays > 1 ? 's' : ''}`
+                                : 'Estimated at checkout',
+                            cost: Number(opt.cost || 0),
+                          }))
+                        : [
+                            {
+                              id: 'standard',
+                              label: 'Standard',
+                              time: '5-7 days',
+                              cost: subtotal >= FREE_SHIP ? 0 : 60,
+                            },
+                            {
+                              id: 'express',
+                              label: 'Express',
+                              time: '2-3 days',
+                              cost: subtotal >= FREE_SHIP ? 0 : 120,
+                            },
+                          ]
+                    ).map(m => (
                       <label
                         key={m.id}
                         className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${shippingMethod === m.id ? 'border-black bg-gray-50' : 'border-gray-200 hover:border-gray-300'}`}
@@ -675,7 +905,7 @@ export default function CartPage() {
                     {shipping.fullName} · {shipping.phone}
                   </p>
                   <p className="text-gray-500">
-                    {shipping.address}, {shipping.city} {shipping.zip}
+                    {shipping.address}, {shipping.city}, {shipping.country} {shipping.zip}
                   </p>
                 </div>
                 <div className="space-y-2">
@@ -734,7 +964,7 @@ export default function CartPage() {
                       {
                         name: 'Cash on Delivery',
                         bg: 'bg-gray-50 border-gray-200',
-                        text: 'text-gray-600',
+                        text: 'text-black',
                       },
                     ].map(p => (
                       <span
@@ -754,7 +984,7 @@ export default function CartPage() {
                     ← Back
                   </button>
                   {userEmail ? (
-                    <div className="flex-1">
+                    <div className="flex-1 space-y-2">
                       <PaymentButton
                         price={grandTotal}
                         productId={allProductIds}
@@ -763,9 +993,30 @@ export default function CartPage() {
                         userEmail={userEmail}
                         sellerName={SHOP_NAME}
                         sellerEmail={SHOP_EMAIL}
-                        label={`Pay ${formatPrice(grandTotal)}`}
+                        shippingAddress={{ ...shipping, shippingMethod }}
+                        phoneNumber={shipping.phone}
+                        breakdown={{
+                          subtotal,
+                          shipping: shippingCost,
+                          discount: discountAmount,
+                          grandTotal,
+                        }}
+                        items={allItems.map(i => ({
+                          productId: i.productId,
+                          quantity: i.quantity,
+                          unitPrice: i.price,
+                          name: i.name,
+                        }))}
+                        label={`Pay Online ${formatPrice(grandTotal)}`}
                         className="w-full justify-center text-[16px] sm:text-base py-3 font-bold rounded-full"
                       />
+                      <button
+                        onClick={handlePlaceCodOrder}
+                        disabled={placingCod}
+                        className="w-full h-11 rounded-full border border-gray-300 text-[14px] font-bold hover:border-black disabled:opacity-50"
+                      >
+                        {placingCod ? 'Placing COD Order...' : 'Place COD Order (Payment Pending)'}
+                      </button>
                     </div>
                   ) : (
                     <Link
@@ -832,7 +1083,7 @@ export default function CartPage() {
                 {step === 'cart' && (
                   <Button
                     showIcon={false}
-                    onClick={() => totalItems > 0 && setStep('shipping')}
+                    onClick={handleGoCheckout}
                     disabled={totalItems === 0}
                     className="w-full mt-5"
                   >
@@ -899,7 +1150,7 @@ export default function CartPage() {
           </div>
           {step === 'cart' ? (
             <button
-              onClick={() => totalItems > 0 && setStep('shipping')}
+              onClick={handleGoCheckout}
               disabled={totalItems === 0}
               className="flex-1 h-10 bg-black text-white font-bold text-[16px] uppercase tracking-wide rounded-full flex items-center justify-center gap-1.5 disabled:opacity-40 active:scale-95 transition-all"
             >
@@ -914,18 +1165,40 @@ export default function CartPage() {
               {savingShipping ? '…' : 'Continue →'}
             </button>
           ) : userEmail ? (
-            <div className="flex-1">
+            <div className="flex-1 grid grid-cols-1 gap-1.5">
               <PaymentButton
                 price={grandTotal}
                 productId={allProductIds}
                 quantity={1}
                 productName={productSummary}
+                userId={session?.user?._id || null}
                 userEmail={userEmail}
                 sellerName={SHOP_NAME}
                 sellerEmail={SHOP_EMAIL}
-                label="Pay Now"
+                shippingAddress={{ ...shipping, shippingMethod }}
+                phoneNumber={shipping.phone}
+                breakdown={{
+                  subtotal,
+                  shipping: shippingCost,
+                  discount: discountAmount,
+                  grandTotal,
+                }}
+                items={allItems.map(i => ({
+                  productId: i.productId,
+                  quantity: i.quantity,
+                  unitPrice: i.price,
+                  name: i.name,
+                }))}
+                label="Online Pay"
                 className="w-full justify-center text-[16px] py-2.5 font-bold rounded-full"
               />
+              <button
+                onClick={handlePlaceCodOrder}
+                disabled={placingCod}
+                className="w-full h-9 rounded-full border border-gray-300 text-[11px] font-bold disabled:opacity-50"
+              >
+                {placingCod ? 'Placing...' : 'COD'}
+              </button>
             </div>
           ) : (
             <Link

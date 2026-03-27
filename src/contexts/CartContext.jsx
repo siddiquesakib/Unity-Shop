@@ -22,6 +22,11 @@ export function CartProvider({ children }) {
   const { createNotification } = useNotifications() || {};
   const { user } = useAuth();
 
+  const getAuthToken = useCallback(() => {
+    if (typeof window === "undefined") return null;
+    return localStorage.getItem("token");
+  }, []);
+
   useEffect(() => {
     // Initial local load
     try {
@@ -56,8 +61,18 @@ export function CartProvider({ children }) {
   // Backend sync when user logs in
   useEffect(() => {
     if (user?._id) {
-      fetch(`${process.env.NEXT_PUBLIC_API_URL}/cart/${user._id}`)
-        .then((res) => res.json())
+      const token = getAuthToken();
+      if (!token) return;
+
+      fetch(`${process.env.NEXT_PUBLIC_API_URL}/cart/${user._id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+        .then((res) => {
+          if (res.status === 401 || res.status === 403) return [];
+          return res.json();
+        })
         .then((data) => {
           if (Array.isArray(data)) {
             // Group the flat items by seller
@@ -76,10 +91,10 @@ export function CartProvider({ children }) {
                     name: item.sellerName || "UnityShop Seller",
                     email: item.sellerEmail || "",
                     verified: item.sellerVerified || false,
-                  },
+                  }
                   items: [],
                 };
-              }
+              }, [user, hydrated, getAuthToken]);
               groups[sellerId].items.push({
                 id: `${item.productId}-${sellerId}${priceTag}`,
                 productId: item.productId,
@@ -285,9 +300,15 @@ export function CartProvider({ children }) {
 
       // Sync with backend
       if (user?._id) {
+        const token = getAuthToken();
+        if (!token) return;
+
         fetch(`${process.env.NEXT_PUBLIC_API_URL}/cart/add`, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
           body: JSON.stringify({
             userId: user._id,
             productId: product._id || product.id,
@@ -311,7 +332,7 @@ export function CartProvider({ children }) {
         });
       }
     },
-    [createNotification, user],
+    [createNotification, getAuthToken, user],
   );
 
   // ─── Remove Item ─────────────────────────────────────────────────────────────
@@ -340,9 +361,15 @@ export function CartProvider({ children }) {
 
       // Sync with backend
       if (user?._id && productIdToRemove) {
+        const token = getAuthToken();
+        if (!token) return;
+
         fetch(`${process.env.NEXT_PUBLIC_API_URL}/cart/remove`, {
           method: "DELETE",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
           body: JSON.stringify({
             userId: user._id,
             productId: productIdToRemove,
@@ -352,7 +379,7 @@ export function CartProvider({ children }) {
         );
       }
     },
-    [cartGroups, user],
+    [cartGroups, getAuthToken, user],
   );
 
   // ─── Update Quantity ──────────────────────────────────────────────────────────
@@ -392,9 +419,15 @@ export function CartProvider({ children }) {
 
       // Sync with backend using the correct clamped quantity
       if (user?._id && productIdToUpdate) {
+        const token = getAuthToken();
+        if (!token) return;
+
         fetch(`${process.env.NEXT_PUBLIC_API_URL}/cart/update`, {
           method: "PUT",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
           body: JSON.stringify({
             userId: user._id,
             productId: productIdToUpdate,
@@ -405,14 +438,21 @@ export function CartProvider({ children }) {
         );
       }
     },
-    [cartGroups, user],
+    [cartGroups, getAuthToken, user],
   );
 
   // ─── Prepare Checkout ─────────────────────────────────────────────────────────
   // Called by the cart page with only the SELECTED groups/items before navigating to /checkout
   // promo: { code, discount, description } | null
   const prepareCheckout = useCallback((selectedGroups, promo = null) => {
-    setCheckoutGroups(selectedGroups);
+    const normalized = Array.isArray(selectedGroups)
+      ? selectedGroups.map((group) => ({
+          ...group,
+          items: Array.isArray(group.items) ? [...group.items] : [],
+        }))
+      : [];
+
+    setCheckoutGroups(normalized);
     setCheckoutPromo(promo);
 
     if (typeof window !== "undefined") {
@@ -422,6 +462,41 @@ export function CartProvider({ children }) {
       );
       localStorage.setItem("unityshop_checkout_promo", JSON.stringify(promo));
     }
+  }, []);
+
+  // Dedicated checkout (buy-now) also writes to the same checkout source-of-truth.
+  const startDirectCheckout = useCallback((product, quantity = 1) => {
+    if (!product) return;
+
+    const sellerId = product.sellerId || product.sellerName || "general";
+    const item = {
+      id: `${product._id || product.id}-${sellerId}-direct`,
+      productId: product._id || product.id,
+      name: product.name,
+      image: product.image || "",
+      price: product.price,
+      quantity: Number(quantity) > 0 ? Number(quantity) : 1,
+      moq: product.moq || 1,
+      maxQuantity: product.stock || 9999,
+      variant: product.variant || product.category || "—",
+      stock: product.stock || 9999,
+      sellerName: product.sellerName || "UnityShop Seller",
+      sellerEmail: product.sellerEmail || "",
+    };
+
+    setCheckoutGroups([
+      {
+        id: `checkout-${sellerId}`,
+        seller: {
+          id: sellerId,
+          name: product.sellerName || "UnityShop Seller",
+          email: product.sellerEmail || "",
+          verified: !!product.sellerVerified,
+        },
+        items: [item],
+      },
+    ]);
+    setCheckoutPromo(null);
   }, []);
 
   // ─── Clear Checkout Items ─────────────────────────────────────────────────────
@@ -475,6 +550,7 @@ export function CartProvider({ children }) {
         removeItem,
         updateQuantity,
         prepareCheckout,
+        startDirectCheckout,
         clearCheckoutItems,
         clearCart,
         moveToSaved,

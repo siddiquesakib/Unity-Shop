@@ -17,13 +17,17 @@ export default function ProductLiveStats({ productId, initialViews = 0 }) {
   // Real-time concurrent viewer count via Socket.IO
   useEffect(() => {
     if (!productId) return;
-    socket.emit('join-product', productId);
-    socket.on('viewer-count', data => {
+
+    const onViewerCount = data => {
       if (data.productId === productId) setLiveViewers(data.viewers);
-    });
+    };
+
+    socket.emit('join-product', productId);
+    socket.on('viewer-count', onViewerCount);
+
     return () => {
       socket.emit('leave-product', productId);
-      socket.off('viewer-count');
+      socket.off('viewer-count', onViewerCount);
     };
   }, [productId]);
 
