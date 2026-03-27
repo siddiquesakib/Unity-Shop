@@ -13,6 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Github,
+  Globe,
   Linkedin,
   Mail,
   MapPin,
@@ -111,7 +112,7 @@ function TeamMemberCard({ member }) {
             {/* socials */}
             <div className="flex justify-center gap-3">
               {[
-                { Icon: Twitter, href: member.social.twitter },
+                { Icon: Globe, href: member.social.portfolio },
                 { Icon: Linkedin, href: member.social.linkedin },
                 { Icon: Github, href: member.social.github },
                 { Icon: Mail, href: `mailto:${member.social.email}` },
@@ -143,11 +144,76 @@ const values = [
 ];
 
 const teamMembers = [
-  { name: "Sabbir Ahmed", role: "CEO", bio: "Leading with vision and passion.", image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Sabbir", location: "Dhaka, BD", skills: ["Strategy", "Leadership"], social: { twitter: "#", linkedin: "#", github: "#", email: "sabbir@example.com" } },
-  { name: "Noman Khan", role: "Lead Dev", bio: "Building scalable web solutions.", image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Noman", location: "Chittagong, BD", skills: ["React", "Node.js"], social: { twitter: "#", linkedin: "#", github: "#", email: "noman@example.com" } },
-  { name: "Ayesha S.", role: "Designer", bio: "Creating intuitive user interfaces.", image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Ayesha", location: "Sylhet, BD", skills: ["Figma", "UI/UX"], social: { twitter: "#", linkedin: "#", github: "#", email: "ayesha@example.com" } },
-  { name: "Rakib H.", role: "Backend", bio: "Ensuring server performance.", image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Rakib", location: "Khulna, BD", skills: ["API", "SQL"], social: { twitter: "#", linkedin: "#", github: "#", email: "rakib@example.com" } },
-  { name: "Muna Aziz", role: "Frontend", bio: "Responsive web specialist.", image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Muna", location: "Rajshahi, BD", skills: ["Tailwind", "Next.js"], social: { twitter: "#", linkedin: "#", github: "#", email: "muna@example.com" } },
+  {
+    name: 'Mohammad Siddique Sakib',
+    role: 'Team Lead',
+    bio: 'Leading with vision and passion.',
+    image: 'https://i.ibb.co/C50XzpB0/sakib.png',
+    location: 'Chattagram, Bangladesh',
+    skills: ['Strategy', 'Leadership'],
+    social: {
+      portfolio: 'https://ssakib-portfolio.vercel.app',
+      linkedin: 'https://www.linkedin.com/in/mohammad-siddique-sakib',
+      github: 'https://github.com/siddiquesakib',
+      email: 'dmsakib1122@gmail.com',
+    },
+  },
+  {
+    name: 'Abu Abdullah Mohammed Iqram',
+    role: 'Lead Dev',
+    bio: 'Building scalable web solutions.',
+    image: 'https://i.ibb.co/HpGbJjNL/iqram.jpg',
+    location: 'Chittagram, Bangladesh',
+    skills: ['React', 'Node.js'],
+    social: {
+      portfolio: 'https://portfolio-aami.vercel.app',
+      linkedin: 'https://www.linkedin.com/in/aam-iqram',
+      github: 'https://github.com/aamiqram',
+      email: 'aamiqram24@gmail.com ',
+    },
+  },
+  {
+    name: 'Ahsan Habib',
+    role: 'Designer',
+    bio: 'Creating intuitive user interfaces.',
+    image: 'https://i.ibb.co/mrLxCxv7/ahsan-navy.png',
+    location: 'Rajshahi, Bangladesh',
+    skills: ['Figma', 'UI/UX'],
+    social: {
+      portfolio: 'https://ahsan-habib0.netlify.app',
+      linkedin: 'https://www.linkedin.com/in/ahsan-habib01',
+      github: 'https://github.com/ahsan-habib01',
+      email: 'ahsanhabiib00@gmail.com',
+    },
+  },
+  {
+    name: 'Md Ariful Islam',
+    role: 'Backend',
+    bio: 'Ensuring server performance.',
+    image: 'https://i.ibb.co/7dVWH56g/ariful.jpg',
+    location: 'Rajshahi, Bangladesh',
+    skills: ['API', 'SQL'],
+    social: {
+      portfolio: '#',
+      linkedin: 'https://www.linkedin.com/in/arifulislam-dev',
+      github: 'https://github.com/ArifulIslam016',
+      email: 'arifulq234@gmail.com',
+    },
+  },
+  {
+    name: 'Rimi Ruma',
+    role: 'Frontend',
+    bio: 'Responsive web specialist.',
+    image: 'https://i.ibb.co/0jYQg1Kp/rimi-ruma.jpg',
+    location: 'Barishal, Bangladesh',
+    skills: ['Tailwind', 'Next.js'],
+    social: {
+      portfolio: 'https://my-portfolio-client-omega.vercel.app',
+      linkedin: 'https://www.linkedin.com/in/rimi-ruma',
+      github: 'https://github.com/rimiruma',
+      email: ' rimiruma12@gmail.com',
+    },
+  },
 ];
 
 const AboutPage = () => {
