@@ -35,12 +35,34 @@ const AINegoBot = ({ product, sellerId }) => {
     }
   }, [isOpen, messages.length, product]);
 
-  // Auto-scroll
+  // Fetch existing negotiation status when modal opens
+  useEffect(() => {
+    if (isOpen && product?._id && user?._id) {
+      const fetchNegotiation = async () => {
+        try {
+          const res = await fetch(
+            `${process.env.NEXT_PUBLIC_API_URL}/api/negotiations/user-product?productId=${product._id}&buyerId=${user._id}`,
+          );
+          if (res.ok) {
+            const data = await res.json();
+            if (data?.status) {
+              setNegotiationStatus(data.status);
+            }
+          }
+        } catch (err) {
+          console.error("Failed to fetch negotiation status:", err);
+        }
+      };
+      fetchNegotiation();
+    }
+  }, [isOpen, product?._id, user?._id]);
+
+  // Auto-scroll to bottom on new messages
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // Prevent body scroll
+  // Prevent body scroll when modal is open
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = "hidden";

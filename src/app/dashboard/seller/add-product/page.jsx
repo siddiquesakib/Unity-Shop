@@ -125,13 +125,12 @@ export default function AddProductPage() {
           : null,
         stock: isAuction ? 1 : formData.stock ? Number(formData.stock) : 1,
         image: formData.image,
-        tags,
+        tags, // <-- only once
         badge: isAuction ? "Auction" : null,
         rating: 0,
         reviews: 0,
         sellerName: user?.name || "Unknown Seller",
         sellerEmail: user?.email || "",
-        tags,
         endAt: isAuction ? formData.endAt : null,
         weight: formData.weight ? parseFloat(formData.weight) : 0,
         dimensions: {
@@ -511,7 +510,6 @@ export default function AddProductPage() {
               </div>
             </div>
           </section>
-
 
           <section className="p-6 rounded-2xl bg-white border border-gray-200 space-y-6">
             <div className="flex items-center gap-3 border-b border-gray-200 pb-4">
