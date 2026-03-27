@@ -25,22 +25,30 @@ export const SocketProvider = ({ children }) => {
       });
 
       newSocket.on("connect", () => {
-        console.log("Socket connected successfully:", newSocket.id);
+        if (DEBUG_NOTIFICATIONS) {
+          console.log("Socket connected successfully:", newSocket.id);
+        }
 
         // Join room with email (and userId if available)
         if (session?.user?.email) {
-          const emailRoom = session.user.email.toLowerCase(); // consistent casing
-          console.log("Joining room:", emailRoom);
+          const emailRoom = session.user.email.toLowerCase();
+          if (DEBUG_NOTIFICATIONS) {
+            console.log("Joining room:", emailRoom);
+          }
           newSocket.emit("join", emailRoom);
         }
 
         if (session?.user?._id) {
-          console.log("Joining room:", session.user._id);
+          if (DEBUG_NOTIFICATIONS) {
+            console.log("Joining room:", session.user._id);
+          }
           newSocket.emit("join", session.user._id);
         }
 
         if (session?.user?.id) {
-          console.log("Joining room:", session.user.id);
+          if (DEBUG_NOTIFICATIONS) {
+            console.log("Joining room:", session.user.id);
+          }
           newSocket.emit("join", session.user.id);
         }
       });

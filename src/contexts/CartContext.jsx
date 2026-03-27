@@ -34,6 +34,18 @@ export function CartProvider({ children }) {
         if (savedLater) {
           setSavedItems(JSON.parse(savedLater));
         }
+
+        const savedCheckout = localStorage.getItem("unityshop_checkout");
+        if (savedCheckout) {
+          setCheckoutGroups(JSON.parse(savedCheckout));
+        }
+
+        const savedCheckoutPromo = localStorage.getItem(
+          "unityshop_checkout_promo",
+        );
+        if (savedCheckoutPromo) {
+          setCheckoutPromo(JSON.parse(savedCheckoutPromo));
+        }
       }
     } catch (e) {
       console.error("Failed to load cart from local storage", e);
@@ -52,6 +64,10 @@ export function CartProvider({ children }) {
             const groups = {};
             data.forEach((item) => {
               const sellerId = item.sellerId || "general";
+              const priceTag =
+                item.pricingType === "negotiated"
+                  ? `-offer-${Number(item.price)}`
+                  : "";
               if (!groups[sellerId]) {
                 groups[sellerId] = {
                   id: `group-${sellerId}`,
@@ -65,11 +81,12 @@ export function CartProvider({ children }) {
                 };
               }
               groups[sellerId].items.push({
-                id: `${item.productId}-${sellerId}`,
+                id: `${item.productId}-${sellerId}${priceTag}`,
                 productId: item.productId,
                 name: item.name,
                 image: item.image,
                 price: item.price,
+                originalPrice: item.originalPrice || item.price,
                 quantity: item.quantity,
                 stock: item.stock,
                 moq: item.moq,
@@ -77,6 +94,7 @@ export function CartProvider({ children }) {
                 variant: item.category || "—",
                 sellerName: item.sellerName,
                 sellerEmail: item.sellerEmail,
+                pricingType: item.pricingType || "standard",
               });
             });
             setCartGroups(Object.values(groups));
@@ -99,15 +117,35 @@ export function CartProvider({ children }) {
     }
   }, [savedItems, hydrated]);
 
+  useEffect(() => {
+    if (hydrated) {
+      localStorage.setItem(
+        "unityshop_checkout",
+        JSON.stringify(checkoutGroups),
+      );
+    }
+  }, [checkoutGroups, hydrated]);
+
+  useEffect(() => {
+    if (hydrated) {
+      localStorage.setItem(
+        "unityshop_checkout_promo",
+        JSON.stringify(checkoutPromo),
+      );
+    }
+  }, [checkoutPromo, hydrated]);
+
   // ─── Save for Later ────────────────────────────────────────────────────────
   const moveToSaved = useCallback((itemId) => {
     let found = null;
     setCartGroups((prev) => {
-      const next = prev.map((g) => {
-        const item = g.items.find((i) => i.id === itemId);
-        if (item) found = { ...item };
-        return { ...g, items: g.items.filter((i) => i.id !== itemId) };
-      }).filter((g) => g.items.length > 0);
+      const next = prev
+        .map((g) => {
+          const item = g.items.find((i) => i.id === itemId);
+          if (item) found = { ...item };
+          return { ...g, items: g.items.filter((i) => i.id !== itemId) };
+        })
+        .filter((g) => g.items.length > 0);
       return next;
     });
     if (found) {
@@ -132,14 +170,28 @@ export function CartProvider({ children }) {
         const groups = prev.map((g) => ({ ...g, items: [...g.items] }));
         const gIdx = groups.findIndex((g) => g.seller.id === sellerId);
         if (gIdx !== -1) {
-          const eIdx = groups[gIdx].items.findIndex((i) => i.productId === found.productId);
+          const eIdx = groups[gIdx].items.findIndex(
+            (i) => i.productId === found.productId,
+          );
           if (eIdx !== -1) {
-            groups[gIdx].items[eIdx] = { ...groups[gIdx].items[eIdx], quantity: groups[gIdx].items[eIdx].quantity + found.quantity };
+            groups[gIdx].items[eIdx] = {
+              ...groups[gIdx].items[eIdx],
+              quantity: groups[gIdx].items[eIdx].quantity + found.quantity,
+            };
           } else {
             groups[gIdx].items.push(found);
           }
         } else {
-          groups.push({ id: `group-${sellerId}`, seller: { id: sellerId, name: found.sellerName || "UnityShop Seller", email: found.sellerEmail || "", verified: false }, items: [found] });
+          groups.push({
+            id: `group-${sellerId}`,
+            seller: {
+              id: sellerId,
+              name: found.sellerName || "UnityShop Seller",
+              email: found.sellerEmail || "",
+              verified: false,
+            },
+            items: [found],
+          });
         }
         return groups;
       });
@@ -153,10 +205,26 @@ export function CartProvider({ children }) {
 
   // ─── Add to Cart ─────────────────────────────────────────────────────────────
   const addToCart = useCallback(
-    (product, quantity = 1) => {
+    (product, quantity = 1, overridePrice = null) => {
       const sellerId = product.sellerId || product.sellerName || "general";
       const sellerName = product.sellerName || "UnityShop Seller";
       const moq = product.moq || 1;
+      const parsedOverridePrice =
+        overridePrice !== null && overridePrice !== undefined
+          ? Number(overridePrice)
+          : null;
+      const hasOverridePrice =
+        parsedOverridePrice !== null &&
+        Number.isFinite(parsedOverridePrice) &&
+        parsedOverridePrice > 0;
+      const finalPrice = hasOverridePrice
+        ? parsedOverridePrice
+        : Number(product.price);
+      const baseProductPrice = Number(product.price);
+      const pricingType = hasOverridePrice ? "negotiated" : "standard";
+      const itemId = hasOverridePrice
+        ? `${product._id || product.id}-${sellerId}-offer-${finalPrice}`
+        : `${product._id || product.id}-${sellerId}`;
 
       // Optimistic update
       setCartGroups((prev) => {
@@ -164,11 +232,12 @@ export function CartProvider({ children }) {
         const groupIdx = groups.findIndex((g) => g.seller.id === sellerId);
 
         const newItem = {
-          id: `${product._id || product.id}-${sellerId}`,
+          id: itemId,
           productId: product._id || product.id,
           name: product.name,
           image: product.image || "",
-          price: product.price,
+          price: finalPrice,
+          originalPrice: baseProductPrice,
           quantity,
           moq,
           maxQuantity: product.stock || 9999,
@@ -176,11 +245,14 @@ export function CartProvider({ children }) {
           stock: product.stock || 9999,
           sellerName,
           sellerEmail: product.sellerEmail || "",
+          pricingType,
         };
 
         if (groupIdx !== -1) {
           const itemIdx = groups[groupIdx].items.findIndex(
-            (i) => i.productId === newItem.productId,
+            (i) =>
+              i.productId === newItem.productId &&
+              Number(i.price) === Number(newItem.price),
           );
           if (itemIdx !== -1) {
             const existing = groups[groupIdx].items[itemIdx];
@@ -220,6 +292,9 @@ export function CartProvider({ children }) {
             userId: user._id,
             productId: product._id || product.id,
             quantity,
+            overridePrice: hasOverridePrice ? finalPrice : null,
+            originalPrice: hasOverridePrice ? baseProductPrice : null,
+            pricingType,
           }),
         }).catch((err) => console.error("Failed to add to cart backend:", err));
       }
@@ -230,7 +305,9 @@ export function CartProvider({ children }) {
         createNotification({
           type: "cart_add",
           title: "Added to Cart",
-          message: `Added ${product.name} to your cart.`,
+          message: hasOverridePrice
+            ? `Added ${product.name} to your cart at negotiated price $${finalPrice}.`
+            : `Added ${product.name} to your cart.`,
         });
       }
     },
@@ -337,6 +414,14 @@ export function CartProvider({ children }) {
   const prepareCheckout = useCallback((selectedGroups, promo = null) => {
     setCheckoutGroups(selectedGroups);
     setCheckoutPromo(promo);
+
+    if (typeof window !== "undefined") {
+      localStorage.setItem(
+        "unityshop_checkout",
+        JSON.stringify(selectedGroups),
+      );
+      localStorage.setItem("unityshop_checkout_promo", JSON.stringify(promo));
+    }
   }, []);
 
   // ─── Clear Checkout Items ─────────────────────────────────────────────────────
@@ -354,6 +439,11 @@ export function CartProvider({ children }) {
     });
     setCheckoutGroups([]);
     setCheckoutPromo(null);
+
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("unityshop_checkout");
+      localStorage.removeItem("unityshop_checkout_promo");
+    }
   }, [checkoutGroups]);
 
   // ─── Clear Entire Cart ────────────────────────────────────────────────────────
@@ -361,6 +451,11 @@ export function CartProvider({ children }) {
     setCartGroups([]);
     setCheckoutGroups([]);
     setCheckoutPromo(null);
+
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("unityshop_checkout");
+      localStorage.removeItem("unityshop_checkout_promo");
+    }
   }, []);
 
   // ─── Derived values ───────────────────────────────────────────────────────────
