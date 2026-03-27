@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/hooks/useAuth';
+import { useSocket } from '@/contexts/SocketContext';
 import { motion } from 'framer-motion';
 import {
   Search,
@@ -14,24 +15,42 @@ import {
   Filter,
   Download,
   MapPin,
+  Trash2,
 } from 'lucide-react';
 import { downloadOrderInvoice } from '@/utils/generateInvoice';
 import OrderTrackingModal from '@/components/common/OrderTrackingModal';
+import { getOrderStatusLabel, normalizeToWorkflowStatus } from '@/utils/orderLifecycle';
 
 const API_BASE =
   process.env.NEXT_PUBLIC_API_URL || 'https://unity-shop-server.vercel.app';
 
+function resolveOrderId(order) {
+  if (!order) return '';
+  if (typeof order._id === 'string') return order._id;
+  if (order?._id?.$oid) return String(order._id.$oid);
+  return '';
+}
+
+function getToken() {
+  if (typeof window === 'undefined') return null;
+  return localStorage.getItem('token');
+}
+
 const getStatusColor = status => {
-  switch (status) {
-    case 'New':
+  const workflow = normalizeToWorkflowStatus(status);
+  switch (workflow) {
+    case 'placed':
       return 'bg-purple-50 text-purple-600 border-purple-200';
-    case 'Processing':
+    case 'confirmed':
+    case 'packed':
       return 'bg-amber-50 text-amber-600 border-amber-200';
-    case 'Shipped':
+    case 'picked':
+    case 'inTransit':
+    case 'outForDelivery':
       return 'bg-blue-50 text-blue-600 border-blue-200';
-    case 'Delivered':
+    case 'delivered':
       return 'bg-emerald-50 text-emerald-600 border-emerald-200';
-    case 'Cancelled':
+    case 'cancelled':
       return 'bg-red-50 text-red-600 border-red-200';
     default:
       return 'bg-gray-50 text-gray-600 border-gray-200';
@@ -39,16 +58,20 @@ const getStatusColor = status => {
 };
 
 const getStatusIcon = status => {
-  switch (status) {
-    case 'New':
+  const workflow = normalizeToWorkflowStatus(status);
+  switch (workflow) {
+    case 'placed':
       return <Clock size={14} />;
-    case 'Processing':
+    case 'confirmed':
+    case 'packed':
       return <Package size={14} />;
-    case 'Shipped':
+    case 'picked':
+    case 'inTransit':
+    case 'outForDelivery':
       return <Truck size={14} />;
-    case 'Delivered':
+    case 'delivered':
       return <CheckCircle size={14} />;
-    case 'Cancelled':
+    case 'cancelled':
       return <XCircle size={14} />;
     default:
       return <Clock size={14} />;
@@ -56,47 +79,71 @@ const getStatusIcon = status => {
 };
 
 // Orders that can still be tracked (not cancelled)
-const isTrackable = status => status !== 'Cancelled';
+const isTrackable = status => normalizeToWorkflowStatus(status) !== 'cancelled';
+const canUserCancel = status => ['placed', 'confirmed'].includes(normalizeToWorkflowStatus(status));
 
 export default function UserOrdersPage() {
   const { user } = useAuth();
+  const socket = useSocket();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
   const [selectedOrder, setSelectedOrder] = useState(null);
+  const [cancellingId, setCancellingId] = useState('');
 
   // Tracking modal state
   const [trackingOrderId, setTrackingOrderId] = useState(null);
 
-  useEffect(() => {
-    const fetchOrders = async () => {
-      if (!user?.email) return;
-      try {
-        const res = await fetch(
-          `${API_BASE}/orders?customerEmail=${encodeURIComponent(user.email)}`,
+  const fetchOrders = useCallback(async () => {
+    if (!user?.email) return;
+    try {
+      const token = getToken();
+      if (!token) return;
+
+      const res = await fetch(
+        `${API_BASE}/orders?customerEmail=${encodeURIComponent(user.email)}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
+      if (res.ok) {
+        const data = await res.json();
+        const rows = Array.isArray(data) ? data : [];
+        setOrders(
+          rows.map(order => ({
+            ...order,
+            workflowStatus: normalizeToWorkflowStatus(
+              order.workflowStatus || order.status,
+            ),
+          })),
         );
-        if (res.ok) {
-          const data = await res.json();
-          setOrders(data);
-        }
-      } catch (err) {
-        console.error('Failed to fetch orders:', err);
-      } finally {
-        setLoading(false);
       }
-    };
-    fetchOrders();
+    } catch (err) {
+      console.error('Failed to fetch orders:', err);
+    } finally {
+      setLoading(false);
+    }
   }, [user?.email]);
 
-  const statuses = [
-    'All',
-    'New',
-    'Processing',
-    'Shipped',
-    'Delivered',
-    'Cancelled',
-  ];
+  useEffect(() => {
+    fetchOrders();
+  }, [fetchOrders]);
+
+  useEffect(() => {
+    if (!socket) return;
+
+    const handleTrackingUpdated = () => {
+      fetchOrders();
+    };
+
+    socket.on('orderTrackingUpdated', handleTrackingUpdated);
+    return () => {
+      socket.off('orderTrackingUpdated', handleTrackingUpdated);
+    };
+  }, [socket, fetchOrders]);
+
+  const statuses = ['All', 'placed', 'confirmed', 'packed', 'picked', 'inTransit', 'outForDelivery', 'delivered', 'cancelled'];
 
   const filteredOrders = orders.filter(order => {
     const matchesSearch =
@@ -104,7 +151,8 @@ export default function UserOrdersPage() {
       (order.sellerName || '').toLowerCase().includes(search.toLowerCase()) ||
       (order.transitionId || '').toLowerCase().includes(search.toLowerCase());
     const matchesStatus =
-      statusFilter === 'All' || (order.status || 'New') === statusFilter;
+      statusFilter === 'All' ||
+      normalizeToWorkflowStatus(order.workflowStatus || order.status) === statusFilter;
     return matchesSearch && matchesStatus;
   });
 
@@ -112,6 +160,66 @@ export default function UserOrdersPage() {
     (sum, o) => sum + (Number(o.amountPaid) || 0),
     0,
   );
+
+  const handleCancelOrder = async order => {
+    const targetId = resolveOrderId(order);
+    if (!targetId || cancellingId) return;
+
+    const ok = window.confirm(
+      'Are you sure you want to cancel this order? This cannot be undone from your side.',
+    );
+    if (!ok) return;
+
+    try {
+      const token = getToken();
+      if (!token) {
+        alert('Please login again.');
+        return;
+      }
+
+      setCancellingId(targetId);
+
+      const res = await fetch(`${API_BASE}/orders/track/${targetId}/status`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ status: 'cancelled' }),
+      });
+
+      const payload = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(payload?.error || 'Failed to cancel order');
+      }
+
+      setOrders(prev =>
+        prev.map(item =>
+          resolveOrderId(item) === targetId
+            ? {
+                ...item,
+                status: payload?.workflowStatus || 'cancelled',
+                workflowStatus: payload?.workflowStatus || 'cancelled',
+              }
+            : item,
+        ),
+      );
+
+      setSelectedOrder(prev =>
+        prev && resolveOrderId(prev) === targetId
+          ? {
+              ...prev,
+              status: payload?.workflowStatus || 'cancelled',
+              workflowStatus: payload?.workflowStatus || 'cancelled',
+            }
+          : prev,
+      );
+    } catch (err) {
+      alert(err.message || 'Failed to cancel order');
+    } finally {
+      setCancellingId('');
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -166,7 +274,7 @@ export default function UserOrdersPage() {
                     : 'bg-gray-100 text-gray-500 hover:text-gray-900'
                 }`}
               >
-                {status}
+                {status === 'All' ? 'All' : getOrderStatusLabel(status)}
               </button>
             ))}
           </div>
@@ -234,7 +342,7 @@ export default function UserOrdersPage() {
               <tbody className="divide-y divide-gray-100">
                 {filteredOrders.map(order => (
                   <tr
-                    key={order._id}
+                    key={resolveOrderId(order) || order.transitionId}
                     className="group hover:bg-gray-50 transition-colors"
                   >
                     <td className="py-4 pl-4">
@@ -270,22 +378,32 @@ export default function UserOrdersPage() {
                     </td>
                     <td className="py-4">
                       <span
-                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${getStatusColor(order.status || 'New')}`}
+                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${getStatusColor(order.workflowStatus || order.status)}`}
                       >
-                        {getStatusIcon(order.status || 'New')}
-                        {order.status || 'New'}
+                        {getStatusIcon(order.workflowStatus || order.status)}
+                        {getOrderStatusLabel(order.workflowStatus || order.status)}
                       </span>
                     </td>
                     <td className="py-4 pr-4 text-right">
                       <div className="flex items-center justify-end gap-1">
                         {/* ── Track Button (NEW) ── */}
-                        {isTrackable(order.status || 'New') && (
+                        {isTrackable(order.workflowStatus || order.status) && (
                           <button
-                            onClick={() => setTrackingOrderId(order._id)}
+                            onClick={() => setTrackingOrderId(resolveOrderId(order))}
                             title="Track Order"
                             className="p-2 rounded-lg hover:bg-blue-50 text-gray-400 hover:text-blue-600 transition-colors"
                           >
                             <MapPin size={16} />
+                          </button>
+                        )}
+                        {canUserCancel(order.workflowStatus || order.status) && (
+                          <button
+                            onClick={() => handleCancelOrder(order)}
+                            title="Cancel Order"
+                            disabled={cancellingId === resolveOrderId(order)}
+                            className="p-2 rounded-lg hover:bg-red-50 text-gray-400 hover:text-red-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            <Trash2 size={16} />
                           </button>
                         )}
                         <button
@@ -389,23 +507,33 @@ export default function UserOrdersPage() {
               <div className="flex justify-between items-center">
                 <span className="text-gray-500">Status</span>
                 <span
-                  className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(selectedOrder.status || 'New')}`}
+                  className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(selectedOrder.workflowStatus || selectedOrder.status)}`}
                 >
-                  {getStatusIcon(selectedOrder.status || 'New')}
-                  {selectedOrder.status || 'New'}
+                  {getStatusIcon(selectedOrder.workflowStatus || selectedOrder.status)}
+                  {getOrderStatusLabel(selectedOrder.workflowStatus || selectedOrder.status)}
                 </span>
               </div>
               {/* Track button inside detail modal too */}
-              {isTrackable(selectedOrder.status || 'New') && (
+              {isTrackable(selectedOrder.workflowStatus || selectedOrder.status) && (
                 <button
                   onClick={() => {
                     setSelectedOrder(null);
-                    setTrackingOrderId(selectedOrder._id);
+                    setTrackingOrderId(resolveOrderId(selectedOrder));
                   }}
                   className="w-full mt-2 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-gray-200 hover:border-black text-sm font-medium transition-colors"
                 >
                   <MapPin size={15} />
                   Track This Order
+                </button>
+              )}
+              {canUserCancel(selectedOrder.workflowStatus || selectedOrder.status) && (
+                <button
+                  onClick={() => handleCancelOrder(selectedOrder)}
+                  disabled={cancellingId === resolveOrderId(selectedOrder)}
+                  className="w-full mt-2 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-red-200 text-red-600 hover:bg-red-50 text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <Trash2 size={15} />
+                  {cancellingId === resolveOrderId(selectedOrder) ? 'Cancelling...' : 'Cancel This Order'}
                 </button>
               )}
             </div>

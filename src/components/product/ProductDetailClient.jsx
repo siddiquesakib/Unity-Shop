@@ -215,9 +215,9 @@ const Stars = ({ value = 0, size = 14, interactive = false, onChange }) => (
 /*  MAIN COMPONENT                                       */
 /* ══════════════════════════════════════════════════════ */
 export default function ProductDetailClient({ product, relatedProducts = [] }) {
-  const API = process.env.NEXT_PUBLIC_API_URL;
+  const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
   const router = useRouter();
-  const { addToCart } = useCart();
+  const { addToCart, startDirectCheckout } = useCart();
   const { formatPrice } = useCurrency();
   const { user } = useAuth();
   const videoRef = useRef(null);
@@ -279,6 +279,7 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
   /* ── Derived ─────────────────────────────────────── */
   const imgs = gallery(product);
   const pid = product._id || product.id;
+  const userId = user?._id || null;
   const rating = product.rating || 0;
   const reviewCount = product.reviews || 0;
   const disc =
@@ -359,8 +360,8 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
           );
           setReviewMeta(data.pagination);
           setReviewPage(page);
-          if (user?._id) {
-            const mine = data.reviews.find((r) => r.userId === user._id);
+          if (userId) {
+            const mine = data.reviews.find((r) => r.userId === userId);
             if (mine) setUserReview(mine);
           }
         }
@@ -369,16 +370,16 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
         setReviewLoading(false);
       }
     },
-    [API, pid, user],
+    [API, pid, userId],
   );
 
   useEffect(() => {
     fetchReviews(1);
-    if (user?._id) {
+    if (userId) {
       fetch(`${API}/reviews/${pid}?page=1&limit=100`)
         .then((r) => r.json())
         .then((d) => {
-          const mine = d.reviews?.find((r) => r.userId === user._id);
+          const mine = d.reviews?.find((r) => r.userId === userId);
           if (mine) {
             setUserReview(mine);
             setMyRating(mine.rating);
@@ -386,8 +387,10 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
           }
         })
         .catch(() => {});
+    } else {
+      setUserReview(null);
     }
-  }, [pid, user]);
+  }, [API, pid, userId, fetchReviews]);
 
   /* ── Handlers ────────────────────────────────────── */
   const qtyChange = (d) => {
@@ -403,7 +406,7 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
     setTimeout(() => setCartOk(false), 2000);
   };
   const buyNow = () => {
-    addToCart(
+    startDirectCheckout(
       { ...product, selectedColor: selColor, selectedSize: selSize },
       qty,
     );

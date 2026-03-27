@@ -1,7 +1,7 @@
 // components/dashboard/OrderTrackingModal.jsx
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   X,
@@ -14,14 +14,16 @@ import {
   User,
   RefreshCw,
 } from 'lucide-react';
+import { getOrderStatusLabel, normalizeToWorkflowStatus } from '@/utils/orderLifecycle';
+import { useSocket } from '@/contexts/SocketContext';
 
 const API_BASE =
   process.env.NEXT_PUBLIC_API_URL || 'https://unity-shop-server.vercel.app';
 
-const STATUS_STEPS = ['New', 'Processing', 'Shipped', 'Delivered'];
+const STATUS_STEPS = ['placed', 'confirmed', 'packed', 'picked', 'inTransit', 'outForDelivery', 'delivered'];
 
 const STEP_CONFIG = {
-  New: {
+  placed: {
     label: 'Order Confirmed',
     icon: Clock,
     color: 'text-purple-600',
@@ -29,7 +31,15 @@ const STEP_CONFIG = {
     border: 'border-purple-300',
     dot: 'bg-purple-500',
   },
-  Processing: {
+  confirmed: {
+    label: 'Manager Approved',
+    icon: Package,
+    color: 'text-amber-600',
+    bg: 'bg-amber-100',
+    border: 'border-amber-300',
+    dot: 'bg-amber-500',
+  },
+  packed: {
     label: 'Being Packed',
     icon: Package,
     color: 'text-amber-600',
@@ -37,7 +47,23 @@ const STEP_CONFIG = {
     border: 'border-amber-300',
     dot: 'bg-amber-500',
   },
-  Shipped: {
+  picked: {
+    label: 'Picked',
+    icon: Truck,
+    color: 'text-blue-600',
+    bg: 'bg-blue-100',
+    border: 'border-blue-300',
+    dot: 'bg-blue-500',
+  },
+  inTransit: {
+    label: 'In Transit',
+    icon: Truck,
+    color: 'text-blue-600',
+    bg: 'bg-blue-100',
+    border: 'border-blue-300',
+    dot: 'bg-blue-500',
+  },
+  outForDelivery: {
     label: 'Shipped',
     icon: Truck,
     color: 'text-blue-600',
@@ -45,7 +71,7 @@ const STEP_CONFIG = {
     border: 'border-blue-300',
     dot: 'bg-blue-500',
   },
-  Delivered: {
+  delivered: {
     label: 'Delivered',
     icon: CheckCircle,
     color: 'text-emerald-600',
@@ -53,7 +79,7 @@ const STEP_CONFIG = {
     border: 'border-emerald-300',
     dot: 'bg-emerald-500',
   },
-  Cancelled: {
+  cancelled: {
     label: 'Cancelled',
     icon: XCircle,
     color: 'text-red-600',
@@ -84,33 +110,68 @@ function formatDateShort(dateStr) {
 }
 
 export default function OrderTrackingModal({ orderId, onClose }) {
+  const socket = useSocket();
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const fetchOrder = async () => {
+  const getToken = () =>
+    typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+
+  const fetchOrder = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${API_BASE}/orders/track/${orderId}`);
+      const token = getToken();
+      if (!token) throw new Error('Missing auth token');
+
+      const res = await fetch(`${API_BASE}/orders/track/${orderId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       if (!res.ok) throw new Error('Failed to fetch order');
       const data = await res.json();
-      setOrder(data);
+      const statusHistory = Array.isArray(data.statusHistory)
+        ? data.statusHistory.map(item => ({
+            ...item,
+            status: normalizeToWorkflowStatus(item.status),
+          }))
+        : [];
+      setOrder({
+        ...data,
+        workflowStatus: normalizeToWorkflowStatus(data.workflowStatus || data.status),
+        statusHistory,
+      });
     } catch (err) {
       setError('Could not load tracking info. Please try again.');
     } finally {
       setLoading(false);
     }
-  };
+  }, [orderId]);
 
   useEffect(() => {
     if (orderId) fetchOrder();
-  }, [orderId]);
+  }, [orderId, fetchOrder]);
 
-  const isCancelled = order?.status === 'Cancelled';
+  useEffect(() => {
+    if (!socket || !orderId) return;
+
+    const handleTrackingUpdate = (payload) => {
+      const updatedOrderId = String(payload?.orderId || '');
+      if (updatedOrderId && updatedOrderId === String(orderId)) {
+        fetchOrder();
+      }
+    };
+
+    socket.on('orderTrackingUpdated', handleTrackingUpdate);
+    return () => {
+      socket.off('orderTrackingUpdated', handleTrackingUpdate);
+    };
+  }, [socket, orderId, fetchOrder]);
+
+  const isCancelled = normalizeToWorkflowStatus(order?.workflowStatus || order?.status) === 'cancelled';
   const currentStepIndex = isCancelled
     ? -1
-    : STATUS_STEPS.indexOf(order?.status || 'New');
+    : STATUS_STEPS.indexOf(normalizeToWorkflowStatus(order?.workflowStatus || order?.status));
 
   return (
     <AnimatePresence>
@@ -247,7 +308,7 @@ export default function OrderTrackingModal({ orderId, onClose }) {
                           const isActive = index === currentStepIndex;
                           const isPending = index > currentStepIndex;
                           const historyEntry = order.statusHistory?.find(
-                            h => h.status === step,
+                            h => normalizeToWorkflowStatus(h.status) === step,
                           );
 
                           return (
@@ -298,7 +359,7 @@ export default function OrderTrackingModal({ orderId, onClose }) {
                                         : 'text-gray-400'
                                     }`}
                                   >
-                                    {config.label}
+                                      {getOrderStatusLabel(step)}
                                   </p>
                                   {isActive && (
                                     <span

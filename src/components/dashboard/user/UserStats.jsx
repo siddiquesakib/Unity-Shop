@@ -8,6 +8,11 @@ import { ShoppingBag, Clock, CreditCard, Heart } from "lucide-react";
 const API_BASE =
   process.env.NEXT_PUBLIC_API_URL || "https://unity-shop-server.vercel.app";
 
+function getToken() {
+  if (typeof window === "undefined") return null;
+  return localStorage.getItem("token");
+}
+
 export default function UserStats() {
   const { user } = useAuth();
   const [stats, setStats] = useState(null);
@@ -17,8 +22,14 @@ export default function UserStats() {
     const fetchStats = async () => {
       if (!user?.email) return;
       try {
+        const token = getToken();
+        if (!token) return;
+
         const res = await fetch(
           `${API_BASE}/orders/user-stats?customerEmail=${encodeURIComponent(user.email)}`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          },
         );
         if (res.ok) {
           const data = await res.json();

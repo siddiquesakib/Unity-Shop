@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { signIn, signOut, useSession } from 'next-auth/react';
 
 const AuthContext = createContext();
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
@@ -13,6 +14,13 @@ export const AuthProvider = ({ children }) => {
 
   const router = useRouter();
   const { data: session, status, update } = useSession();
+
+  const resolveAuthToken = () => {
+    if (token) return token;
+    if (session?.backendToken) return session.backendToken;
+    if (typeof window !== 'undefined') return localStorage.getItem('token');
+    return null;
+  };
 
   // ✅ Sync user state with NextAuth session
   useEffect(() => {
@@ -24,6 +32,9 @@ export const AuthProvider = ({ children }) => {
         image: session.user.image,
         role: session.user.role || 'user',
         sellerRequest: session.user.sellerRequest || null,
+        profileLocation: session.user.profileLocation || null,
+        activeLocation: session.user.activeLocation || null,
+        needsLocationSelection: Boolean(session.user.needsLocationSelection),
       };
 
       setUser(sessionUser);
@@ -44,6 +55,49 @@ export const AuthProvider = ({ children }) => {
       setLoading(false);
     }
   }, [session, status]);
+
+  useEffect(() => {
+    if (status !== 'authenticated') return;
+    if (!session?.backendToken) return;
+
+    const syncLocation = async () => {
+      try {
+        const res = await fetch(
+          `${API_BASE}/users/location/active`,
+          {
+            headers: {
+              Authorization: `Bearer ${session.backendToken}`,
+            },
+          },
+        );
+
+        if (!res.ok) return;
+        const data = await res.json();
+
+        setUser(prev => {
+          if (!prev) return prev;
+          const updated = {
+            ...prev,
+            profileLocation: data.profileLocation || null,
+            activeLocation: data.activeLocation || null,
+            needsLocationSelection: Boolean(data.needsLocationSelection),
+          };
+          localStorage.setItem('user', JSON.stringify(updated));
+          return updated;
+        });
+
+        await update({
+          profileLocation: data.profileLocation || null,
+          activeLocation: data.activeLocation || null,
+          needsLocationSelection: Boolean(data.needsLocationSelection),
+        });
+      } catch (error) {
+        console.error('Location sync error:', error);
+      }
+    };
+
+    syncLocation();
+  }, [session?.backendToken, status, update]);
 
   // ✅ Login (Credentials)
   const login = async (email, password) => {
@@ -77,14 +131,20 @@ export const AuthProvider = ({ children }) => {
   };
 
   // ✅ Register (Backend Call)
-  const register = async (name, email, password) => {
+  const register = async (name, email, password, location = null) => {
     try {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/auth/register`,
+        `${API_BASE}/auth/register`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name, email, password }),
+          body: JSON.stringify({
+            name,
+            email,
+            password,
+            country: location?.country || '',
+            city: location?.city || '',
+          }),
         },
       );
 
@@ -101,6 +161,61 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const updateActiveLocation = async ({ country, city, source = 'navbar' }) => {
+    const authToken = resolveAuthToken();
+
+    if (!authToken) {
+      return { success: false, error: 'Please log in again' };
+    }
+
+    try {
+      const res = await fetch(
+        `${API_BASE}/users/location/active`,
+        {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${authToken}`,
+          },
+          body: JSON.stringify({ country, city, source }),
+        },
+      );
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.message || 'Failed to update location');
+      }
+
+      const updatedUser = {
+        ...(user || {}),
+        profileLocation: data.profileLocation || null,
+        activeLocation: data.activeLocation || null,
+        needsLocationSelection: Boolean(data.needsLocationSelection),
+      };
+
+      setUser(updatedUser);
+      localStorage.setItem('user', JSON.stringify(updatedUser));
+
+      await update({
+        profileLocation: data.profileLocation || null,
+        activeLocation: data.activeLocation || null,
+        needsLocationSelection: Boolean(data.needsLocationSelection),
+      });
+
+      return {
+        success: true,
+        data: {
+          profileLocation: data.profileLocation || null,
+          activeLocation: data.activeLocation || null,
+          needsLocationSelection: Boolean(data.needsLocationSelection),
+        },
+      };
+    } catch (error) {
+      console.error('Update Active Location Error:', error);
+      return { success: false, error: error.message };
+    }
+  };
+
   // ✅ Submit Seller Request
   const submitSellerRequest = async formData => {
     if (!user?.email) {
@@ -109,7 +224,7 @@ export const AuthProvider = ({ children }) => {
 
     try {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/seller-requests`,
+        `${API_BASE}/seller-requests`,
         {
           method: 'POST',
           headers: {
@@ -149,7 +264,7 @@ export const AuthProvider = ({ children }) => {
 
     try {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/users/profile/${user.email}`,
+        `${API_BASE}/users/profile/${user.email}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -214,6 +329,7 @@ export const AuthProvider = ({ children }) => {
         getDashboardByRole,
         submitSellerRequest,
         checkSellerRequestStatus,
+        updateActiveLocation,
       }}
     >
       {children}

@@ -168,7 +168,7 @@ export function downloadOrderInvoice(order) {
 
   // ========== STATUS BADGE ==========
   y += 25;
-  const status = order.status || "New";
+  const status = order.workflowStatus || order.status || "placed";
   doc.setFontSize(8);
   doc.setFont("helvetica", "bold");
   doc.setTextColor(...dark);
@@ -176,7 +176,15 @@ export function downloadOrderInvoice(order) {
 
   y += 8;
   const statusColors = {
-    New: [168, 85, 247],
+    placed: [79, 70, 229],
+    confirmed: [245, 158, 11],
+    packed: [217, 119, 6],
+    picked: [37, 99, 235],
+    inTransit: [59, 130, 246],
+    outForDelivery: [29, 78, 216],
+    delivered: [16, 185, 129],
+    cancelled: [239, 68, 68],
+    New: [79, 70, 229],
     Processing: [245, 158, 11],
     Shipped: [59, 130, 246],
     Delivered: [16, 185, 129],

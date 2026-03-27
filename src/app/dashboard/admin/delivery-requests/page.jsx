@@ -6,7 +6,16 @@ export default function DeliveryRequestsPage() {
   const [requests, setRequests] = useState([]);
 
   useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/delivery-requests`)
+    const token =
+      typeof window !== "undefined" ? localStorage.getItem("token") : null;
+    if (!token) {
+      setRequests([]);
+      return;
+    }
+
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/delivery-requests`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
       .then((res) => res.json())
       .then((data) => setRequests(data))
       .catch((err) => console.error(err));
@@ -14,12 +23,17 @@ export default function DeliveryRequestsPage() {
 
   const handleAction = async (email, action) => {
     try {
+      const token =
+        typeof window !== "undefined" ? localStorage.getItem("token") : null;
+      if (!token) throw new Error("Missing auth token");
+
       const endpoint =
         action === "approve" ? "approve-delivery" : "reject-delivery";
       await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/users/${endpoint}/${email}`,
         {
           method: "PATCH",
+          headers: { Authorization: `Bearer ${token}` },
         },
       );
       toast.success(`Request ${action}d successfully`);

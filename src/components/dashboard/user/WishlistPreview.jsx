@@ -18,8 +18,18 @@ export default function WishlistPreview() {
     const fetchWishlist = async () => {
       if (!user?.email) return;
       try {
+        const token =
+          typeof window !== "undefined" ? localStorage.getItem("token") : null;
+        if (!token) {
+          setProducts([]);
+          return;
+        }
+
         const res = await fetch(
           `${API_BASE}/users/wishlist/${encodeURIComponent(user.email)}`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          },
         );
         if (res.ok) {
           const data = await res.json();
@@ -36,9 +46,16 @@ export default function WishlistPreview() {
 
   const removeFromWishlist = async (productId) => {
     try {
+      const token =
+        typeof window !== "undefined" ? localStorage.getItem("token") : null;
+      if (!token) return;
+
       const res = await fetch(
         `${API_BASE}/users/wishlist/${encodeURIComponent(user.email)}/${productId}`,
-        { method: "DELETE" },
+        {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${token}` },
+        },
       );
       if (res.ok) {
         setProducts(products.filter((p) => p._id !== productId));
