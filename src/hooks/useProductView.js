@@ -8,6 +8,7 @@
 import { useEffect, useState } from 'react';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+const VIEWED_KEY_PREFIX = 'unityshop_viewed_product_';
 
 export function useProductView(productId, initialViews = 0) {
   const [views, setViews] = useState(initialViews);
@@ -15,9 +16,21 @@ export function useProductView(productId, initialViews = 0) {
   useEffect(() => {
     if (!productId) return;
 
+    // Prevent duplicate increments caused by remounts/navigation churn.
+    if (typeof window !== 'undefined') {
+      const viewedKey = `${VIEWED_KEY_PREFIX}${productId}`;
+      if (sessionStorage.getItem(viewedKey) === '1') {
+        return;
+      }
+      sessionStorage.setItem(viewedKey, '1');
+    }
+
+    const controller = new AbortController();
+
     // Fire-and-forget — don't block the UI
     fetch(`${API_URL}/products/${productId}/view`, {
       method: 'POST',
+      signal: controller.signal,
     })
       .then(res => res.json())
       .then(data => {
@@ -28,6 +41,10 @@ export function useProductView(productId, initialViews = 0) {
       .catch(() => {
         // Silently fail — view count is non-critical
       });
+
+    return () => {
+      controller.abort();
+    };
   }, [productId]); // Only runs once per product page mount
 
   return views;

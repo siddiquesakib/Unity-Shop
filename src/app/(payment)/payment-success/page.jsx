@@ -5,7 +5,8 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { useCart } from '@/contexts/CartContext';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL;
+const API_BASE =
+  process.env.NEXT_PUBLIC_API_URL || "https://unity-shop-server.vercel.app";
 
 export default function PaymentSuccess() {
   return (
@@ -41,6 +42,24 @@ function SuccessContent() {
 
         const data = await res.json();
         console.log('Payment verification response:', data);
+        const token =
+          typeof window !== "undefined" ? localStorage.getItem("token") : null;
+
+        if (!token) {
+          throw new Error("Please log in again to verify your payment.");
+        }
+
+        const res = await fetch(
+          `${API_BASE}/payment/retrivedsessionAfterPayment?session_id=${sessionId}`,
+          {
+            method: "PATCH",
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          },
+        );
+
+        const data = await res.json().catch(() => ({}));
 
         if (!res.ok && data?.message !== 'Order already processed.') {
           throw new Error(data?.error || 'Payment verification failed');

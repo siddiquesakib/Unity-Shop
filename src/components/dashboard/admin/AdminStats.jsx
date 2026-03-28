@@ -15,12 +15,25 @@ import { motion } from "framer-motion";
 const API_BASE =
   process.env.NEXT_PUBLIC_API_URL || "https://unity-shop-server.vercel.app";
 
+function getToken() {
+  if (typeof window === "undefined") return null;
+  return localStorage.getItem("token");
+}
+
 export default function AdminStats() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch(`${API_BASE}/orders/platform-stats`)
+    const token = getToken();
+    if (!token) {
+      setLoading(false);
+      return;
+    }
+
+    fetch(`${API_BASE}/orders/platform-stats`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
       .then((res) => res.json())
       .then((d) => {
         setData(d);

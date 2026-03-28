@@ -5,9 +5,15 @@ import { useAuth } from "@/hooks/useAuth";
 import { motion } from "framer-motion";
 import { Eye, Package, Clock, Truck, CheckCircle, XCircle } from "lucide-react";
 import Link from "next/link";
+import { getOrderStatusLabel, normalizeToWorkflowStatus } from "@/utils/orderLifecycle";
 
 const API_BASE =
   process.env.NEXT_PUBLIC_API_URL || "https://unity-shop-server.vercel.app";
+
+function getToken() {
+  if (typeof window === "undefined") return null;
+  return localStorage.getItem("token");
+}
 
 export default function RecentOrders() {
   const { user } = useAuth();
@@ -19,12 +25,22 @@ export default function RecentOrders() {
     const fetchOrders = async () => {
       if (!user?.email) return;
       try {
+        const token = getToken();
+        if (!token) return;
+
         const res = await fetch(
           `${API_BASE}/orders?customerEmail=${encodeURIComponent(user.email)}`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          },
         );
         if (res.ok) {
           const data = await res.json();
-          setOrders(data.slice(0, 5));
+          const rows = (Array.isArray(data) ? data : []).map((o) => ({
+            ...o,
+            workflowStatus: normalizeToWorkflowStatus(o.workflowStatus || o.status),
+          }));
+          setOrders(rows.slice(0, 5));
         }
       } catch (err) {
         console.error("Failed to fetch orders:", err);
@@ -36,16 +52,20 @@ export default function RecentOrders() {
   }, [user?.email]);
 
   const getStatusColor = (status) => {
-    switch (status) {
-      case "Delivered":
+    const workflow = normalizeToWorkflowStatus(status);
+    switch (workflow) {
+      case "delivered":
         return "bg-emerald-50 text-emerald-600 border-emerald-200";
-      case "Processing":
+      case "confirmed":
+      case "packed":
         return "bg-amber-50 text-amber-600 border-amber-200";
-      case "Shipped":
+      case "picked":
+      case "inTransit":
+      case "outForDelivery":
         return "bg-blue-50 text-blue-600 border-blue-200";
-      case "Cancelled":
+      case "cancelled":
         return "bg-red-50 text-red-600 border-red-200";
-      case "New":
+      case "placed":
         return "bg-purple-50 text-purple-600 border-purple-200";
       default:
         return "bg-gray-50 text-gray-600 border-gray-200";
@@ -53,16 +73,20 @@ export default function RecentOrders() {
   };
 
   const getStatusIcon = (status) => {
-    switch (status) {
-      case "New":
+    const workflow = normalizeToWorkflowStatus(status);
+    switch (workflow) {
+      case "placed":
         return <Clock size={12} />;
-      case "Processing":
+      case "confirmed":
+      case "packed":
         return <Package size={12} />;
-      case "Shipped":
+      case "picked":
+      case "inTransit":
+      case "outForDelivery":
         return <Truck size={12} />;
-      case "Delivered":
+      case "delivered":
         return <CheckCircle size={12} />;
-      case "Cancelled":
+      case "cancelled":
         return <XCircle size={12} />;
       default:
         return <Clock size={12} />;
@@ -134,9 +158,9 @@ export default function RecentOrders() {
                   </div>
                 </div>
                 <div className="text-right flex flex-col items-end gap-3">
-                  <span className={`px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest border ${getStatusColor(order.status || "New")
+                  <span className={`px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest border ${getStatusColor(order.workflowStatus || order.status)
                     } group-hover/item:border-black transition-colors`}>
-                    {order.status || "Processing"}
+                    {getOrderStatusLabel(order.workflowStatus || order.status || "placed")}
                   </span>
                   <p className="text-[9px] font-black text-gray-300 uppercase tracking-[0.1em]">
                     {order.createdAt ? new Date(order.createdAt).toLocaleDateString('en-US', {
@@ -215,11 +239,11 @@ export default function RecentOrders() {
                 <span className="text-gray-500">Status</span>
                 <span
                   className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(
-                    selectedOrder.status || "New",
+                    selectedOrder.workflowStatus || selectedOrder.status || "placed",
                   )}`}
                 >
-                  {getStatusIcon(selectedOrder.status || "New")}
-                  {selectedOrder.status || "New"}
+                  {getStatusIcon(selectedOrder.workflowStatus || selectedOrder.status || "placed")}
+                  {getOrderStatusLabel(selectedOrder.workflowStatus || selectedOrder.status || "placed")}
                 </span>
               </div>
               {selectedOrder.transitionId && (

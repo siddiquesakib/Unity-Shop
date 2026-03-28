@@ -64,6 +64,18 @@ const NotificationListener = () => {
             ...toastOptions,
           });
           break;
+        case "offer_accepted":
+          toast.success(data.message || "Your offer was accepted!", {
+            icon: "✅",
+            ...toastOptions,
+          });
+          break;
+        case "offer_rejected":
+          toast.error(data.message || "Your offer was declined.", {
+            icon: "❌",
+            ...toastOptions,
+          });
+          break;
         default:
           toast(data.message || "New notification", toastOptions);
       }

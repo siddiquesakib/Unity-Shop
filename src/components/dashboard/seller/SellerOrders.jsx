@@ -5,9 +5,15 @@ import { useAuth } from "@/hooks/useAuth";
 import { motion } from "framer-motion";
 import { Eye, Truck, XCircle, CheckCircle, Package, Clock } from "lucide-react";
 import Link from "next/link";
+import { getOrderStatusLabel, normalizeToWorkflowStatus } from "@/utils/orderLifecycle";
 
 const API_BASE =
   process.env.NEXT_PUBLIC_API_URL || "https://unity-shop-server.vercel.app";
+
+function getToken() {
+  if (typeof window === "undefined") return null;
+  return localStorage.getItem("token");
+}
 
 export default function SellerOrders() {
   const { user } = useAuth();
@@ -18,12 +24,22 @@ export default function SellerOrders() {
     const fetchOrders = async () => {
       if (!user?.email) return;
       try {
+        const token = getToken();
+        if (!token) return;
+
         const res = await fetch(
           `${API_BASE}/orders?sellerEmail=${encodeURIComponent(user.email)}`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          },
         );
         if (res.ok) {
           const data = await res.json();
-          setOrders(data.slice(0, 5)); // Show only 5 recent
+          const rows = (Array.isArray(data) ? data : []).map((o) => ({
+            ...o,
+            workflowStatus: normalizeToWorkflowStatus(o.workflowStatus || o.status),
+          }));
+          setOrders(rows.slice(0, 5));
         }
       } catch (err) {
         console.error("Failed to fetch orders:", err);
@@ -36,15 +52,23 @@ export default function SellerOrders() {
 
   const updateStatus = async (orderId, newStatus) => {
     try {
+      const token = getToken();
+      if (!token) return;
+
       const res = await fetch(`${API_BASE}/orders/${orderId}`, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: newStatus }),
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ status: newStatus, actorRole: "seller" }),
       });
       if (res.ok) {
         setOrders(
           orders.map((o) =>
-            o._id === orderId ? { ...o, status: newStatus } : o,
+            o._id === orderId
+              ? { ...o, status: newStatus, workflowStatus: normalizeToWorkflowStatus(newStatus) }
+              : o,
           ),
         );
       }
@@ -54,16 +78,20 @@ export default function SellerOrders() {
   };
 
   const getStatusColor = (status) => {
-    switch (status) {
-      case "New":
+    const workflow = normalizeToWorkflowStatus(status);
+    switch (workflow) {
+      case "placed":
         return "bg-blue-50 text-blue-600 border-blue-200";
-      case "Processing":
+      case "confirmed":
+      case "packed":
         return "bg-amber-50 text-amber-600 border-amber-200";
-      case "Shipped":
+      case "picked":
+      case "inTransit":
+      case "outForDelivery":
         return "bg-purple-50 text-purple-600 border-purple-200";
-      case "Delivered":
+      case "delivered":
         return "bg-emerald-50 text-emerald-600 border-emerald-200";
-      case "Cancelled":
+      case "cancelled":
         return "bg-red-50 text-red-500 border-red-200";
       default:
         return "bg-gray-100 text-gray-500 border-gray-200";
@@ -144,36 +172,27 @@ export default function SellerOrders() {
                   <td className="py-4">
                     <span
                       className={`px-2.5 py-1 rounded-full text-xs font-medium border ${getStatusColor(
-                        order.status || "New",
+                        order.workflowStatus || order.status,
                       )}`}
                     >
-                      {order.status || "New"}
+                      {getOrderStatusLabel(order.workflowStatus || order.status || "placed")}
                     </span>
                   </td>
                   <td className="py-4 text-right">
                     <div className="flex items-center justify-end gap-1">
-                      {(order.status === "New" || !order.status) && (
+                      {order.workflowStatus === "confirmed" && (
                         <button
-                          onClick={() => updateStatus(order._id, "Processing")}
-                          title="Process Order"
+                          onClick={() => updateStatus(order._id, "packed")}
+                          title="Mark Packed"
                           className="p-2 rounded-lg hover:bg-gray-100 text-gray-500 hover:text-amber-600 transition-colors"
                         >
                           <CheckCircle size={16} />
                         </button>
                       )}
-                      {order.status === "Processing" && (
-                        <button
-                          onClick={() => updateStatus(order._id, "Shipped")}
-                          title="Mark Shipped"
-                          className="p-2 rounded-lg hover:bg-gray-100 text-gray-500 hover:text-purple-600 transition-colors"
-                        >
-                          <Truck size={16} />
-                        </button>
-                      )}
-                      {order.status !== "Cancelled" &&
-                        order.status !== "Delivered" && (
+                      {order.workflowStatus !== "cancelled" &&
+                        order.workflowStatus !== "delivered" && (
                           <button
-                            onClick={() => updateStatus(order._id, "Cancelled")}
+                            onClick={() => updateStatus(order._id, "cancelled")}
                             title="Cancel Order"
                             className="p-2 rounded-lg hover:bg-gray-100 text-gray-500 hover:text-red-500 transition-colors"
                           >

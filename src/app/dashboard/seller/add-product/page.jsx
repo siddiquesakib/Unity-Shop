@@ -22,6 +22,8 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 
+const MAX_IMAGES = 5;
+
 export default function AddProductPage() {
   const { user } = useAuth();
   const router = useRouter();
@@ -35,20 +37,30 @@ export default function AddProductPage() {
     originalPrice: "",
     stock: "1",
     image: "",
+    images: [],
     endAt: "",
     weight: "",
     originCountry: "",
-    isInternational: "false",
+    originCity: "",
     length: "",
     width: "",
     height: "",
     shippingType: "paid",
     hsCode: "",
+    insideCityCost: "",
+    outsideCityCost: "",
+    deliveryDaysInside: "",
+    deliveryDaysOutside: "",
+    internationalStandardCost: "",
+    internationalStandardDays: "",
+    internationalExpressCost: "",
+    internationalExpressDays: "",
   });
 
   const [tags, setTags] = useState([]);
   const [inputValue, setInputValue] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
   const [isGeneratingDesc, setIsGeneratingDesc] = useState(false); // AI description state
@@ -92,6 +104,99 @@ export default function AddProductPage() {
     setTags(tags.filter((tag) => tag !== tagToRemove));
   };
 
+  const handleImageFileUpload = async (e) => {
+    const files = Array.from(e.target.files || []);
+    if (!files.length) return;
+
+    const existing = formData.images?.length || 0;
+    if (existing >= MAX_IMAGES) {
+      setError(`You can upload up to ${MAX_IMAGES} photos.`);
+      e.target.value = "";
+      return;
+    }
+
+    const slotsLeft = MAX_IMAGES - existing;
+    const selectedFiles = files.slice(0, slotsLeft);
+
+    for (const file of selectedFiles) {
+      if (!file.type.startsWith("image/")) {
+        setError("Please select valid image files only.");
+        e.target.value = "";
+        return;
+      }
+
+      if (file.size > 10 * 1024 * 1024) {
+        setError("Each image must be under 10MB.");
+        e.target.value = "";
+        return;
+      }
+    }
+
+    setIsUploadingImage(true);
+    setError("");
+
+    try {
+      const token =
+        typeof window !== "undefined" ? localStorage.getItem("token") : null;
+
+      if (!token) {
+        throw new Error("Session expired. Please login again.");
+      }
+
+      const uploadedUrls = [];
+
+      for (const file of selectedFiles) {
+        const fd = new FormData();
+        fd.append("image", file);
+
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/upload`, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          body: fd,
+        });
+
+        const data = await res.json();
+
+        if (!res.ok || !data?.imageUrl) {
+          throw new Error(data?.message || data?.error || "Image upload failed");
+        }
+
+        uploadedUrls.push(data.imageUrl);
+      }
+
+      setFormData((prev) => {
+        const nextImages = [...(prev.images || []), ...uploadedUrls].slice(0, MAX_IMAGES);
+        return {
+          ...prev,
+          images: nextImages,
+          image: nextImages[0] || "",
+        };
+      });
+
+      if (files.length > slotsLeft) {
+        setError(`Only first ${slotsLeft} image(s) were uploaded. Max ${MAX_IMAGES} allowed.`);
+      }
+    } catch (err) {
+      setError(err.message || "Image upload failed");
+    } finally {
+      setIsUploadingImage(false);
+      e.target.value = "";
+    }
+  };
+
+  const removeUploadedImage = (indexToRemove) => {
+    setFormData((prev) => {
+      const nextImages = (prev.images || []).filter((_, idx) => idx !== indexToRemove);
+      return {
+        ...prev,
+        images: nextImages,
+        image: nextImages[0] || "",
+      };
+    });
+  };
+
   const handleSubmit = async () => {
     setError("");
 
@@ -101,12 +206,22 @@ export default function AddProductPage() {
       !formData.category ||
       !formData.price ||
       !formData.image ||
+      !formData.originCountry ||
+      !formData.originCity ||
+      !formData.insideCityCost ||
+      !formData.outsideCityCost ||
+      !formData.deliveryDaysInside ||
+      !formData.deliveryDaysOutside ||
+      !formData.internationalStandardCost ||
+      !formData.internationalStandardDays ||
+      !formData.internationalExpressCost ||
+      !formData.internationalExpressDays ||
       (isAuction && !formData.endAt)
     ) {
       setError(
         isAuction
-          ? "Product name, category, price, image, and auction end date are required."
-          : "Product name, category, price, and image are required.",
+          ? "Product name, category, price, image, origin, shipping config, and auction end date are required."
+          : "Product name, category, price, image, origin, and shipping config are required.",
       );
       return;
     }
@@ -114,6 +229,13 @@ export default function AddProductPage() {
     setIsLoading(true);
 
     try {
+      const token =
+        typeof window !== "undefined" ? localStorage.getItem("token") : null;
+
+      if (!token) {
+        throw new Error("Session expired. Please login again.");
+      }
+
       const productData = {
         name: formData.name,
         category: formData.category,
@@ -125,13 +247,13 @@ export default function AddProductPage() {
           : null,
         stock: isAuction ? 1 : formData.stock ? Number(formData.stock) : 1,
         image: formData.image,
+        images: formData.images,
         tags,
         badge: isAuction ? "Auction" : null,
         rating: 0,
         reviews: 0,
         sellerName: user?.name || "Unknown Seller",
         sellerEmail: user?.email || "",
-        tags,
         endAt: isAuction ? formData.endAt : null,
         weight: formData.weight ? parseFloat(formData.weight) : 0,
         dimensions: {
@@ -139,15 +261,38 @@ export default function AddProductPage() {
           width: formData.width ? parseFloat(formData.width) : 0,
           height: formData.height ? parseFloat(formData.height) : 0,
         },
-        originCountry: formData.originCountry || "Local",
-        isInternational: formData.isInternational === "true",
+        origin: {
+          country: formData.originCountry.trim(),
+          city: formData.originCity.trim(),
+        },
+        shippingConfig: {
+          local: {
+            insideCityCost: Number(formData.insideCityCost),
+            outsideCityCost: Number(formData.outsideCityCost),
+            deliveryDaysInside: Number(formData.deliveryDaysInside),
+            deliveryDaysOutside: Number(formData.deliveryDaysOutside),
+          },
+          international: {
+            standard: {
+              cost: Number(formData.internationalStandardCost),
+              deliveryDays: Number(formData.internationalStandardDays),
+            },
+            express: {
+              cost: Number(formData.internationalExpressCost),
+              deliveryDays: Number(formData.internationalExpressDays),
+            },
+          },
+        },
         shippingType: formData.shippingType,
         hsCode: formData.hsCode,
       };
 
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/products`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
         body: JSON.stringify(productData),
       });
 
@@ -397,27 +542,72 @@ export default function AddProductPage() {
               <h2 className="text-xl font-bold text-gray-900">Product Image</h2>
             </div>
             <div className="space-y-4">
-              <input
-                type="url"
-                name="image"
-                value={formData.image}
-                onChange={handleChange}
-                placeholder="Image URL"
-                className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 outline-none"
-              />
-              {formData.image && (
-                <Image
-                  src={formData.image}
-                  alt="Preview"
-                  width={160}
-                  height={160}
-                  className="w-40 h-40 object-cover rounded-xl border"
+              <label className="block">
+                <div className="w-full border-2 border-dashed border-gray-300 hover:border-gray-500 rounded-xl px-4 py-8 text-center cursor-pointer transition-colors bg-gray-50/60">
+                  <p className="text-sm font-semibold text-gray-700">
+                    {isUploadingImage ? "Uploading image..." : "Click to upload product photos"}
+                  </p>
+                  <p className="text-xs text-gray-500 mt-1">JPG, PNG, WEBP (max 10MB each, up to 5 photos)</p>
+                  <p className="text-[11px] text-gray-500 mt-2">
+                    Uploaded: {formData.images.length}/{MAX_IMAGES}
+                  </p>
+                </div>
+                <input
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  onChange={handleImageFileUpload}
+                  disabled={isUploadingImage || formData.images.length >= MAX_IMAGES}
+                  className="hidden"
                 />
+              </label>
+
+              {isUploadingImage && (
+                <p className="text-xs text-gray-500 flex items-center gap-2">
+                  <Loader2 size={14} className="animate-spin" /> Uploading to media server...
+                </p>
+              )}
+
+              {formData.images.length > 0 && (
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  {formData.images.map((img, idx) => (
+                    <div key={`${img}-${idx}`} className="relative w-full aspect-square">
+                      <Image
+                        src={img}
+                        alt={`Preview ${idx + 1}`}
+                        fill
+                        className="object-cover rounded-xl border"
+                      />
+                      {idx === 0 && (
+                        <span className="absolute top-2 left-2 text-[10px] px-2 py-0.5 rounded-full bg-black text-white font-semibold">
+                          Cover
+                        </span>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => removeUploadedImage(idx)}
+                        className="absolute top-2 right-2 w-6 h-6 rounded-full bg-black/70 text-white flex items-center justify-center hover:bg-black"
+                        title="Remove image"
+                      >
+                        <X size={12} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
               )}
               <AIProductPreview
-                onImageGenerated={(url) =>
-                  setFormData((prev) => ({ ...prev, image: url }))
-                }
+                onImageGenerated={(url) => {
+                  setFormData((prev) => {
+                    const existing = prev.images || [];
+                    if (existing.length >= MAX_IMAGES) return prev;
+                    const nextImages = [...existing, url];
+                    return {
+                      ...prev,
+                      images: nextImages,
+                      image: nextImages[0] || "",
+                    };
+                  });
+                }}
               />
             </div>
           </section>
@@ -512,7 +702,6 @@ export default function AddProductPage() {
             </div>
           </section>
 
-
           <section className="p-6 rounded-2xl bg-white border border-gray-200 space-y-6">
             <div className="flex items-center gap-3 border-b border-gray-200 pb-4">
               <div className="p-2 rounded-lg bg-blue-50 text-blue-500">
@@ -600,7 +789,7 @@ export default function AddProductPage() {
 
               <div className="space-y-2">
                 <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                  Origin Country
+                  Origin Country <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
@@ -612,25 +801,110 @@ export default function AddProductPage() {
                 />
               </div>
 
-              <div className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  id="isInternational"
-                  checked={formData.isInternational === "true"}
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      isInternational: e.target.checked ? "true" : "false",
-                    }))
-                  }
-                  className="w-4 h-4 accent-black"
-                />
-                <label
-                  htmlFor="isInternational"
-                  className="text-sm text-gray-700"
-                >
-                  Available for International Shipping
+              <div className="space-y-2">
+                <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                  Origin City <span className="text-red-500">*</span>
                 </label>
+                <input
+                  type="text"
+                  name="originCity"
+                  value={formData.originCity}
+                  onChange={handleChange}
+                  placeholder="e.g. Dhaka"
+                  className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 outline-none"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                  Local Shipping (Inside City / Outside City)
+                </label>
+                <div className="grid grid-cols-2 gap-2">
+                  <input
+                    type="number"
+                    name="insideCityCost"
+                    min="0"
+                    value={formData.insideCityCost}
+                    onChange={handleChange}
+                    placeholder="Inside City Cost"
+                    className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 outline-none"
+                  />
+                  <input
+                    type="number"
+                    name="outsideCityCost"
+                    min="0"
+                    value={formData.outsideCityCost}
+                    onChange={handleChange}
+                    placeholder="Outside City Cost"
+                    className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 outline-none"
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <input
+                    type="number"
+                    name="deliveryDaysInside"
+                    min="1"
+                    value={formData.deliveryDaysInside}
+                    onChange={handleChange}
+                    placeholder="Delivery Days (Inside)"
+                    className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 outline-none"
+                  />
+                  <input
+                    type="number"
+                    name="deliveryDaysOutside"
+                    min="1"
+                    value={formData.deliveryDaysOutside}
+                    onChange={handleChange}
+                    placeholder="Delivery Days (Outside)"
+                    className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 outline-none"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                  International Shipping (Standard / Express)
+                </label>
+                <div className="grid grid-cols-2 gap-2">
+                  <input
+                    type="number"
+                    name="internationalStandardCost"
+                    min="0"
+                    value={formData.internationalStandardCost}
+                    onChange={handleChange}
+                    placeholder="Standard Cost"
+                    className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 outline-none"
+                  />
+                  <input
+                    type="number"
+                    name="internationalStandardDays"
+                    min="1"
+                    value={formData.internationalStandardDays}
+                    onChange={handleChange}
+                    placeholder="Standard Days"
+                    className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 outline-none"
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <input
+                    type="number"
+                    name="internationalExpressCost"
+                    min="0"
+                    value={formData.internationalExpressCost}
+                    onChange={handleChange}
+                    placeholder="Express Cost"
+                    className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 outline-none"
+                  />
+                  <input
+                    type="number"
+                    name="internationalExpressDays"
+                    min="1"
+                    value={formData.internationalExpressDays}
+                    onChange={handleChange}
+                    placeholder="Express Days"
+                    className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 outline-none"
+                  />
+                </div>
               </div>
             </div>
           </section>

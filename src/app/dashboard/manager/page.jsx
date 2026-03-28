@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import ManagerOverview from "@/components/dashboard/manager/ManagerOverview";
 import {
   ShoppingCart,
@@ -14,35 +14,50 @@ import {
 import { motion } from "framer-motion";
 import Link from "next/link";
 
+function getToken() {
+  if (typeof window === "undefined") return null;
+  return localStorage.getItem("token");
+}
+
 export default function ManagerDashboard() {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchStats = async () => {
-      try {
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/orders/platform-stats`,
-        );
-        if (res.ok) {
-          const data = await res.json();
-          setStats(data);
-        }
-      } catch (err) {
-        console.error("Failed to fetch platform stats:", err);
-      } finally {
-        setLoading(false);
+  const fetchStats = useCallback(async () => {
+    try {
+      const token = getToken();
+      if (!token) return;
+
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/orders/platform-stats`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
+      if (res.ok) {
+        const data = await res.json();
+        setStats(data);
       }
-    };
-    fetchStats();
+    } catch (err) {
+      console.error("Failed to fetch platform stats:", err);
+    } finally {
+      setLoading(false);
+    }
   }, []);
+
+  useEffect(() => {
+    fetchStats();
+  }, [fetchStats]);
 
   // Calculate fulfillment percentages
   const totalOrders = stats?.totalOrders || 1;
-  const newCount = stats?.statusCounts?.["New"] || 0;
-  const processingCount = stats?.statusCounts?.["Processing"] || 0;
-  const shippedCount = stats?.statusCounts?.["Shipped"] || 0;
-  const deliveredCount = stats?.statusCounts?.["Delivered"] || 0;
+  const newCount = stats?.statusCounts?.["placed"] || 0;
+  const processingCount = stats?.statusCounts?.["confirmed"] || 0;
+  const shippedCount =
+    (stats?.statusCounts?.["picked"] || 0) +
+    (stats?.statusCounts?.["inTransit"] || 0) +
+    (stats?.statusCounts?.["outForDelivery"] || 0);
+  const deliveredCount = stats?.statusCounts?.["delivered"] || 0;
 
   const fulfillmentBars = [
     {

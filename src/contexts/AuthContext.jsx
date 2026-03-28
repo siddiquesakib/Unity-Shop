@@ -24,6 +24,9 @@ export const AuthProvider = ({ children }) => {
         image: session.user.image,
         role: session.user.role || 'user',
         sellerRequest: session.user.sellerRequest || null,
+        profileLocation: session.user.profileLocation || null,
+        activeLocation: session.user.activeLocation || null,
+        needsLocationSelection: Boolean(session.user.needsLocationSelection),
       };
 
       setUser(sessionUser);
@@ -44,6 +47,49 @@ export const AuthProvider = ({ children }) => {
       setLoading(false);
     }
   }, [session, status]);
+
+  useEffect(() => {
+    if (status !== 'authenticated') return;
+    if (!session?.backendToken) return;
+
+    const syncLocation = async () => {
+      try {
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/users/location/active`,
+          {
+            headers: {
+              Authorization: `Bearer ${session.backendToken}`,
+            },
+          },
+        );
+
+        if (!res.ok) return;
+        const data = await res.json();
+
+        setUser(prev => {
+          if (!prev) return prev;
+          const updated = {
+            ...prev,
+            profileLocation: data.profileLocation || null,
+            activeLocation: data.activeLocation || null,
+            needsLocationSelection: Boolean(data.needsLocationSelection),
+          };
+          localStorage.setItem('user', JSON.stringify(updated));
+          return updated;
+        });
+
+        await update({
+          profileLocation: data.profileLocation || null,
+          activeLocation: data.activeLocation || null,
+          needsLocationSelection: Boolean(data.needsLocationSelection),
+        });
+      } catch (error) {
+        console.error('Location sync error:', error);
+      }
+    };
+
+    syncLocation();
+  }, [session?.backendToken, status, update]);
 
   // ✅ Login (Credentials)
   const login = async (email, password) => {
@@ -77,14 +123,20 @@ export const AuthProvider = ({ children }) => {
   };
 
   // ✅ Register (Backend Call)
-  const register = async (name, email, password) => {
+  const register = async (name, email, password, location = null) => {
     try {
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/auth/register`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name, email, password }),
+          body: JSON.stringify({
+            name,
+            email,
+            password,
+            country: location?.country || '',
+            city: location?.city || '',
+          }),
         },
       );
 
@@ -97,6 +149,59 @@ export const AuthProvider = ({ children }) => {
       return { success: true };
     } catch (error) {
       console.error('Registration Error:', error);
+      return { success: false, error: error.message };
+    }
+  };
+
+  const updateActiveLocation = async ({ country, city, source = 'navbar' }) => {
+    if (!token) {
+      return { success: false, error: 'Please log in again' };
+    }
+
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/users/location/active`,
+        {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ country, city, source }),
+        },
+      );
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.message || 'Failed to update location');
+      }
+
+      const updatedUser = {
+        ...(user || {}),
+        profileLocation: data.profileLocation || null,
+        activeLocation: data.activeLocation || null,
+        needsLocationSelection: Boolean(data.needsLocationSelection),
+      };
+
+      setUser(updatedUser);
+      localStorage.setItem('user', JSON.stringify(updatedUser));
+
+      await update({
+        profileLocation: data.profileLocation || null,
+        activeLocation: data.activeLocation || null,
+        needsLocationSelection: Boolean(data.needsLocationSelection),
+      });
+
+      return {
+        success: true,
+        data: {
+          profileLocation: data.profileLocation || null,
+          activeLocation: data.activeLocation || null,
+          needsLocationSelection: Boolean(data.needsLocationSelection),
+        },
+      };
+    } catch (error) {
+      console.error('Update Active Location Error:', error);
       return { success: false, error: error.message };
     }
   };
@@ -214,6 +319,7 @@ export const AuthProvider = ({ children }) => {
         getDashboardByRole,
         submitSellerRequest,
         checkSellerRequestStatus,
+        updateActiveLocation,
       }}
     >
       {children}

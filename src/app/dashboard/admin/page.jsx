@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import AdminAnalytics from "@/components/dashboard/admin/AdminAnalytics";
 import VerificationQueue from "@/components/dashboard/admin/VerificationQueue";
 import {
@@ -9,16 +9,30 @@ import {
   Package,
   Loader2,
 } from "lucide-react";
+import { getOrderStatusLabel, normalizeToWorkflowStatus } from "@/utils/orderLifecycle";
 
 const API_BASE =
   process.env.NEXT_PUBLIC_API_URL || "https://unity-shop-server.vercel.app";
+
+function getToken() {
+  if (typeof window === "undefined") return null;
+  return localStorage.getItem("token");
+}
 
 export default function AdminDashboard() {
   const [recentOrders, setRecentOrders] = useState([]);
   const [loadingOrders, setLoadingOrders] = useState(true);
 
-  useEffect(() => {
-    fetch(`${API_BASE}/orders/platform-stats`)
+  const fetchRecentOrders = useCallback(() => {
+    const token = getToken();
+    if (!token) {
+      setLoadingOrders(false);
+      return;
+    }
+
+    fetch(`${API_BASE}/orders/platform-stats`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
       .then((res) => res.json())
       .then((data) => {
         setRecentOrders(data.recentOrders || []);
@@ -30,15 +44,22 @@ export default function AdminDashboard() {
       });
   }, []);
 
+  useEffect(() => {
+    fetchRecentOrders();
+  }, [fetchRecentOrders]);
+
   const getStatusColor = (status) => {
     switch (status) {
-      case "Delivered":
+      case "delivered":
         return "text-emerald-600";
-      case "Shipped":
+      case "picked":
+      case "inTransit":
+      case "outForDelivery":
         return "text-blue-600";
-      case "Processing":
+      case "confirmed":
+      case "packed":
         return "text-amber-600";
-      case "Cancelled":
+      case "cancelled":
         return "text-red-600";
       default:
         return "text-gray-600";
@@ -146,11 +167,11 @@ export default function AdminDashboard() {
                     </div>
                   </div>
                   <div className="text-right flex flex-col items-end gap-2">
-                    <div className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border transition-colors ${order.status === 'Delivered' ? 'bg-emerald-50 text-emerald-600 border-emerald-100 group-hover/item:bg-emerald-500 group-hover/item:text-white group-hover/item:border-emerald-500' :
-                      order.status === 'Cancelled' ? 'bg-red-50 text-red-600 border-red-100 group-hover/item:bg-red-500 group-hover/item:text-white group-hover/item:border-red-500' :
+                    <div className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border transition-colors ${normalizeToWorkflowStatus(order.workflowStatus || order.status) === 'delivered' ? 'bg-emerald-50 text-emerald-600 border-emerald-100 group-hover/item:bg-emerald-500 group-hover/item:text-white group-hover/item:border-emerald-500' :
+                      normalizeToWorkflowStatus(order.workflowStatus || order.status) === 'cancelled' ? 'bg-red-50 text-red-600 border-red-100 group-hover/item:bg-red-500 group-hover/item:text-white group-hover/item:border-red-500' :
                         'bg-gray-50 text-gray-600 border-gray-100 group-hover/item:bg-black group-hover/item:text-white group-hover/item:border-black'
                       }`}>
-                      {order.status || "Pending"}
+                      {getOrderStatusLabel(order.workflowStatus || order.status || "placed")}
                     </div>
                     <p className="text-[10px] font-bold text-gray-300 uppercase tracking-tighter">
                       {order.createdAt ? getTimeAgo(order.createdAt) : "Just Now"}

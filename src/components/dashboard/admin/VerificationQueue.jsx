@@ -7,20 +7,35 @@ import { motion } from "framer-motion";
 const API_BASE =
   process.env.NEXT_PUBLIC_API_URL || "https://unity-shop-server.vercel.app";
 
+function getToken() {
+  if (typeof window === "undefined") return null;
+  return localStorage.getItem("token");
+}
+
 export default function VerificationQueue() {
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(null); // email of user being processed
 
   const fetchRequests = () => {
-    fetch(`${API_BASE}/users/seller-requests?status=pending`)
+    const token = getToken();
+    if (!token) {
+      setApplications([]);
+      setLoading(false);
+      return;
+    }
+
+    fetch(`${API_BASE}/users/seller-requests?status=pending`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
       .then((res) => res.json())
       .then((data) => {
-        setApplications(data);
+        setApplications(Array.isArray(data) ? data : []);
         setLoading(false);
       })
       .catch((err) => {
         console.error("Failed to fetch seller requests:", err);
+        setApplications([]);
         setLoading(false);
       });
   };
@@ -32,8 +47,12 @@ export default function VerificationQueue() {
   const handleApprove = async (email) => {
     setActionLoading(email);
     try {
+      const token = getToken();
+      if (!token) return;
+
       const res = await fetch(`${API_BASE}/users/approve-seller/${email}`, {
         method: "PATCH",
+        headers: { Authorization: `Bearer ${token}` },
       });
       if (res.ok) {
         setApplications((prev) => prev.filter((a) => a.email !== email));
@@ -47,8 +66,12 @@ export default function VerificationQueue() {
   const handleReject = async (email) => {
     setActionLoading(email);
     try {
+      const token = getToken();
+      if (!token) return;
+
       const res = await fetch(`${API_BASE}/users/reject-seller/${email}`, {
         method: "PATCH",
+        headers: { Authorization: `Bearer ${token}` },
       });
       if (res.ok) {
         setApplications((prev) => prev.filter((a) => a.email !== email));

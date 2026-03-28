@@ -50,6 +50,11 @@ export function CartProvider({ children }) {
   const isJustClearedRef = useRef(false);
 
   // ─── Initial load from localStorage ────────────────────────────────────────
+  const getAuthToken = useCallback(() => {
+    if (typeof window === "undefined") return null;
+    return localStorage.getItem("token");
+  }, []);
+
   useEffect(() => {
     try {
       if (typeof window !== 'undefined') {
@@ -61,6 +66,18 @@ export function CartProvider({ children }) {
         const savedLater = localStorage.getItem('unityshop_saved');
         if (savedLater) {
           setSavedItems((JSON.parse(savedLater) || []).map(sanitizeItem));
+        }
+
+        const savedCheckout = localStorage.getItem("unityshop_checkout");
+        if (savedCheckout) {
+          setCheckoutGroups(JSON.parse(savedCheckout));
+        }
+
+        const savedCheckoutPromo = localStorage.getItem(
+          "unityshop_checkout_promo",
+        );
+        if (savedCheckoutPromo) {
+          setCheckoutPromo(JSON.parse(savedCheckoutPromo));
         }
       }
     } catch (e) {
@@ -109,6 +126,29 @@ export function CartProvider({ children }) {
             const groups = {};
             data.forEach(item => {
               const sellerId = item.sellerId || 'general';
+    if (user?._id) {
+      const token = getAuthToken();
+      if (!token) return;
+
+      fetch(`${process.env.NEXT_PUBLIC_API_URL}/cart/${user._id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+        .then((res) => {
+          if (res.status === 401 || res.status === 403) return [];
+          return res.json();
+        })
+        .then((data) => {
+          if (Array.isArray(data)) {
+            // Group the flat items by seller
+            const groups = {};
+            data.forEach((item) => {
+              const sellerId = item.sellerId || "general";
+              const priceTag =
+                item.pricingType === "negotiated"
+                  ? `-offer-${Number(item.price)}`
+                  : "";
               if (!groups[sellerId]) {
                 groups[sellerId] = {
                   id: `group-${sellerId}`,
@@ -117,7 +157,7 @@ export function CartProvider({ children }) {
                     name: item.sellerName || 'UnityShop Seller',
                     email: item.sellerEmail || '',
                     verified: item.sellerVerified || false,
-                  },
+                  }
                   items: [],
                 };
               }
@@ -138,6 +178,23 @@ export function CartProvider({ children }) {
                   sellerEmail: item.sellerEmail,
                 }),
               );
+              }, [user, hydrated, getAuthToken]);
+              groups[sellerId].items.push({
+                id: `${item.productId}-${sellerId}${priceTag}`,
+                productId: item.productId,
+                name: item.name,
+                image: item.image,
+                price: item.price,
+                originalPrice: item.originalPrice || item.price,
+                quantity: item.quantity,
+                stock: item.stock,
+                moq: item.moq,
+                maxQuantity: item.stock || 9999,
+                variant: item.category || "—",
+                sellerName: item.sellerName,
+                sellerEmail: item.sellerEmail,
+                pricingType: item.pricingType || "standard",
+              });
             });
             console.log(
               '[CartContext] Setting cart groups:',
@@ -179,6 +236,35 @@ export function CartProvider({ children }) {
           return { ...g, items: g.items.filter(i => i.id !== itemId) };
         })
         .filter(g => g.items.length > 0);
+  useEffect(() => {
+    if (hydrated) {
+      localStorage.setItem(
+        "unityshop_checkout",
+        JSON.stringify(checkoutGroups),
+      );
+    }
+  }, [checkoutGroups, hydrated]);
+
+  useEffect(() => {
+    if (hydrated) {
+      localStorage.setItem(
+        "unityshop_checkout_promo",
+        JSON.stringify(checkoutPromo),
+      );
+    }
+  }, [checkoutPromo, hydrated]);
+
+  // ─── Save for Later ────────────────────────────────────────────────────────
+  const moveToSaved = useCallback((itemId) => {
+    let found = null;
+    setCartGroups((prev) => {
+      const next = prev
+        .map((g) => {
+          const item = g.items.find((i) => i.id === itemId);
+          if (item) found = { ...item };
+          return { ...g, items: g.items.filter((i) => i.id !== itemId) };
+        })
+        .filter((g) => g.items.length > 0);
       return next;
     });
     if (found) {
@@ -214,6 +300,12 @@ export function CartProvider({ children }) {
                 Number(existing.quantity) + Number(safeFound.quantity),
                 Number(existing.maxQuantity) || 9999,
               ),
+            (i) => i.productId === found.productId,
+          );
+          if (eIdx !== -1) {
+            groups[gIdx].items[eIdx] = {
+              ...groups[gIdx].items[eIdx],
+              quantity: groups[gIdx].items[eIdx].quantity + found.quantity,
             };
           } else {
             groups[gIdx].items.push(safeFound);
@@ -228,6 +320,11 @@ export function CartProvider({ children }) {
               verified: false,
             },
             items: [safeFound],
+              name: found.sellerName || "UnityShop Seller",
+              email: found.sellerEmail || "",
+              verified: false,
+            },
+            items: [found],
           });
         }
         return groups;
@@ -269,6 +366,54 @@ export function CartProvider({ children }) {
         if (groupIdx !== -1) {
           const itemIdx = groups[groupIdx].items.findIndex(
             i => i.productId === newItem.productId,
+    (product, quantity = 1, overridePrice = null) => {
+      const sellerId = product.sellerId || product.sellerName || "general";
+      const sellerName = product.sellerName || "UnityShop Seller";
+      const moq = product.moq || 1;
+      const parsedOverridePrice =
+        overridePrice !== null && overridePrice !== undefined
+          ? Number(overridePrice)
+          : null;
+      const hasOverridePrice =
+        parsedOverridePrice !== null &&
+        Number.isFinite(parsedOverridePrice) &&
+        parsedOverridePrice > 0;
+      const finalPrice = hasOverridePrice
+        ? parsedOverridePrice
+        : Number(product.price);
+      const baseProductPrice = Number(product.price);
+      const pricingType = hasOverridePrice ? "negotiated" : "standard";
+      const itemId = hasOverridePrice
+        ? `${product._id || product.id}-${sellerId}-offer-${finalPrice}`
+        : `${product._id || product.id}-${sellerId}`;
+
+      // Optimistic update
+      setCartGroups((prev) => {
+        const groups = prev.map((g) => ({ ...g, items: [...g.items] }));
+        const groupIdx = groups.findIndex((g) => g.seller.id === sellerId);
+
+        const newItem = {
+          id: itemId,
+          productId: product._id || product.id,
+          name: product.name,
+          image: product.image || "",
+          price: finalPrice,
+          originalPrice: baseProductPrice,
+          quantity,
+          moq,
+          maxQuantity: product.stock || 9999,
+          variant: product.variant || product.category || "—",
+          stock: product.stock || 9999,
+          sellerName,
+          sellerEmail: product.sellerEmail || "",
+          pricingType,
+        };
+
+        if (groupIdx !== -1) {
+          const itemIdx = groups[groupIdx].items.findIndex(
+            (i) =>
+              i.productId === newItem.productId &&
+              Number(i.price) === Number(newItem.price),
           );
           if (itemIdx !== -1) {
             const existing = groups[groupIdx].items[itemIdx];
@@ -299,13 +444,22 @@ export function CartProvider({ children }) {
       });
 
       if (user?._id) {
+        const token = getAuthToken();
+        if (!token) return;
+
         fetch(`${process.env.NEXT_PUBLIC_API_URL}/cart/add`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
           body: JSON.stringify({
             userId: user._id,
             productId: product._id || product.id,
-            quantity: Number(quantity) || 1,
+            quantity,
+            overridePrice: hasOverridePrice ? finalPrice : null,
+            originalPrice: hasOverridePrice ? baseProductPrice : null,
+            pricingType,
           }),
         }).catch(err => console.error('Failed to add to cart backend:', err));
       }
@@ -314,13 +468,15 @@ export function CartProvider({ children }) {
 
       if (createNotification) {
         createNotification({
-          type: 'cart_add',
-          title: 'Added to Cart',
-          message: `Added ${product.name} to your cart.`,
+          type: "cart_add",
+          title: "Added to Cart",
+          message: hasOverridePrice
+            ? `Added ${product.name} to your cart at negotiated price $${finalPrice}.`
+            : `Added ${product.name} to your cart.`,
         });
       }
     },
-    [createNotification, user],
+    [createNotification, getAuthToken, user],
   );
 
   // ─── Remove Item ─────────────────────────────────────────────────────────────
@@ -347,9 +503,15 @@ export function CartProvider({ children }) {
       );
 
       if (user?._id && productIdToRemove) {
+        const token = getAuthToken();
+        if (!token) return;
+
         fetch(`${process.env.NEXT_PUBLIC_API_URL}/cart/remove`, {
-          method: 'DELETE',
-          headers: { 'Content-Type': 'application/json' },
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
           body: JSON.stringify({
             userId: user._id,
             productId: productIdToRemove,
@@ -359,7 +521,7 @@ export function CartProvider({ children }) {
         );
       }
     },
-    [cartGroups, user],
+    [cartGroups, getAuthToken, user],
   );
 
   // ─── Update Quantity ──────────────────────────────────────────────────────────
@@ -400,9 +562,15 @@ export function CartProvider({ children }) {
       );
 
       if (user?._id && productIdToUpdate) {
+        const token = getAuthToken();
+        if (!token) return;
+
         fetch(`${process.env.NEXT_PUBLIC_API_URL}/cart/update`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
           body: JSON.stringify({
             userId: user._id,
             productId: productIdToUpdate,
@@ -413,13 +581,63 @@ export function CartProvider({ children }) {
         );
       }
     },
-    [cartGroups, user],
+    [cartGroups, getAuthToken, user],
   );
 
   // ─── Prepare Checkout ─────────────────────────────────────────────────────────
   const prepareCheckout = useCallback((selectedGroups, promo = null) => {
-    setCheckoutGroups(selectedGroups);
+    const normalized = Array.isArray(selectedGroups)
+      ? selectedGroups.map((group) => ({
+          ...group,
+          items: Array.isArray(group.items) ? [...group.items] : [],
+        }))
+      : [];
+
+    setCheckoutGroups(normalized);
     setCheckoutPromo(promo);
+
+    if (typeof window !== "undefined") {
+      localStorage.setItem(
+        "unityshop_checkout",
+        JSON.stringify(selectedGroups),
+      );
+      localStorage.setItem("unityshop_checkout_promo", JSON.stringify(promo));
+    }
+  }, []);
+
+  // Dedicated checkout (buy-now) also writes to the same checkout source-of-truth.
+  const startDirectCheckout = useCallback((product, quantity = 1) => {
+    if (!product) return;
+
+    const sellerId = product.sellerId || product.sellerName || "general";
+    const item = {
+      id: `${product._id || product.id}-${sellerId}-direct`,
+      productId: product._id || product.id,
+      name: product.name,
+      image: product.image || "",
+      price: product.price,
+      quantity: Number(quantity) > 0 ? Number(quantity) : 1,
+      moq: product.moq || 1,
+      maxQuantity: product.stock || 9999,
+      variant: product.variant || product.category || "—",
+      stock: product.stock || 9999,
+      sellerName: product.sellerName || "UnityShop Seller",
+      sellerEmail: product.sellerEmail || "",
+    };
+
+    setCheckoutGroups([
+      {
+        id: `checkout-${sellerId}`,
+        seller: {
+          id: sellerId,
+          name: product.sellerName || "UnityShop Seller",
+          email: product.sellerEmail || "",
+          verified: !!product.sellerVerified,
+        },
+        items: [item],
+      },
+    ]);
+    setCheckoutPromo(null);
   }, []);
 
   // ─── Clear Checkout Items ─────────────────────────────────────────────────────
@@ -572,6 +790,23 @@ export function CartProvider({ children }) {
     },
     [cartGroups, checkoutGroups, user],
   );
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("unityshop_checkout");
+      localStorage.removeItem("unityshop_checkout_promo");
+    }
+  }, [checkoutGroups]);
+
+  // ─── Clear Entire Cart ────────────────────────────────────────────────────────
+  const clearCart = useCallback(() => {
+    setCartGroups([]);
+    setCheckoutGroups([]);
+    setCheckoutPromo(null);
+
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("unityshop_checkout");
+      localStorage.removeItem("unityshop_checkout_promo");
+    }
+  }, []);
 
   // ─── Derived values ───────────────────────────────────────────────────────────
   const totalUniqueItems = cartGroups.reduce(
@@ -590,6 +825,7 @@ export function CartProvider({ children }) {
         removeItem,
         updateQuantity,
         prepareCheckout,
+        startDirectCheckout,
         clearCheckoutItems,
         clearCart,
         moveToSaved,
