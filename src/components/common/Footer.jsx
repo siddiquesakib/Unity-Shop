@@ -3,7 +3,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-
+// this is fotter component
 const columns = [
   {
     title: "Navigation",
