@@ -1,4 +1,3 @@
-// app/cart/page.jsx
 'use client';
 
 import { useState, useMemo, useEffect, useCallback } from 'react';
@@ -34,7 +33,6 @@ const FREE_SHIP = 999;
 const SHOP_EMAIL = process.env.NEXT_PUBLIC_SHOP_EMAIL || 'shop@unityshop.com';
 const SHOP_NAME = process.env.NEXT_PUBLIC_SHOP_NAME || 'UnityShop';
 
-/** Returns base API URL with no trailing slash, or null if env var is missing. */
 function getApiUrl() {
   const raw = process.env.NEXT_PUBLIC_API_URL;
   if (!raw) return null;
@@ -54,6 +52,13 @@ const EMPTY_SHIPPING = {
   country: 'Bangladesh',
   zip: '',
   note: '',
+};
+
+// ─── Safe number helper ────────────────────────────────────────────────────────
+// Converts anything to a valid number, falls back to `fallback`
+const n = (val, fallback = 0) => {
+  const num = Number(val);
+  return isFinite(num) ? num : fallback;
 };
 
 export default function CartPage() {
@@ -89,7 +94,7 @@ export default function CartPage() {
 
   /* ── Auto-load saved shipping info ─────────────────────────────── */
   useEffect(() => {
-    if (sessionStatus === 'loading') return; // wait until session resolves
+    if (sessionStatus === 'loading') return;
     if (!userEmail) return;
 
     const API_URL = getApiUrl();
@@ -127,7 +132,6 @@ export default function CartPage() {
         return res.ok ? res.json() : null;
       })
       .then(data => {
-        console.log('[Cart] Shipping data:', data);
         if (data && data.fullName) {
           setShipping({
             fullName: data.fullName || '',
@@ -161,22 +165,30 @@ export default function CartPage() {
   }, [userEmail, sessionStatus]);
 
   /* ── Derived totals ─────────────────────────────────────────────── */
+  // All numeric fields are coerced with n() so no NaN can sneak into totals
   const allItems = useMemo(
     () =>
       cartGroups.flatMap(g =>
         g.items.map(i => ({
           ...i,
+          // Guarantee these are always safe numbers at render time
+          quantity: Math.max(1, n(i.quantity, 1)),
+          price: Math.max(0, n(i.price, 0)),
+          moq: Math.max(1, n(i.moq, 1)),
+          maxQuantity: Math.max(1, n(i.maxQuantity, 9999)),
+          stock: Math.max(0, n(i.stock, 0)),
           sellerName: g.seller.name,
           sellerId: g.seller.id,
         })),
       ),
     [cartGroups],
   );
+
   const totalItems = allItems.length;
   const subtotal = allItems.reduce((s, i) => s + i.price * i.quantity, 0);
   const totalQty = allItems.reduce((s, i) => s + i.quantity, 0);
   const discountAmount = appliedPromo
-    ? Math.min(appliedPromo.discount, subtotal)
+    ? Math.min(n(appliedPromo.discount, 0), subtotal)
     : 0;
   const dynamicShippingCost =
     shippingOptions?.options?.[shippingMethod]?.cost ?? null;
@@ -191,9 +203,13 @@ export default function CartPage() {
   const grandTotal = Math.max(0, subtotal - discountAmount + shippingCost);
   const totalSavings = discountAmount + (subtotal >= FREE_SHIP ? 60 : 0);
 
-  /* ── Handlers ───────────────────────────────────────────────────── */
-  const handleQtyChange = (item, d) =>
-    updateQuantity(item.id, item.quantity + d * (item.moq || 1));
+  /* ── Quantity change handler ─────────────────────────────────────── */
+  const handleQtyChange = (item, d) => {
+    // Both current quantity and moq are coerced — the root fix for NaN
+    const current = Math.max(1, n(item.quantity, 1));
+    const step = Math.max(1, n(item.moq, 1));
+    updateQuantity(item.id, current + d * step);
+  };
 
   const handleRemove = id => {
     setRemovingId(id);
@@ -221,14 +237,7 @@ export default function CartPage() {
     if (!shippingValid) return;
 
     const API_URL = getApiUrl();
-
-    if (!API_URL) {
-      console.warn('[Cart] Skipping save — NEXT_PUBLIC_API_URL not set.');
-      setStep('payment');
-      return;
-    }
-    if (!userEmail) {
-      console.warn('[Cart] Skipping save — user not logged in.');
+    if (!API_URL || !userEmail) {
       setStep('payment');
       return;
     }
@@ -236,6 +245,15 @@ export default function CartPage() {
     setSavingShipping(true);
     setShippingMsg(null);
 
+    try {
+      const res = await fetch(
+        `${API_URL}/users/shipping/${encodeURIComponent(userEmail)}`,
+        {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(shipping),
+        },
+      );
     const token = getAuthToken();
     if (!token) {
       setShippingMsg({ type: 'err', text: 'Please log in again.' });
@@ -256,8 +274,6 @@ export default function CartPage() {
         body: JSON.stringify(shipping),
       });
       const data = await res.json();
-      console.log('[Cart] PATCH shipping response:', res.status, data);
-
       if (res.ok) {
         setSavedBadge(true);
         setShippingMsg({ type: 'ok', text: 'Address saved to your profile ✓' });
@@ -271,7 +287,6 @@ export default function CartPage() {
         setTimeout(() => setStep('payment'), 1400);
       }
     } catch (err) {
-      console.error('[Cart] Network error saving shipping:', err);
       setShippingMsg({
         type: 'err',
         text: 'Network error — address not saved, but you can still proceed.',
@@ -525,7 +540,13 @@ export default function CartPage() {
                           setStep('shipping');
                       }
                     }}
-                    className={`w-5 h-5 rounded-full flex items-center justify-center text-[9px] transition-all ${done ? 'bg-black text-white cursor-pointer' : active ? 'bg-black text-white' : 'bg-gray-200 text-gray-400'}`}
+                    className={`w-5 h-5 rounded-full flex items-center justify-center text-[9px] transition-all ${
+                      done
+                        ? 'bg-black text-white cursor-pointer'
+                        : active
+                          ? 'bg-black text-white'
+                          : 'bg-gray-200 text-gray-400'
+                    }`}
                   >
                     {done ? <FiCheck size={10} /> : i + 1}
                   </button>
@@ -547,7 +568,7 @@ export default function CartPage() {
         />
 
         <div className="flex flex-col lg:flex-row gap-4">
-          {/* LEFT */}
+          {/* ── LEFT ─────────────────────────────────────────────── */}
           <div className="flex-1 space-y-3 min-w-0">
             {/* STEP: CART */}
             {step === 'cart' && (
@@ -571,13 +592,25 @@ export default function CartPage() {
                         {group.items.length} items
                       </span>
                     </div>
+
                     <div className="divide-y divide-gray-50">
                       {group.items.map(item => {
+                        // Safe values for this item — coerce once per render
+                        const qty = Math.max(1, n(item.quantity, 1));
+                        const moq = Math.max(1, n(item.moq, 1));
+                        const maxQty = Math.max(1, n(item.maxQuantity, 9999));
+                        const price = Math.max(0, n(item.price, 0));
+                        const stock = Math.max(0, n(item.stock, 0));
                         const isRemoving = removingId === item.id;
+
                         return (
                           <div
                             key={item.id}
-                            className={`flex gap-3 p-3 sm:p-4 transition-all duration-250 ${isRemoving ? 'opacity-0 -translate-x-4 max-h-0 py-0 overflow-hidden' : ''}`}
+                            className={`flex gap-3 p-3 sm:p-4 transition-all duration-250 ${
+                              isRemoving
+                                ? 'opacity-0 -translate-x-4 max-h-0 py-0 overflow-hidden'
+                                : ''
+                            }`}
                           >
                             <Link
                               href={`/products/${item.productId}`}
@@ -597,6 +630,7 @@ export default function CartPage() {
                                 </div>
                               )}
                             </Link>
+
                             <div className="flex-1 min-w-0 flex flex-col justify-between">
                               <div>
                                 <Link
@@ -622,60 +656,72 @@ export default function CartPage() {
                                     </span>
                                   )}
                                 </div>
-                                {item.stock > 0 && item.stock <= 5 && (
+                                {stock > 0 && stock <= 5 && (
                                   <p className="text-[10px] text-gray-600 font-semibold mt-1 flex items-center gap-1">
-                                    <span className="w-1 h-1 rounded-full bg-gray-600 animate-pulse" />{' '}
-                                    Only {item.stock} left
+                                    <span className="w-1 h-1 rounded-full bg-gray-600 animate-pulse" />
+                                    Only {stock} left
                                   </p>
                                 )}
                               </div>
+
                               <div className="flex items-center gap-3 mt-2">
+                                {/* Quantity stepper — safe values prevent NaN */}
                                 <div className="inline-flex items-center rounded-full border border-gray-200">
                                   <button
-                                    onClick={() => handleQtyChange(item, -1)}
-                                    disabled={item.quantity <= (item.moq || 1)}
+                                    onClick={() =>
+                                      handleQtyChange(
+                                        { ...item, quantity: qty, moq },
+                                        -1,
+                                      )
+                                    }
+                                    disabled={qty <= moq}
                                     className="w-7 h-7 flex items-center justify-center text-gray-500 hover:text-black disabled:opacity-30 rounded-l-full hover:bg-gray-50"
                                   >
                                     <FiMinus size={11} />
                                   </button>
                                   <span className="w-8 text-center text-[16px] font-bold">
-                                    {item.quantity}
+                                    {qty}
                                   </span>
                                   <button
-                                    onClick={() => handleQtyChange(item, 1)}
-                                    disabled={
-                                      item.quantity >= (item.maxQuantity || 999)
+                                    onClick={() =>
+                                      handleQtyChange(
+                                        { ...item, quantity: qty, moq },
+                                        1,
+                                      )
                                     }
+                                    disabled={qty >= maxQty}
                                     className="w-7 h-7 flex items-center justify-center text-gray-500 hover:text-black disabled:opacity-30 rounded-r-full hover:bg-gray-50"
                                   >
                                     <FiPlus size={11} />
                                   </button>
                                 </div>
+
                                 <button
                                   onClick={() => moveToSaved(item.id)}
                                   className="text-[10px] text-gray-400 hover:text-black flex items-center gap-0.5 transition-colors"
                                 >
-                                  <FiBookmark size={11} />{' '}
+                                  <FiBookmark size={11} />
                                   <span className="hidden sm:inline">Save</span>
                                 </button>
                                 <button
                                   onClick={() => handleRemove(item.id)}
                                   className="text-[10px] text-gray-400 hover:text-gray-900 flex items-center gap-0.5 transition-colors"
                                 >
-                                  <FiTrash2 size={11} />{' '}
+                                  <FiTrash2 size={11} />
                                   <span className="hidden sm:inline">
                                     Remove
                                   </span>
                                 </button>
                               </div>
                             </div>
+
                             <div className="text-right shrink-0 pl-2">
                               <p className="text-[16px] sm:text-base font-black text-gray-900">
-                                {formatPrice(item.price * item.quantity)}
+                                {formatPrice(price * qty)}
                               </p>
-                              {item.quantity > 1 && (
+                              {qty > 1 && (
                                 <p className="text-[10px] text-gray-400">
-                                  {formatPrice(item.price)} ea
+                                  {formatPrice(price)} ea
                                 </p>
                               )}
                             </div>
@@ -685,6 +731,7 @@ export default function CartPage() {
                     </div>
                   </div>
                 ))}
+
                 <Link
                   href="/products"
                   className="inline-flex items-center gap-1.5 text-[16px] font-medium text-gray-400 hover:text-black transition-colors"
@@ -692,6 +739,7 @@ export default function CartPage() {
                   <FiArrowRight className="rotate-180" size={12} /> Continue
                   Shopping
                 </Link>
+
                 {savedItems.length > 0 && (
                   <SavedForLater
                     items={savedItems}
@@ -816,7 +864,11 @@ export default function CartPage() {
                     ).map(m => (
                       <label
                         key={m.id}
-                        className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${shippingMethod === m.id ? 'border-black bg-gray-50' : 'border-gray-200 hover:border-gray-300'}`}
+                        className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
+                          shippingMethod === m.id
+                            ? 'border-black bg-gray-50'
+                            : 'border-gray-200 hover:border-gray-300'
+                        }`}
                       >
                         <input
                           type="radio"
@@ -846,10 +898,13 @@ export default function CartPage() {
                   </div>
                 </div>
 
-                {/* Feedback banner */}
                 {shippingMsg && (
                   <div
-                    className={`flex items-center gap-1.5 text-[11px] font-semibold px-3 py-2 rounded-lg ${shippingMsg.type === 'ok' ? 'bg-gray-50 text-black' : 'bg-red-50 text-red-600'}`}
+                    className={`flex items-center gap-1.5 text-[11px] font-semibold px-3 py-2 rounded-lg ${
+                      shippingMsg.type === 'ok'
+                        ? 'bg-gray-50 text-black'
+                        : 'bg-red-50 text-red-600'
+                    }`}
                   >
                     {shippingMsg.type === 'ok' ? (
                       <FiCheckCircle size={12} />
@@ -874,7 +929,7 @@ export default function CartPage() {
                   >
                     {savingShipping ? (
                       <>
-                        <span className="w-3.5 h-3.5 border-2 border-white/40 border-t-white rounded-full animate-spin" />{' '}
+                        <span className="w-3.5 h-3.5 border-2 border-white/40 border-t-white rounded-full animate-spin" />
                         Saving…
                       </>
                     ) : (
@@ -908,6 +963,7 @@ export default function CartPage() {
                     {shipping.address}, {shipping.city}, {shipping.country} {shipping.zip}
                   </p>
                 </div>
+
                 <div className="space-y-2">
                   {allItems.map(item => (
                     <div key={item.id} className="flex items-center gap-3">
@@ -940,6 +996,7 @@ export default function CartPage() {
                     </div>
                   ))}
                 </div>
+
                 <div>
                   <p className="text-[16px] font-bold text-gray-500 mb-2">
                     Pay with
@@ -976,6 +1033,7 @@ export default function CartPage() {
                     ))}
                   </div>
                 </div>
+
                 <div className="flex gap-2 pt-2">
                   <button
                     onClick={() => setStep('shipping')}
@@ -1031,7 +1089,7 @@ export default function CartPage() {
             )}
           </div>
 
-          {/* RIGHT: ORDER SUMMARY */}
+          {/* ── RIGHT: ORDER SUMMARY ─────────────────────────────── */}
           <div className="lg:w-80 xl:w-[340px] shrink-0">
             <div className="bg-white rounded-xl border border-gray-200 sticky top-24 overflow-hidden">
               <div className="p-4 sm:p-5">
@@ -1087,8 +1145,7 @@ export default function CartPage() {
                     disabled={totalItems === 0}
                     className="w-full mt-5"
                   >
-                    Secure Checkout ·{' '}
-                    {formatPrice(grandTotal)}
+                    Secure Checkout · {formatPrice(grandTotal)}
                   </Button>
                 )}
                 <div className="mt-3 pt-3 border-t border-gray-100">
@@ -1214,7 +1271,7 @@ export default function CartPage() {
   );
 }
 
-/* ─── Saved For Later ─────────────────────────────────────── */
+/* ─── Saved For Later ─────────────────────────────────────────────── */
 function SavedForLater({ items, moveToCart, removeSavedItem, formatPrice }) {
   if (!items.length) return null;
   return (
@@ -1224,59 +1281,62 @@ function SavedForLater({ items, moveToCart, removeSavedItem, formatPrice }) {
         <span className="text-gray-400 font-medium">({items.length})</span>
       </h2>
       <div className="bg-white rounded-xl border border-gray-200 divide-y divide-gray-50">
-        {items.map(item => (
-          <div key={item.id} className="flex gap-3 p-3">
-            <Link
-              href={`/products/${item.productId}`}
-              className="relative w-16 h-16 rounded-lg bg-gray-50 overflow-hidden shrink-0"
-            >
-              {item.image ? (
-                <Image
-                  src={item.image}
-                  alt={item.name}
-                  fill
-                  className="object-cover"
-                  sizes="64px"
-                />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center text-gray-200">
-                  <FiPackage size={18} />
-                </div>
-              )}
-            </Link>
-            <div className="flex-1 min-w-0">
+        {items.map(item => {
+          const price = Math.max(0, Number(item.price) || 0);
+          return (
+            <div key={item.id} className="flex gap-3 p-3">
               <Link
                 href={`/products/${item.productId}`}
-                className="text-[16px] font-semibold text-gray-900 line-clamp-1"
+                className="relative w-16 h-16 rounded-lg bg-gray-50 overflow-hidden shrink-0"
               >
-                {item.name}
+                {item.image ? (
+                  <Image
+                    src={item.image}
+                    alt={item.name}
+                    fill
+                    className="object-cover"
+                    sizes="64px"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-gray-200">
+                    <FiPackage size={18} />
+                  </div>
+                )}
               </Link>
-              <p className="text-[16px] font-black mt-0.5">
-                {formatPrice(item.price)}
-              </p>
-              <div className="flex gap-2 mt-1.5">
-                <button
-                  onClick={() => moveToCart(item.id)}
-                  className="text-[10px] font-bold text-black hover:underline flex items-center gap-0.5"
+              <div className="flex-1 min-w-0">
+                <Link
+                  href={`/products/${item.productId}`}
+                  className="text-[16px] font-semibold text-gray-900 line-clamp-1"
                 >
-                  <FiShoppingCart size={10} /> Move to Cart
-                </button>
-                <button
-                  onClick={() => removeSavedItem(item.id)}
-                  className="text-[10px] text-gray-400 hover:text-gray-900 flex items-center gap-0.5"
-                >
-                  <FiTrash2 size={10} /> Remove
-                </button>
+                  {item.name}
+                </Link>
+                <p className="text-[16px] font-black mt-0.5">
+                  {formatPrice(price)}
+                </p>
+                <div className="flex gap-2 mt-1.5">
+                  <button
+                    onClick={() => moveToCart(item.id)}
+                    className="text-[10px] font-bold text-black hover:underline flex items-center gap-0.5"
+                  >
+                    <FiShoppingCart size={10} /> Move to Cart
+                  </button>
+                  <button
+                    onClick={() => removeSavedItem(item.id)}
+                    className="text-[10px] text-gray-400 hover:text-gray-900 flex items-center gap-0.5"
+                  >
+                    <FiTrash2 size={10} /> Remove
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
 }
 
-/* ─── Input ───────────────────────────────────────────────── */
+/* ─── Input ───────────────────────────────────────────────────────── */
 function Input({ label, name, value, onChange, type = 'text' }) {
   return (
     <div>
