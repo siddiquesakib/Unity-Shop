@@ -3,7 +3,11 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { Search, CheckCircle } from "lucide-react";
-import { getOrderStatusLabel, normalizeToWorkflowStatus } from "@/utils/orderLifecycle";
+import {
+  getOrderStatusLabel,
+  normalizeToWorkflowStatus,
+} from "@/utils/orderLifecycle";
+import { useCurrency } from "@/contexts/CurrencyContext";
 
 const API_BASE =
   process.env.NEXT_PUBLIC_API_URL || "https://unity-shop-server.vercel.app";
@@ -29,6 +33,7 @@ export default function SellerOrdersPage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [updating, setUpdating] = useState("");
+  const { formatPrice } = useCurrency();
 
   const fetchOrders = async () => {
     if (!user?.email) return;
@@ -48,11 +53,13 @@ export default function SellerOrdersPage() {
       setOrders(
         rows.map((o) => ({
           ...o,
-          workflowStatus: normalizeToWorkflowStatus(o.workflowStatus || o.status),
+          workflowStatus: normalizeToWorkflowStatus(
+            o.workflowStatus || o.status,
+          ),
         })),
       );
     } catch (error) {
-      console.error("Failed to fetch seller orders", error);
+      // console.error("Failed to fetch seller orders", error);
     } finally {
       setLoading(false);
     }
@@ -109,6 +116,7 @@ export default function SellerOrdersPage() {
     );
   });
 
+  console.log("Seller Orders:", orders);
   return (
     <div className="space-y-6">
       <div>
@@ -143,7 +151,7 @@ export default function SellerOrdersPage() {
                   <th className="px-4 py-3 text-left">Order</th>
                   <th className="px-4 py-3 text-left">Customer</th>
                   <th className="px-4 py-3 text-left">Amount</th>
-                  <th className="px-4 py-3 text-left">Shipping</th>
+                  {/* <th className="px-4 py-3 text-left">Shipping</th> */}
                   <th className="px-4 py-3 text-left">Status</th>
                   <th className="px-4 py-3 text-right">Action</th>
                 </tr>
@@ -156,19 +164,24 @@ export default function SellerOrdersPage() {
                     </td>
                     <td className="px-4 py-3">
                       <div>{order.customerName || "N/A"}</div>
-                      <div className="text-xs text-gray-500">{order.customerEmail || "N/A"}</div>
+                      <div className="text-xs text-gray-500">
+                        {order.customerEmail || "N/A"}
+                      </div>
                     </td>
                     <td className="px-4 py-3">
-                      ${Number(order.totals?.grandTotal || 0).toFixed(2)}
+                      {formatPrice(Number(order.amountPaid || 0).toFixed(2))}
                     </td>
-                    <td className="px-4 py-3 text-xs text-gray-600">
-                      {order.shippingSnapshot?.type || "N/A"} / {order.shippingSnapshot?.method || "N/A"}
-                    </td>
+                    {/* <td className="px-4 py-3 text-xs text-gray-600">
+                      {order.shippingSnapshot?.type || "N/A"} /{" "}
+                      {order.shippingSnapshot?.method || "N/A"}
+                    </td> */}
                     <td className="px-4 py-3">
                       <span
                         className={`px-2.5 py-1 rounded-full text-xs font-semibold ${STATUS_COLOR[order.status] || "bg-gray-100 text-gray-700"}`}
                       >
-                        {getOrderStatusLabel(order.workflowStatus || order.status || "placed")}
+                        {getOrderStatusLabel(
+                          order.status || order.status || "Placed",
+                        )}
                       </span>
                     </td>
                     <td className="px-4 py-3 text-right">
@@ -176,7 +189,8 @@ export default function SellerOrdersPage() {
                         onClick={() => markPacked(order._id)}
                         disabled={
                           updating === order._id ||
-                          (order.workflowStatus || order.status) !== "confirmed" ||
+                          (order.workflowStatus || order.status) !==
+                            "confirmed" ||
                           (order.workflowStatus || order.status) === "delivered"
                         }
                         className="inline-flex items-center gap-1 px-3 py-1.5 text-xs rounded-lg border border-gray-300 disabled:opacity-50"

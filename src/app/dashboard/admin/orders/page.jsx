@@ -16,7 +16,10 @@ import {
   AlertCircle,
 } from "lucide-react";
 import OrderTrackingModal from "@/components/common/OrderTrackingModal";
-import { getOrderStatusLabel, normalizeToWorkflowStatus } from "@/utils/orderLifecycle";
+import {
+  getOrderStatusLabel,
+  normalizeToWorkflowStatus,
+} from "@/utils/orderLifecycle";
 
 const API_BASE =
   process.env.NEXT_PUBLIC_API_URL || "https://unity-shop-server.vercel.app";
@@ -71,7 +74,9 @@ function getIcon(status) {
 
 function StatusDropdown({ order, onStatusChange, updating }) {
   const [open, setOpen] = useState(false);
-  const current = normalizeToWorkflowStatus(order.workflowStatus || order.status || "placed");
+  const current = normalizeToWorkflowStatus(
+    order.workflowStatus || order.status || "placed",
+  );
   return (
     <div className="relative">
       <button
@@ -147,7 +152,7 @@ export default function AdminOrdersPage() {
         return;
       }
 
-      const res = await fetch(`${API_BASE}/orders/suborders`, {
+      const res = await fetch(`${API_BASE}/orders`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (res.ok) {
@@ -156,7 +161,9 @@ export default function AdminOrdersPage() {
         setOrders(
           rows.map((o) => ({
             ...o,
-            workflowStatus: normalizeToWorkflowStatus(o.workflowStatus || o.status),
+            workflowStatus: normalizeToWorkflowStatus(
+              o.workflowStatus || o.status,
+            ),
           })),
         );
       }
@@ -235,6 +242,7 @@ export default function AdminOrdersPage() {
         const e = await res.json();
         throw new Error(e.error || "Failed");
       }
+
       setOrders((prev) =>
         prev.map((o) =>
           o._id === orderId
@@ -257,10 +265,9 @@ export default function AdminOrdersPage() {
   };
 
   const stats = STATUS_STEPS.reduce((acc, s) => {
-    acc[s] =
-      orders.filter(
-        (o) => normalizeToWorkflowStatus(o.workflowStatus || o.status) === s,
-      ).length;
+    acc[s] = orders.filter(
+      (o) => normalizeToWorkflowStatus(o.workflowStatus || o.status) === s,
+    ).length;
     return acc;
   }, {});
 
@@ -274,10 +281,11 @@ export default function AdminOrdersPage() {
     return (
       m &&
       (statusFilter === "All" ||
-        normalizeToWorkflowStatus(order.workflowStatus || order.status) === statusFilter)
+        normalizeToWorkflowStatus(order.workflowStatus || order.status) ===
+          statusFilter)
     );
   });
-
+  // console.log("filteredorders:", orders);
   return (
     <div className="space-y-6">
       <div className="flex items-end justify-between">
@@ -552,8 +560,12 @@ export default function AdminOrdersPage() {
                         <button
                           onClick={() => setAssigningId(order._id)}
                           disabled={
-                            normalizeToWorkflowStatus(order.workflowStatus || order.status) === "cancelled" ||
-                            normalizeToWorkflowStatus(order.workflowStatus || order.status) === "delivered"
+                            normalizeToWorkflowStatus(
+                              order.workflowStatus || order.status,
+                            ) === "cancelled" ||
+                            normalizeToWorkflowStatus(
+                              order.workflowStatus || order.status,
+                            ) === "delivered"
                           }
                           className="text-xs font-medium text-blue-600 hover:text-blue-900 disabled:opacity-50 disabled:cursor-not-allowed bg-blue-50 px-3 py-1.5 rounded-lg hover:bg-blue-100 transition-colors"
                         >

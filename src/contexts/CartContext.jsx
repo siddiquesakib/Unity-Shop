@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import {
   createContext,
@@ -7,16 +7,16 @@ import {
   useEffect,
   useCallback,
   useRef,
-} from 'react';
-import toast from 'react-hot-toast';
-import { useNotifications } from '@/contexts/NotificationContext';
-import { useAuth } from '@/contexts/AuthContext';
+} from "react";
+import toast from "react-hot-toast";
+import { useNotifications } from "@/contexts/NotificationContext";
+import { useAuth } from "@/contexts/AuthContext";
 
 const CartContext = createContext(null);
 
 // ─── Sanitize every numeric field on any item from ANY source ────────────────
 // Handles: strings ("2"), undefined, null, objects, NaN — all become safe numbers
-const sanitizeItem = item => ({
+const sanitizeItem = (item) => ({
   ...item,
   quantity: Math.max(1, Number(item.quantity) || 1),
   price: Math.max(0, Number(item.price) || 0),
@@ -26,9 +26,9 @@ const sanitizeItem = item => ({
 });
 
 // Sanitize an entire groups array (used when loading from localStorage or backend)
-const sanitizeGroups = groups =>
+const sanitizeGroups = (groups) =>
   Array.isArray(groups)
-    ? groups.map(g => ({
+    ? groups.map((g) => ({
         ...g,
         items: Array.isArray(g.items) ? g.items.map(sanitizeItem) : [],
       }))
@@ -57,13 +57,13 @@ export function CartProvider({ children }) {
 
   useEffect(() => {
     try {
-      if (typeof window !== 'undefined') {
-        const saved = localStorage.getItem('unityshop_cart');
+      if (typeof window !== "undefined") {
+        const saved = localStorage.getItem("unityshop_cart");
         if (saved) {
           // sanitizeGroups fixes any stale string/undefined fields from old schema
           setCartGroups(sanitizeGroups(JSON.parse(saved)));
         }
-        const savedLater = localStorage.getItem('unityshop_saved');
+        const savedLater = localStorage.getItem("unityshop_saved");
         if (savedLater) {
           setSavedItems((JSON.parse(savedLater) || []).map(sanitizeItem));
         }
@@ -81,52 +81,21 @@ export function CartProvider({ children }) {
         }
       }
     } catch (e) {
-      console.error('Failed to load cart from local storage', e);
+      console.error("Failed to load cart from local storage", e);
     }
     setHydrated(true);
   }, []);
 
   // ─── Backend sync when user logs in ─────────────────────────────────────────
   useEffect(() => {
-    // Only sync if the user ID actually changed, not every time hydration happens
-    // AND don't sync if we just cleared the cart
+    // Only sync if the user ID actually changed and we didn't just clear the cart.
     if (
       user?._id &&
       lastSyncedUserRef.current !== user._id &&
       !isJustClearedRef.current
     ) {
       lastSyncedUserRef.current = user._id;
-      console.log(
-        '[CartContext] Syncing cart with backend for user:',
-        user._id,
-      );
-      fetch(`${process.env.NEXT_PUBLIC_API_URL}/cart/${user._id}`)
-        .then(res => {
-          console.log(
-            '[CartContext] Backend response status:',
-            res.status,
-            res.statusText,
-          );
-          return res.json();
-        })
-        .then(data => {
-          console.log('[CartContext] Backend cart data:', data);
-          console.log(
-            '[CartContext] Data is array?',
-            Array.isArray(data),
-            'Length:',
-            Array.isArray(data) ? data.length : 'N/A',
-          );
-          if (Array.isArray(data) && data.length > 0) {
-            console.log(
-              '[CartContext] Cart has',
-              data.length,
-              'items from backend',
-            );
-            const groups = {};
-            data.forEach(item => {
-              const sellerId = item.sellerId || 'general';
-    if (user?._id) {
+
       const token = getAuthToken();
       if (!token) return;
 
@@ -140,8 +109,7 @@ export function CartProvider({ children }) {
           return res.json();
         })
         .then((data) => {
-          if (Array.isArray(data)) {
-            // Group the flat items by seller
+          if (Array.isArray(data) && data.length > 0) {
             const groups = {};
             data.forEach((item) => {
               const sellerId = item.sellerId || "general";
@@ -149,37 +117,21 @@ export function CartProvider({ children }) {
                 item.pricingType === "negotiated"
                   ? `-offer-${Number(item.price)}`
                   : "";
+
               if (!groups[sellerId]) {
                 groups[sellerId] = {
                   id: `group-${sellerId}`,
                   seller: {
                     id: sellerId,
-                    name: item.sellerName || 'UnityShop Seller',
-                    email: item.sellerEmail || '',
+                    name: item.sellerName || "UnityShop Seller",
+                    email: item.sellerEmail || "",
                     verified: item.sellerVerified || false,
-                  }
+                  },
                   items: [],
                 };
               }
-              // sanitizeItem here — backend may return numbers as strings
-              groups[sellerId].items.push(
-                sanitizeItem({
-                  id: `${item.productId}-${sellerId}`,
-                  productId: item.productId,
-                  name: item.name,
-                  image: item.image,
-                  price: item.price,
-                  quantity: item.quantity,
-                  stock: item.stock,
-                  moq: item.moq,
-                  maxQuantity: item.stock || 9999,
-                  variant: item.category || '—',
-                  sellerName: item.sellerName,
-                  sellerEmail: item.sellerEmail,
-                }),
-              );
-              }, [user, hydrated, getAuthToken]);
-              groups[sellerId].items.push({
+
+              const newItem = sanitizeItem({
                 id: `${item.productId}-${sellerId}${priceTag}`,
                 productId: item.productId,
                 name: item.name,
@@ -195,47 +147,35 @@ export function CartProvider({ children }) {
                 sellerEmail: item.sellerEmail,
                 pricingType: item.pricingType || "standard",
               });
+
+              groups[sellerId].items.push(newItem);
             });
-            console.log(
-              '[CartContext] Setting cart groups:',
-              Object.values(groups),
-            );
+
             setCartGroups(Object.values(groups));
-          } else {
-            console.log('[CartContext] Backend cart is empty or not an array');
           }
         })
-        .catch(err => console.error('[CartContext] Failed to sync cart:', err));
+        .catch((err) =>
+          console.error("[CartContext] Failed to sync cart:", err),
+        );
     } else if (!user?._id) {
       // Clear ref when user logs out
       lastSyncedUserRef.current = null;
     }
-  }, [user?._id]);
+  }, [getAuthToken, user?._id]);
 
   // ─── Persist to localStorage ─────────────────────────────────────────────────
   useEffect(() => {
     if (hydrated) {
-      localStorage.setItem('unityshop_cart', JSON.stringify(cartGroups));
+      localStorage.setItem("unityshop_cart", JSON.stringify(cartGroups));
     }
   }, [cartGroups, hydrated]);
 
   useEffect(() => {
     if (hydrated) {
-      localStorage.setItem('unityshop_saved', JSON.stringify(savedItems));
+      localStorage.setItem("unityshop_saved", JSON.stringify(savedItems));
     }
   }, [savedItems, hydrated]);
 
-  // ─── Save for Later ──────────────────────────────────────────────────────────
-  const moveToSaved = useCallback(itemId => {
-    let found = null;
-    setCartGroups(prev => {
-      const next = prev
-        .map(g => {
-          const item = g.items.find(i => i.id === itemId);
-          if (item) found = { ...item };
-          return { ...g, items: g.items.filter(i => i.id !== itemId) };
-        })
-        .filter(g => g.items.length > 0);
   useEffect(() => {
     if (hydrated) {
       localStorage.setItem(
@@ -254,7 +194,7 @@ export function CartProvider({ children }) {
     }
   }, [checkoutPromo, hydrated]);
 
-  // ─── Save for Later ────────────────────────────────────────────────────────
+  // ─── Save for Later ──────────────────────────────────────────────────────────
   const moveToSaved = useCallback((itemId) => {
     let found = null;
     setCartGroups((prev) => {
@@ -268,29 +208,32 @@ export function CartProvider({ children }) {
       return next;
     });
     if (found) {
-      setSavedItems(prev => {
-        if (prev.some(i => i.id === found.id)) return prev;
+      setSavedItems((prev) => {
+        if (prev.some((i) => i.id === found.id)) return prev;
         return [...prev, sanitizeItem(found)];
       });
-      toast.success('Saved for later');
+      toast.success("Saved for later");
     }
   }, []);
 
-  const moveToCart = useCallback(itemId => {
+  const moveToCart = useCallback((itemId) => {
     let found = null;
-    setSavedItems(prev => {
-      found = prev.find(i => i.id === itemId);
-      return prev.filter(i => i.id !== itemId);
+    setSavedItems((prev) => {
+      found = prev.find((i) => i.id === itemId);
+      return prev.filter((i) => i.id !== itemId);
     });
     if (found) {
       const safeFound = sanitizeItem(found);
-      setCartGroups(prev => {
-        const sellerId = safeFound.sellerName || 'general';
-        const groups = prev.map(g => ({ ...g, items: [...g.items] }));
-        const gIdx = groups.findIndex(g => g.seller.id === sellerId);
+      setCartGroups((prev) => {
+        const sellerId =
+          safeFound.sellerId || safeFound.sellerName || "general";
+        const groups = prev.map((g) => ({ ...g, items: [...g.items] }));
+        const gIdx = groups.findIndex((g) => g.seller.id === sellerId);
         if (gIdx !== -1) {
           const eIdx = groups[gIdx].items.findIndex(
-            i => i.productId === safeFound.productId,
+            (i) =>
+              i.productId === safeFound.productId &&
+              Number(i.price) === Number(safeFound.price),
           );
           if (eIdx !== -1) {
             const existing = groups[gIdx].items[eIdx];
@@ -300,12 +243,6 @@ export function CartProvider({ children }) {
                 Number(existing.quantity) + Number(safeFound.quantity),
                 Number(existing.maxQuantity) || 9999,
               ),
-            (i) => i.productId === found.productId,
-          );
-          if (eIdx !== -1) {
-            groups[gIdx].items[eIdx] = {
-              ...groups[gIdx].items[eIdx],
-              quantity: groups[gIdx].items[eIdx].quantity + found.quantity,
             };
           } else {
             groups[gIdx].items.push(safeFound);
@@ -315,57 +252,25 @@ export function CartProvider({ children }) {
             id: `group-${sellerId}`,
             seller: {
               id: sellerId,
-              name: safeFound.sellerName || 'UnityShop Seller',
-              email: safeFound.sellerEmail || '',
+              name: safeFound.sellerName || "UnityShop Seller",
+              email: safeFound.sellerEmail || "",
               verified: false,
             },
             items: [safeFound],
-              name: found.sellerName || "UnityShop Seller",
-              email: found.sellerEmail || "",
-              verified: false,
-            },
-            items: [found],
           });
         }
         return groups;
       });
-      toast.success('Moved back to cart');
+      toast.success("Moved back to cart");
     }
   }, []);
 
-  const removeSavedItem = useCallback(itemId => {
-    setSavedItems(prev => prev.filter(i => i.id !== itemId));
+  const removeSavedItem = useCallback((itemId) => {
+    setSavedItems((prev) => prev.filter((i) => i.id !== itemId));
   }, []);
 
   // ─── Add to Cart ─────────────────────────────────────────────────────────────
   const addToCart = useCallback(
-    (product, quantity = 1) => {
-      const sellerId = product.sellerId || product.sellerName || 'general';
-      const sellerName = product.sellerName || 'UnityShop Seller';
-
-      // sanitizeItem on the new item so it enters state clean
-      const newItem = sanitizeItem({
-        id: `${product._id || product.id}-${sellerId}`,
-        productId: product._id || product.id,
-        name: product.name,
-        image: product.image || '',
-        price: product.price,
-        quantity: Number(quantity) || 1,
-        moq: product.moq,
-        maxQuantity: product.stock || 9999,
-        variant: product.variant || product.category || '—',
-        stock: product.stock || 9999,
-        sellerName,
-        sellerEmail: product.sellerEmail || '',
-      });
-
-      setCartGroups(prev => {
-        const groups = prev.map(g => ({ ...g, items: [...g.items] }));
-        const groupIdx = groups.findIndex(g => g.seller.id === sellerId);
-
-        if (groupIdx !== -1) {
-          const itemIdx = groups[groupIdx].items.findIndex(
-            i => i.productId === newItem.productId,
     (product, quantity = 1, overridePrice = null) => {
       const sellerId = product.sellerId || product.sellerName || "general";
       const sellerName = product.sellerName || "UnityShop Seller";
@@ -424,7 +329,7 @@ export function CartProvider({ children }) {
                 Number(existing.maxQuantity) || 9999,
               ),
             };
-            toast.success('Updated item quantity in cart!');
+            toast.success("Updated item quantity in cart!");
           } else {
             groups[groupIdx].items.push(newItem);
           }
@@ -434,7 +339,7 @@ export function CartProvider({ children }) {
             seller: {
               id: sellerId,
               name: sellerName,
-              email: product.sellerEmail || '',
+              email: product.sellerEmail || "",
               verified: product.sellerVerified || false,
             },
             items: [newItem],
@@ -461,10 +366,10 @@ export function CartProvider({ children }) {
             originalPrice: hasOverridePrice ? baseProductPrice : null,
             pricingType,
           }),
-        }).catch(err => console.error('Failed to add to cart backend:', err));
+        }).catch((err) => console.error("Failed to add to cart backend:", err));
       }
 
-      toast.success('Added to cart!');
+      toast.success("Added to cart!");
 
       if (createNotification) {
         createNotification({
@@ -481,11 +386,11 @@ export function CartProvider({ children }) {
 
   // ─── Remove Item ─────────────────────────────────────────────────────────────
   const removeItem = useCallback(
-    itemId => {
+    (itemId) => {
       let productIdToRemove = null;
       if (user?._id) {
         for (const group of cartGroups) {
-          const item = group.items.find(i => i.id === itemId);
+          const item = group.items.find((i) => i.id === itemId);
           if (item) {
             productIdToRemove = item.productId;
             break;
@@ -493,13 +398,13 @@ export function CartProvider({ children }) {
         }
       }
 
-      setCartGroups(prev =>
+      setCartGroups((prev) =>
         prev
-          .map(group => ({
+          .map((group) => ({
             ...group,
-            items: group.items.filter(item => item.id !== itemId),
+            items: group.items.filter((item) => item.id !== itemId),
           }))
-          .filter(group => group.items.length > 0),
+          .filter((group) => group.items.length > 0),
       );
 
       if (user?._id && productIdToRemove) {
@@ -516,8 +421,8 @@ export function CartProvider({ children }) {
             userId: user._id,
             productId: productIdToRemove,
           }),
-        }).catch(err =>
-          console.error('Failed to remove item from backend:', err),
+        }).catch((err) =>
+          console.error("Failed to remove item from backend:", err),
         );
       }
     },
@@ -535,7 +440,7 @@ export function CartProvider({ children }) {
 
       if (user?._id) {
         for (const group of cartGroups) {
-          const item = group.items.find(i => i.id === itemId);
+          const item = group.items.find((i) => i.id === itemId);
           if (item) {
             productIdToUpdate = item.productId;
             finalQuantity = Math.min(
@@ -547,10 +452,10 @@ export function CartProvider({ children }) {
         }
       }
 
-      setCartGroups(prev =>
-        prev.map(group => ({
+      setCartGroups((prev) =>
+        prev.map((group) => ({
           ...group,
-          items: group.items.map(item => {
+          items: group.items.map((item) => {
             if (item.id !== itemId) return item;
             const clamped = Math.min(
               Math.max(safeQty, Number(item.moq) || 1),
@@ -576,8 +481,8 @@ export function CartProvider({ children }) {
             productId: productIdToUpdate,
             quantity: finalQuantity,
           }),
-        }).catch(err =>
-          console.error('Failed to update quantity on backend:', err),
+        }).catch((err) =>
+          console.error("Failed to update quantity on backend:", err),
         );
       }
     },
@@ -643,19 +548,19 @@ export function CartProvider({ children }) {
   // ─── Clear Checkout Items ─────────────────────────────────────────────────────
   const clearCheckoutItems = useCallback(async () => {
     // Snapshot the paid item IDs + productIds before mutating state
-    const paidItems = checkoutGroups.flatMap(g =>
-      g.items.map(i => ({ id: i.id, productId: i.productId })),
+    const paidItems = checkoutGroups.flatMap((g) =>
+      g.items.map((i) => ({ id: i.id, productId: i.productId })),
     );
-    const paidItemIds = new Set(paidItems.map(i => i.id));
+    const paidItemIds = new Set(paidItems.map((i) => i.id));
 
     // 1. Clear from local state (same as before)
-    setCartGroups(prev =>
+    setCartGroups((prev) =>
       prev
-        .map(group => ({
+        .map((group) => ({
           ...group,
-          items: group.items.filter(item => !paidItemIds.has(item.id)),
+          items: group.items.filter((item) => !paidItemIds.has(item.id)),
         }))
-        .filter(group => group.items.length > 0),
+        .filter((group) => group.items.length > 0),
     );
     setCheckoutGroups([]);
     setCheckoutPromo(null);
@@ -670,8 +575,8 @@ export function CartProvider({ children }) {
             const res = await fetch(
               `${process.env.NEXT_PUBLIC_API_URL}/cart/remove`,
               {
-                method: 'DELETE',
-                headers: { 'Content-Type': 'application/json' },
+                method: "DELETE",
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ userId: user._id, productId }),
               },
             );
@@ -683,7 +588,7 @@ export function CartProvider({ children }) {
           }),
         );
       } catch (err) {
-        console.error('Error removing paid items from backend:', err);
+        console.error("Error removing paid items from backend:", err);
       }
     }
   }, [checkoutGroups, user]);
@@ -691,19 +596,21 @@ export function CartProvider({ children }) {
   // ─── Clear Entire Cart ────────────────────────────────────────────────────────
   const clearCart = useCallback(
     async (userIdOverride = null) => {
-      console.log('[clearCart] Called with userIdOverride:', userIdOverride);
+      console.log("[clearCart] Called with userIdOverride:", userIdOverride);
 
       // Set flag to prevent sync right after clearing
       isJustClearedRef.current = true;
       console.log(
-        '[clearCart] Set isJustClearedRef to true - will prevent sync',
+        "[clearCart] Set isJustClearedRef to true - will prevent sync",
       );
 
       // 1. Snapshot all items from BOTH cartGroups and checkoutGroups
       // (checkout items should be in cart, but just to be safe)
-      const cartItems = cartGroups.flatMap(g => g.items.map(i => i.productId));
-      const checkoutItems = checkoutGroups.flatMap(g =>
-        g.items.map(i => i.productId),
+      const cartItems = cartGroups.flatMap((g) =>
+        g.items.map((i) => i.productId),
+      );
+      const checkoutItems = checkoutGroups.flatMap((g) =>
+        g.items.map((i) => i.productId),
       );
 
       // Combine and deduplicate
@@ -721,13 +628,13 @@ export function CartProvider({ children }) {
       setCartGroups([]);
       setCheckoutGroups([]);
       setCheckoutPromo(null);
-      console.log('[clearCart] Local state cleared');
+      console.log("[clearCart] Local state cleared");
 
       // 3. Also explicitly clear localStorage to be safe
-      if (typeof window !== 'undefined') {
-        localStorage.removeItem('unityshop_cart');
-        localStorage.removeItem('unityshop_saved');
-        console.log('[clearCart] localStorage cleared');
+      if (typeof window !== "undefined") {
+        localStorage.removeItem("unityshop_cart");
+        localStorage.removeItem("unityshop_saved");
+        console.log("[clearCart] localStorage cleared");
       }
 
       // 4. Delete every item from the backend so the GET /cart sync on
@@ -736,15 +643,15 @@ export function CartProvider({ children }) {
         // Wait for all DELETE requests to complete before returning
         try {
           await Promise.all(
-            allProductIds.map(async productId => {
+            allProductIds.map(async (productId) => {
               console.log(
                 `[clearCart] Deleting product ${productId} from backend...`,
               );
               const res = await fetch(
                 `${process.env.NEXT_PUBLIC_API_URL}/cart/remove`,
                 {
-                  method: 'DELETE',
-                  headers: { 'Content-Type': 'application/json' },
+                  method: "DELETE",
+                  headers: { "Content-Type": "application/json" },
                   body: JSON.stringify({ userId, productId }),
                 },
               );
@@ -764,18 +671,18 @@ export function CartProvider({ children }) {
             }),
           );
           console.log(
-            '[clearCart] ✓✓✓ All products successfully removed from backend',
+            "[clearCart] ✓✓✓ All products successfully removed from backend",
           );
         } catch (err) {
           console.error(
-            'Error removing items from backend during clearCart:',
+            "Error removing items from backend during clearCart:",
             err,
           );
           throw new Error(`Failed to clear cart from backend: ${err.message}`);
         }
       } else {
         console.warn(
-          '[clearCart] Skipped backend deletion: no userId or products',
+          "[clearCart] Skipped backend deletion: no userId or products",
         );
       }
 
@@ -784,29 +691,12 @@ export function CartProvider({ children }) {
       setTimeout(() => {
         isJustClearedRef.current = false;
         console.log(
-          '[clearCart] Reset isJustClearedRef to false - sync allowed again',
+          "[clearCart] Reset isJustClearedRef to false - sync allowed again",
         );
       }, 2000);
     },
     [cartGroups, checkoutGroups, user],
   );
-    if (typeof window !== "undefined") {
-      localStorage.removeItem("unityshop_checkout");
-      localStorage.removeItem("unityshop_checkout_promo");
-    }
-  }, [checkoutGroups]);
-
-  // ─── Clear Entire Cart ────────────────────────────────────────────────────────
-  const clearCart = useCallback(() => {
-    setCartGroups([]);
-    setCheckoutGroups([]);
-    setCheckoutPromo(null);
-
-    if (typeof window !== "undefined") {
-      localStorage.removeItem("unityshop_checkout");
-      localStorage.removeItem("unityshop_checkout_promo");
-    }
-  }, []);
 
   // ─── Derived values ───────────────────────────────────────────────────────────
   const totalUniqueItems = cartGroups.reduce(
@@ -842,6 +732,6 @@ export function CartProvider({ children }) {
 
 export function useCart() {
   const ctx = useContext(CartContext);
-  if (!ctx) throw new Error('useCart must be used inside <CartProvider>');
+  if (!ctx) throw new Error("useCart must be used inside <CartProvider>");
   return ctx;
 }
