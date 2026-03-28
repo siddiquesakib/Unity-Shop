@@ -297,6 +297,20 @@ export default function CartPage() {
     .join(", ");
   const productIdsArray = allItems.map((i) => i.productId).filter(Boolean);
   const allProductIds = allItems.map((i) => i.productId).join(",");
+  const sellerNames = [
+    ...new Set(
+      cartGroups
+        .map((group) => group?.seller?.name)
+        .filter((name) => typeof name === "string" && name.trim()),
+    ),
+  ];
+  const sellerEmails = [
+    ...new Set(
+      cartGroups
+        .map((group) => group?.seller?.email)
+        .filter((email) => typeof email === "string" && email.trim()),
+    ),
+  ];
 
   const handleGoCheckout = useCallback(() => {
     if (!allItems.length) return;
@@ -1049,8 +1063,8 @@ export default function CartPage() {
                         quantity={1}
                         productName={productSummary}
                         userEmail={userEmail}
-                        sellerName={SHOP_NAME}
-                        sellerEmail={SHOP_EMAIL}
+                        sellerName={sellerNames.join(", ") || SHOP_NAME}
+                        sellerEmail={sellerEmails.join(",") || SHOP_EMAIL}
                         shippingAddress={{ ...shipping, shippingMethod }}
                         phoneNumber={shipping.phone}
                         breakdown={{
@@ -1232,8 +1246,8 @@ export default function CartPage() {
                 productName={productSummary}
                 userId={session?.user?._id || null}
                 userEmail={userEmail}
-                sellerName={SHOP_NAME}
-                sellerEmail={SHOP_EMAIL}
+                sellerName={sellerNames.join(", ") || SHOP_NAME}
+                sellerEmail={sellerEmails.join(",") || SHOP_EMAIL}
                 shippingAddress={{ ...shipping, shippingMethod }}
                 phoneNumber={shipping.phone}
                 breakdown={{
