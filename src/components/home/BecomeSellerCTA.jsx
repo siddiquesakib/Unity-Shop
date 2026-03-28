@@ -7,6 +7,7 @@ import {
   FiUsers,
   FiShoppingBag,
 } from "react-icons/fi";
+import Button from "@/components/common/Button";
 
 const highlights = [
   { icon: FiShoppingBag, text: "Free Setup" },
@@ -76,13 +77,13 @@ const BecomeSellerCTA = () => {
 
               {/* CTA button */}
               <div className="mt-7">
-                <Link
+                <Button
                   href="/register?role=seller"
-                  className="inline-flex items-center gap-2 rounded-full bg-white text-black font-bold text-base sm:text-lg px-7 py-3.5 shadow-lg shadow-black/30 hover:bg-gray-100 hover:scale-[1.03] active:scale-100 transition-all duration-200"
+                  variant="light"
+                  className="!px-7 !py-3.5 !text-base sm:!text-lg !rounded-full shadow-lg shadow-black/30"
                 >
                   Start Selling — Free
-                  <FiArrowRight className="w-5 h-5" />
-                </Link>
+                </Button>
               </div>
             </div>
 

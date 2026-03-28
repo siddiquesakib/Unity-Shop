@@ -2,8 +2,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Link from "next/link";
 import ProductCard from "../product/ProductCard";
+import Button from "@/components/common/Button";
 import { FiArrowRight, FiPackage } from "react-icons/fi";
 
 const NewArrivals = () => {
@@ -50,12 +50,13 @@ const NewArrivals = () => {
               Fresh products added to our store
             </p>
           </div>
-          <Link
+          <Button
             href="/products"
-            className="hidden sm:inline-flex items-center gap-2 px-5 py-3 text-sm font-bold text-black border-2 border-black rounded-full hover:bg-black hover:text-white transition-all duration-200"
+            className="hidden sm:flex !px-5 !py-3 !text-sm !rounded-full"
+            showIcon={false}
           >
             View All <FiArrowRight className="w-4 h-4" />
-          </Link>
+          </Button>
         </div>
 
         {/* Grid */}
@@ -81,12 +82,13 @@ const NewArrivals = () => {
 
         {/* Mobile View All */}
         <div className="text-center mt-8 sm:hidden">
-          <Link
+          <Button
             href="/products"
-            className="inline-flex items-center gap-2 px-6 py-3 text-base font-bold text-black border-2 border-black rounded-full hover:bg-black hover:text-white transition-all duration-200"
+            className="!px-6 !py-3 !text-base !rounded-full"
+            showIcon={false}
           >
             View All <FiArrowRight className="w-4 h-4" />
-          </Link>
+          </Button>
         </div>
       </div>
     </section>

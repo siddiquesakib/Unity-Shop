@@ -14,10 +14,10 @@ import {
   FiClock,
   FiUsers,
   FiPercent,
-  FiDollarSign,
   FiSearch,
   FiRefreshCw,
 } from 'react-icons/fi';
+import Button from '@/components/common/Button';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
@@ -249,14 +249,14 @@ function FormModal({ form, setForm, onSubmit, onClose, isEditing, loading }) {
             >
               Cancel
             </button>
-            <button
+            <Button
               type="submit"
               disabled={loading}
-              className="flex-1 py-2.5 text-sm font-bold bg-black text-white
-                rounded-xl hover:bg-gray-800 active:scale-[0.98] transition-all disabled:opacity-50"
+              className="flex-1 justify-center !py-2.5 disabled:opacity-50"
+              showIcon={false}
             >
               {loading ? 'Saving…' : isEditing ? 'Save Changes' : 'Create Code'}
-            </button>
+            </Button>
           </div>
         </form>
       </div>
@@ -454,18 +454,18 @@ export default function PromoCodeGenerator() {
               Create and manage discount codes for your customers
             </p>
           </div>
-          <button
+          <Button
             onClick={() => {
               setForm(EMPTY_FORM);
               setEditId(null);
               setShowModal(true);
             }}
-            className="inline-flex items-center gap-2 px-5 py-2.5 bg-black text-white text-sm font-bold
-              rounded-full hover:bg-gray-800 shadow-lg shadow-black/10 hover:scale-[1.02] active:scale-95 transition-all"
+            className="flex items-center gap-2 !px-5 !py-2.5 !rounded-full shadow-lg shadow-black/10"
+            showIcon={false}
           >
             <FiPlus size={16} />
             New Promo Code
-          </button>
+          </Button>
         </div>
 
         {/* Stats */}

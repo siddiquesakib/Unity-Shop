@@ -5,6 +5,7 @@ import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { FiCheck } from "react-icons/fi";
+import Button from "@/components/common/Button";
 
 const OrderReview = ({
   shippingData,
@@ -163,10 +164,11 @@ const OrderReview = ({
         >
           Back
         </button>
-        <button
+        <Button
           onClick={onPlaceOrder}
           disabled={!termsAccepted || isPlacingOrder}
-          className="px-8 py-3.5 bg-black text-white font-bold rounded-full hover:bg-gray-800 shadow-2xl shadow-black/20 hover:shadow-black/30 hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:scale-100 flex items-center"
+          showIcon={false}
+          className="flex items-center justify-center !px-8 !py-3 font-bold disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isPlacingOrder ? (
             <>
@@ -195,7 +197,7 @@ const OrderReview = ({
           ) : (
             "Place Order"
           )}
-        </button>
+        </Button>
       </div>
     </div>
   );

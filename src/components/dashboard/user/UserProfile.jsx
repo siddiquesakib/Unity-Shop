@@ -16,6 +16,7 @@ import {
 import { useAuth } from '@/hooks/useAuth';
 import Link from 'next/link';
 import Image from 'next/image';
+import Button from '@/components/common/Button';
 
 export default function UserProfile() {
   const { user } = useAuth();
@@ -210,12 +211,13 @@ export default function UserProfile() {
 
           {/* ── Edit Profile button ── */}
           <div className="mt-auto pt-5">
-            <Link
+            <Button
               href="/dashboard/user/profile"
-              className="flex items-center justify-center gap-2 w-full py-2.5 bg-gray-900 hover:bg-black text-white text-sm font-medium rounded-lg transition-colors"
+              className="w-full justify-center !py-2.5"
+              showIcon={false}
             >
               Edit Profile <ArrowUpRight size={14} />
-            </Link>
+            </Button>
           </div>
         </div>
       )}
