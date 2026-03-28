@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { useState, useMemo, useEffect, useCallback } from 'react';
-import Link from 'next/link';
-import Image from 'next/image';
-import { useRouter } from 'next/navigation';
+import { useState, useMemo, useEffect, useCallback } from "react";
+import Link from "next/link";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
 import {
   FiTrash2,
   FiShoppingCart,
@@ -20,38 +20,38 @@ import {
   FiCreditCard,
   FiCheckCircle,
   FiAlertCircle,
-} from 'react-icons/fi';
-import { useCart } from '@/contexts/CartContext';
-import { useCurrency } from '@/contexts/CurrencyContext';
-import { useSession } from 'next-auth/react';
-import PromoCodeInput from '@/components/promoCode/PromoCodeInput';
-import PaymentButton from '@/components/common/payment-button/PaymentButton';
-import FreeShippingProgress from '@/components/common/FreeShippingProgress';
-import Button from '@/components/common/Button';
+} from "react-icons/fi";
+import { useCart } from "@/contexts/CartContext";
+import { useCurrency } from "@/contexts/CurrencyContext";
+import { useSession } from "next-auth/react";
+import PromoCodeInput from "@/components/promoCode/PromoCodeInput";
+import PaymentButton from "@/components/common/payment-button/PaymentButton";
+import FreeShippingProgress from "@/components/common/FreeShippingProgress";
+import Button from "@/components/common/Button";
 
 const FREE_SHIP = 999;
-const SHOP_EMAIL = process.env.NEXT_PUBLIC_SHOP_EMAIL || 'shop@unityshop.com';
-const SHOP_NAME = process.env.NEXT_PUBLIC_SHOP_NAME || 'UnityShop';
+const SHOP_EMAIL = process.env.NEXT_PUBLIC_SHOP_EMAIL || "shop@unityshop.com";
+const SHOP_NAME = process.env.NEXT_PUBLIC_SHOP_NAME || "UnityShop";
 
 function getApiUrl() {
   const raw = process.env.NEXT_PUBLIC_API_URL;
   if (!raw) return null;
-  return raw.replace(/\/$/, '');
+  return raw.replace(/\/$/, "");
 }
 
 function getAuthToken() {
-  if (typeof window === 'undefined') return null;
-  return localStorage.getItem('token');
+  if (typeof window === "undefined") return null;
+  return localStorage.getItem("token");
 }
 
 const EMPTY_SHIPPING = {
-  fullName: '',
-  phone: '',
-  address: '',
-  city: '',
-  country: 'Bangladesh',
-  zip: '',
-  note: '',
+  fullName: "",
+  phone: "",
+  address: "",
+  city: "",
+  country: "Bangladesh",
+  zip: "",
+  note: "",
 };
 
 // ─── Safe number helper ────────────────────────────────────────────────────────
@@ -67,7 +67,6 @@ export default function CartPage() {
     savedItems,
     removeItem,
     updateQuantity,
-    prepareCheckout,
     hydrated,
     moveToSaved,
     moveToCart,
@@ -77,13 +76,13 @@ export default function CartPage() {
   const { formatPrice } = useCurrency();
   const { data: session, status: sessionStatus } = useSession();
   const router = useRouter(); // Added router
-  const userEmail = session?.user?.email || '';
+  const userEmail = session?.user?.email || "";
 
   const [removingId, setRemovingId] = useState(null);
   const [appliedPromo, setAppliedPromo] = useState(null);
-  const [step, setStep] = useState('cart');
+  const [step, setStep] = useState("cart");
   const [shipping, setShipping] = useState(EMPTY_SHIPPING);
-  const [shippingMethod, setShippingMethod] = useState('standard');
+  const [shippingMethod, setShippingMethod] = useState("standard");
   const [shippingOptions, setShippingOptions] = useState(null);
   const [shippingOptionsLoading, setShippingOptionsLoading] = useState(false);
   const [shippingOptionsError, setShippingOptionsError] = useState(null);
@@ -94,13 +93,13 @@ export default function CartPage() {
 
   /* ── Auto-load saved shipping info ─────────────────────────────── */
   useEffect(() => {
-    if (sessionStatus === 'loading') return;
+    if (sessionStatus === "loading") return;
     if (!userEmail) return;
 
     const API_URL = getApiUrl();
     if (!API_URL) {
       console.warn(
-        '[Cart] NEXT_PUBLIC_API_URL is not set — cannot load shipping info.',
+        "[Cart] NEXT_PUBLIC_API_URL is not set — cannot load shipping info.",
       );
       return;
     }
@@ -110,37 +109,37 @@ export default function CartPage() {
     const token = getAuthToken();
 
     if (!token) {
-      console.warn('[Cart] Missing auth token — cannot load shipping info.');
+      console.warn("[Cart] Missing auth token — cannot load shipping info.");
       return;
     }
 
-    console.log('[Cart] Loading shipping info →', url);
+    console.log("[Cart] Loading shipping info →", url);
 
     fetch(url, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
     })
-      .then(res => {
+      .then((res) => {
         if (res.status === 401 || res.status === 403) {
-          throw new Error('Unauthorized to load shipping profile');
+          throw new Error("Unauthorized to load shipping profile");
         }
         return res;
       })
-      .then(res => {
-        console.log('[Cart] GET shipping status:', res.status);
+      .then((res) => {
+        console.log("[Cart] GET shipping status:", res.status);
         return res.ok ? res.json() : null;
       })
-      .then(data => {
+      .then((data) => {
         if (data && data.fullName) {
           setShipping({
-            fullName: data.fullName || '',
-            phone: data.phone || '',
-            address: data.address || '',
-            city: data.city || '',
-            country: data.country || 'Bangladesh',
-            zip: data.zip || '',
-            note: data.note || '',
+            fullName: data.fullName || "",
+            phone: data.phone || "",
+            address: data.address || "",
+            city: data.city || "",
+            country: data.country || "Bangladesh",
+            zip: data.zip || "",
+            note: data.note || "",
           });
           setSavedBadge(true);
           return;
@@ -151,25 +150,30 @@ export default function CartPage() {
             Authorization: `Bearer ${token}`,
           },
         })
-          .then(res => (res.ok ? res.json() : null))
-          .then(locationData => {
+          .then((res) => (res.ok ? res.json() : null))
+          .then((locationData) => {
             if (!locationData?.activeLocation) return;
-            setShipping(prev => ({
+            setShipping((prev) => ({
               ...prev,
-              country: prev.country || locationData.activeLocation.country || 'Bangladesh',
-              city: prev.city || locationData.activeLocation.city || '',
+              country:
+                prev.country ||
+                locationData.activeLocation.country ||
+                "Bangladesh",
+              city: prev.city || locationData.activeLocation.city || "",
             }));
           });
       })
-      .catch(err => console.error('[Cart] Failed to load shipping info:', err));
+      .catch((err) =>
+        console.error("[Cart] Failed to load shipping info:", err),
+      );
   }, [userEmail, sessionStatus]);
 
   /* ── Derived totals ─────────────────────────────────────────────── */
   // All numeric fields are coerced with n() so no NaN can sneak into totals
   const allItems = useMemo(
     () =>
-      cartGroups.flatMap(g =>
-        g.items.map(i => ({
+      cartGroups.flatMap((g) =>
+        g.items.map((i) => ({
           ...i,
           // Guarantee these are always safe numbers at render time
           quantity: Math.max(1, n(i.quantity, 1)),
@@ -197,7 +201,7 @@ export default function CartPage() {
       ? Number(dynamicShippingCost)
       : subtotal >= FREE_SHIP
         ? 0
-        : shippingMethod === 'express'
+        : shippingMethod === "express"
           ? 120
           : 60;
   const grandTotal = Math.max(0, subtotal - discountAmount + shippingCost);
@@ -211,7 +215,7 @@ export default function CartPage() {
     updateQuantity(item.id, current + d * step);
   };
 
-  const handleRemove = id => {
+  const handleRemove = (id) => {
     setRemovingId(id);
     setTimeout(() => {
       removeItem(id);
@@ -219,9 +223,9 @@ export default function CartPage() {
     }, 250);
   };
 
-  const handleShippingChange = e => {
+  const handleShippingChange = (e) => {
     const { name, value } = e.target;
-    setShipping(p => ({ ...p, [name]: value }));
+    setShipping((p) => ({ ...p, [name]: value }));
     setShippingMsg(null);
   };
 
@@ -238,37 +242,28 @@ export default function CartPage() {
 
     const API_URL = getApiUrl();
     if (!API_URL || !userEmail) {
-      setStep('payment');
+      setStep("payment");
       return;
     }
 
     setSavingShipping(true);
     setShippingMsg(null);
 
-    try {
-      const res = await fetch(
-        `${API_URL}/users/shipping/${encodeURIComponent(userEmail)}`,
-        {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(shipping),
-        },
-      );
     const token = getAuthToken();
     if (!token) {
-      setShippingMsg({ type: 'err', text: 'Please log in again.' });
+      setShippingMsg({ type: "err", text: "Please log in again." });
       setSavingShipping(false);
       return;
     }
 
     const url = `${API_URL}/users/shipping/${encodeURIComponent(userEmail)}`;
-    console.log('[Cart] Saving shipping info →', url, shipping);
+    console.log("[Cart] Saving shipping info →", url, shipping);
 
     try {
       const res = await fetch(url, {
-        method: 'PATCH',
+        method: "PATCH",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(shipping),
@@ -276,50 +271,47 @@ export default function CartPage() {
       const data = await res.json();
       if (res.ok) {
         setSavedBadge(true);
-        setShippingMsg({ type: 'ok', text: 'Address saved to your profile ✓' });
-        setTimeout(() => setStep('payment'), 600);
+        setShippingMsg({ type: "ok", text: "Address saved to your profile ✓" });
+        setTimeout(() => setStep("payment"), 600);
       } else {
         setShippingMsg({
-          type: 'err',
+          type: "err",
           text:
-            data?.message || 'Address could not be saved — proceeding anyway.',
+            data?.message || "Address could not be saved — proceeding anyway.",
         });
-        setTimeout(() => setStep('payment'), 1400);
+        setTimeout(() => setStep("payment"), 1400);
       }
     } catch (err) {
       setShippingMsg({
-        type: 'err',
-        text: 'Network error — address not saved, but you can still proceed.',
+        type: "err",
+        text: "Network error — address not saved, but you can still proceed.",
       });
-      setTimeout(() => setStep('payment'), 1400);
+      setTimeout(() => setStep("payment"), 1400);
     } finally {
       setSavingShipping(false);
     }
   }, [shippingValid, userEmail, shipping]);
 
   const productSummary = allItems
-    .map(i => `${i.name} (×${i.quantity})`)
-    .join(', ');
-  const productIdsArray = allItems
-    .map(i => i.productId)
-    .filter(Boolean);
-  const allProductIds = allItems.map(i => i.productId).join(',');
+    .map((i) => `${i.name} (×${i.quantity})`)
+    .join(", ");
+  const productIdsArray = allItems.map((i) => i.productId).filter(Boolean);
+  const allProductIds = allItems.map((i) => i.productId).join(",");
 
   const handleGoCheckout = useCallback(() => {
     if (!allItems.length) return;
-
-    prepareCheckout(cartGroups, appliedPromo || null);
-    router.push('/checkout');
-  }, [allItems.length, appliedPromo, cartGroups, prepareCheckout, router]);
+    // Keep the step-based flow on the cart page.
+    setStep("shipping");
+  }, [allItems.length]);
 
   const handlePlaceCodOrder = async () => {
     const API_URL = getApiUrl();
     if (!API_URL) {
-      alert('API URL missing for COD order.');
+      alert("API URL missing for COD order.");
       return;
     }
     if (!userEmail) {
-      router.push('/login');
+      router.push("/login");
       return;
     }
 
@@ -327,13 +319,13 @@ export default function CartPage() {
     try {
       const token = getAuthToken();
       if (!token) {
-        throw new Error('Please log in again to place COD order');
+        throw new Error("Please log in again to place COD order");
       }
 
       const res = await fetch(`${API_URL}/payment/create-cod-order`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
@@ -348,7 +340,7 @@ export default function CartPage() {
             discount: discountAmount,
             grandTotal,
           },
-          items: allItems.map(i => ({
+          items: allItems.map((i) => ({
             productId: i.productId,
             quantity: i.quantity,
             unitPrice: i.price,
@@ -359,15 +351,15 @@ export default function CartPage() {
 
       const data = await res.json();
       if (!res.ok) {
-        throw new Error(data?.error || 'Failed to place COD order');
+        throw new Error(data?.error || "Failed to place COD order");
       }
 
-      if (typeof clearCheckoutItems === 'function') {
+      if (typeof clearCheckoutItems === "function") {
         clearCheckoutItems();
       }
-      router.push('/dashboard/user/orders');
+      router.push("/dashboard/user/orders");
     } catch (error) {
-      alert(error.message || 'Failed to place COD order');
+      alert(error.message || "Failed to place COD order");
     } finally {
       setPlacingCod(false);
     }
@@ -376,13 +368,13 @@ export default function CartPage() {
   useEffect(() => {
     const API_URL = getApiUrl();
     if (!API_URL) return;
-    if (step !== 'shipping') return;
+    if (step !== "shipping") return;
     if (!shipping.city?.trim() || !shipping.country?.trim()) return;
     if (!productIdsArray.length) return;
 
     const token = getAuthToken();
     if (!token) {
-      setShippingOptionsError('Please log in again to get shipping options');
+      setShippingOptionsError("Please log in again to get shipping options");
       return;
     }
 
@@ -390,9 +382,9 @@ export default function CartPage() {
     setShippingOptionsError(null);
 
     fetch(`${API_URL}/payment/shipping-options`, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({
@@ -403,21 +395,26 @@ export default function CartPage() {
         },
       }),
     })
-      .then(async res => {
+      .then(async (res) => {
+        if (res.status === 404) {
+          // Endpoint not available on this backend; fall back to default rates.
+          return null;
+        }
         const data = await res.json();
         if (!res.ok) {
-          throw new Error(data?.error || 'Failed to fetch shipping options');
+          throw new Error(data?.error || "Failed to fetch shipping options");
         }
         return data;
       })
-      .then(data => {
+      .then((data) => {
+        if (!data) return;
         setShippingOptions(data);
         const hasCurrentOption = !!data?.options?.[shippingMethod];
         if (!hasCurrentOption && data?.recommended) {
           setShippingMethod(data.recommended);
         }
       })
-      .catch(err => {
+      .catch((err) => {
         setShippingOptionsError(err.message);
         setShippingOptions(null);
       })
@@ -427,7 +424,7 @@ export default function CartPage() {
     shipping.city,
     shipping.country,
     shippingMethod,
-    productIdsArray.join(','),
+    productIdsArray.join(","),
   ]);
 
   /* ── Loading ────────────────────────────────────────────────────── */
@@ -510,48 +507,48 @@ export default function CartPage() {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 pt-3">
           <div>
             <h1 className="text-xl sm:text-2xl font-black text-gray-900">
-              {step === 'cart'
-                ? 'Shopping Cart'
-                : step === 'shipping'
-                  ? 'Shipping Details'
-                  : 'Payment'}
+              {step === "cart"
+                ? "Shopping Cart"
+                : step === "shipping"
+                  ? "Shipping Details"
+                  : "Payment"}
             </h1>
             <p className="text-[16px] text-gray-400 mt-0.5">
-              {totalItems} {totalItems === 1 ? 'item' : 'items'} · {totalQty}{' '}
+              {totalItems} {totalItems === 1 ? "item" : "items"} · {totalQty}{" "}
               units
             </p>
           </div>
           <div className="flex items-center gap-1.5 text-[10px] font-bold">
-            {['Cart', 'Shipping', 'Payment'].map((s, i) => {
+            {["Cart", "Shipping", "Payment"].map((s, i) => {
               const active =
-                (i === 0 && step === 'cart') ||
-                (i === 1 && step === 'shipping') ||
-                (i === 2 && step === 'payment');
+                (i === 0 && step === "cart") ||
+                (i === 1 && step === "shipping") ||
+                (i === 2 && step === "payment");
               const done =
-                (i === 0 && step !== 'cart') || (i === 1 && step === 'payment');
+                (i === 0 && step !== "cart") || (i === 1 && step === "payment");
               return (
                 <div key={s} className="flex items-center gap-1.5">
                   {i > 0 && <div className="w-5 h-px bg-gray-300" />}
                   <button
                     onClick={() => {
                       if (done || active) {
-                        if (i === 0) setStep('cart');
-                        else if (i === 1 && step === 'payment')
-                          setStep('shipping');
+                        if (i === 0) setStep("cart");
+                        else if (i === 1 && step === "payment")
+                          setStep("shipping");
                       }
                     }}
                     className={`w-5 h-5 rounded-full flex items-center justify-center text-[9px] transition-all ${
                       done
-                        ? 'bg-black text-white cursor-pointer'
+                        ? "bg-black text-white cursor-pointer"
                         : active
-                          ? 'bg-black text-white'
-                          : 'bg-gray-200 text-gray-400'
+                          ? "bg-black text-white"
+                          : "bg-gray-200 text-gray-400"
                     }`}
                   >
                     {done ? <FiCheck size={10} /> : i + 1}
                   </button>
                   <span
-                    className={`hidden sm:inline ${active || done ? 'text-gray-900' : 'text-gray-400'}`}
+                    className={`hidden sm:inline ${active || done ? "text-gray-900" : "text-gray-400"}`}
                   >
                     {s}
                   </span>
@@ -571,9 +568,9 @@ export default function CartPage() {
           {/* ── LEFT ─────────────────────────────────────────────── */}
           <div className="flex-1 space-y-3 min-w-0">
             {/* STEP: CART */}
-            {step === 'cart' && (
+            {step === "cart" && (
               <>
-                {cartGroups.map(group => (
+                {cartGroups.map((group) => (
                   <div
                     key={group.id}
                     className="bg-white rounded-xl border border-gray-200 overflow-hidden"
@@ -594,7 +591,7 @@ export default function CartPage() {
                     </div>
 
                     <div className="divide-y divide-gray-50">
-                      {group.items.map(item => {
+                      {group.items.map((item) => {
                         // Safe values for this item — coerce once per render
                         const qty = Math.max(1, n(item.quantity, 1));
                         const moq = Math.max(1, n(item.moq, 1));
@@ -608,8 +605,8 @@ export default function CartPage() {
                             key={item.id}
                             className={`flex gap-3 p-3 sm:p-4 transition-all duration-250 ${
                               isRemoving
-                                ? 'opacity-0 -translate-x-4 max-h-0 py-0 overflow-hidden'
-                                : ''
+                                ? "opacity-0 -translate-x-4 max-h-0 py-0 overflow-hidden"
+                                : ""
                             }`}
                           >
                             <Link
@@ -640,7 +637,7 @@ export default function CartPage() {
                                   {item.name}
                                 </Link>
                                 <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                                  {item.variant && item.variant !== '—' && (
+                                  {item.variant && item.variant !== "—" && (
                                     <span className="text-[10px] text-gray-400 bg-gray-50 px-1.5 py-0.5 rounded">
                                       {item.variant}
                                     </span>
@@ -752,7 +749,7 @@ export default function CartPage() {
             )}
 
             {/* STEP: SHIPPING */}
-            {step === 'shipping' && (
+            {step === "shipping" && (
               <div className="bg-white rounded-xl border border-gray-200 p-4 sm:p-5 space-y-4">
                 <div className="flex items-center justify-between">
                   <h2 className="text-[16px] sm:text-base font-black text-gray-900 flex items-center gap-1.5">
@@ -825,9 +822,10 @@ export default function CartPage() {
                       Loading shipping options...
                     </p>
                   )}
-                  {shippingOptions?.type === 'international' && (
+                  {shippingOptions?.type === "international" && (
                     <p className="text-[10px] text-blue-600 font-semibold mb-2">
-                      International delivery detected. Choose standard or express.
+                      International delivery detected. Choose standard or
+                      express.
                     </p>
                   )}
                   {shippingOptionsError && (
@@ -836,38 +834,39 @@ export default function CartPage() {
                     </p>
                   )}
                   <div className="space-y-2">
-                    {(
-                      shippingOptions?.options
-                        ? Object.entries(shippingOptions.options).map(([id, opt]) => ({
+                    {(shippingOptions?.options
+                      ? Object.entries(shippingOptions.options).map(
+                          ([id, opt]) => ({
                             id,
-                            label: id === 'express' ? 'Express' : 'Standard',
+                            label: id === "express" ? "Express" : "Standard",
                             time:
                               opt.estimatedDays > 0
-                                ? `${opt.estimatedDays} day${opt.estimatedDays > 1 ? 's' : ''}`
-                                : 'Estimated at checkout',
+                                ? `${opt.estimatedDays} day${opt.estimatedDays > 1 ? "s" : ""}`
+                                : "Estimated at checkout",
                             cost: Number(opt.cost || 0),
-                          }))
-                        : [
-                            {
-                              id: 'standard',
-                              label: 'Standard',
-                              time: '5-7 days',
-                              cost: subtotal >= FREE_SHIP ? 0 : 60,
-                            },
-                            {
-                              id: 'express',
-                              label: 'Express',
-                              time: '2-3 days',
-                              cost: subtotal >= FREE_SHIP ? 0 : 120,
-                            },
-                          ]
-                    ).map(m => (
+                          }),
+                        )
+                      : [
+                          {
+                            id: "standard",
+                            label: "Standard",
+                            time: "5-7 days",
+                            cost: subtotal >= FREE_SHIP ? 0 : 60,
+                          },
+                          {
+                            id: "express",
+                            label: "Express",
+                            time: "2-3 days",
+                            cost: subtotal >= FREE_SHIP ? 0 : 120,
+                          },
+                        ]
+                    ).map((m) => (
                       <label
                         key={m.id}
                         className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
                           shippingMethod === m.id
-                            ? 'border-black bg-gray-50'
-                            : 'border-gray-200 hover:border-gray-300'
+                            ? "border-black bg-gray-50"
+                            : "border-gray-200 hover:border-gray-300"
                         }`}
                       >
                         <input
@@ -901,12 +900,12 @@ export default function CartPage() {
                 {shippingMsg && (
                   <div
                     className={`flex items-center gap-1.5 text-[11px] font-semibold px-3 py-2 rounded-lg ${
-                      shippingMsg.type === 'ok'
-                        ? 'bg-gray-50 text-black'
-                        : 'bg-red-50 text-red-600'
+                      shippingMsg.type === "ok"
+                        ? "bg-gray-50 text-black"
+                        : "bg-red-50 text-red-600"
                     }`}
                   >
-                    {shippingMsg.type === 'ok' ? (
+                    {shippingMsg.type === "ok" ? (
                       <FiCheckCircle size={12} />
                     ) : (
                       <FiAlertCircle size={12} />
@@ -917,7 +916,7 @@ export default function CartPage() {
 
                 <div className="flex gap-2 pt-2">
                   <button
-                    onClick={() => setStep('cart')}
+                    onClick={() => setStep("cart")}
                     className="px-5 h-10 border border-gray-200 rounded-full text-[16px] font-bold hover:border-black transition-colors"
                   >
                     ← Back
@@ -933,7 +932,7 @@ export default function CartPage() {
                         Saving…
                       </>
                     ) : (
-                      'Continue to Payment'
+                      "Continue to Payment"
                     )}
                   </button>
                 </div>
@@ -941,7 +940,7 @@ export default function CartPage() {
             )}
 
             {/* STEP: PAYMENT */}
-            {step === 'payment' && (
+            {step === "payment" && (
               <div className="bg-white rounded-xl border border-gray-200 p-4 sm:p-5 space-y-4">
                 <h2 className="text-[16px] sm:text-base font-black text-gray-900 flex items-center gap-1.5">
                   <FiCreditCard size={14} /> Payment
@@ -950,7 +949,7 @@ export default function CartPage() {
                   <div className="flex justify-between">
                     <span className="text-gray-400">Ship to</span>
                     <button
-                      onClick={() => setStep('shipping')}
+                      onClick={() => setStep("shipping")}
                       className="text-black font-bold text-[10px]"
                     >
                       Edit
@@ -960,12 +959,13 @@ export default function CartPage() {
                     {shipping.fullName} · {shipping.phone}
                   </p>
                   <p className="text-gray-500">
-                    {shipping.address}, {shipping.city}, {shipping.country} {shipping.zip}
+                    {shipping.address}, {shipping.city}, {shipping.country}{" "}
+                    {shipping.zip}
                   </p>
                 </div>
 
                 <div className="space-y-2">
-                  {allItems.map(item => (
+                  {allItems.map((item) => (
                     <div key={item.id} className="flex items-center gap-3">
                       <div className="relative w-10 h-10 rounded-lg bg-gray-50 overflow-hidden shrink-0">
                         {item.image ? (
@@ -1004,26 +1004,26 @@ export default function CartPage() {
                   <div className="flex flex-wrap gap-2">
                     {[
                       {
-                        name: 'bKash',
-                        bg: 'bg-gray-50 border-gray-200',
-                        text: 'text-black',
+                        name: "bKash",
+                        bg: "bg-gray-50 border-gray-200",
+                        text: "text-black",
                       },
                       {
-                        name: 'Nagad',
-                        bg: 'bg-gray-50 border-orange-200',
-                        text: 'text-black',
+                        name: "Nagad",
+                        bg: "bg-gray-50 border-orange-200",
+                        text: "text-black",
                       },
                       {
-                        name: 'Visa/Card',
-                        bg: 'bg-gray-50 border-gray-200',
-                        text: 'text-black',
+                        name: "Visa/Card",
+                        bg: "bg-gray-50 border-gray-200",
+                        text: "text-black",
                       },
                       {
-                        name: 'Cash on Delivery',
-                        bg: 'bg-gray-50 border-gray-200',
-                        text: 'text-black',
+                        name: "Cash on Delivery",
+                        bg: "bg-gray-50 border-gray-200",
+                        text: "text-black",
                       },
-                    ].map(p => (
+                    ].map((p) => (
                       <span
                         key={p.name}
                         className={`px-3 py-1.5 rounded-lg border text-[10px] font-bold ${p.bg} ${p.text}`}
@@ -1036,7 +1036,7 @@ export default function CartPage() {
 
                 <div className="flex gap-2 pt-2">
                   <button
-                    onClick={() => setStep('shipping')}
+                    onClick={() => setStep("shipping")}
                     className="px-5 h-10 border border-gray-200 rounded-full text-[16px] font-bold hover:border-black transition-colors"
                   >
                     ← Back
@@ -1059,7 +1059,7 @@ export default function CartPage() {
                           discount: discountAmount,
                           grandTotal,
                         }}
-                        items={allItems.map(i => ({
+                        items={allItems.map((i) => ({
                           productId: i.productId,
                           quantity: i.quantity,
                           unitPrice: i.price,
@@ -1073,7 +1073,9 @@ export default function CartPage() {
                         disabled={placingCod}
                         className="w-full h-11 rounded-full border border-gray-300 text-[14px] font-bold hover:border-black disabled:opacity-50"
                       >
-                        {placingCod ? 'Placing COD Order...' : 'Place COD Order (Payment Pending)'}
+                        {placingCod
+                          ? "Placing COD Order..."
+                          : "Place COD Order (Payment Pending)"}
                       </button>
                     </div>
                   ) : (
@@ -1108,9 +1110,9 @@ export default function CartPage() {
                   <div className="flex justify-between">
                     <span className="text-gray-500">Shipping</span>
                     <span
-                      className={`font-semibold ${shippingCost === 0 ? 'text-green-500' : ''}`}
+                      className={`font-semibold ${shippingCost === 0 ? "text-green-500" : ""}`}
                     >
-                      {shippingCost === 0 ? 'FREE' : formatPrice(shippingCost)}
+                      {shippingCost === 0 ? "FREE" : formatPrice(shippingCost)}
                     </span>
                   </div>
                   {appliedPromo && discountAmount > 0 && (
@@ -1138,7 +1140,7 @@ export default function CartPage() {
                     {formatPrice(grandTotal)}
                   </span>
                 </div>
-                {step === 'cart' && (
+                {step === "cart" && (
                   <Button
                     showIcon={false}
                     onClick={handleGoCheckout}
@@ -1151,7 +1153,7 @@ export default function CartPage() {
                 <div className="mt-3 pt-3 border-t border-gray-100">
                   <PromoCodeInput
                     subtotal={subtotal}
-                    onApply={promo => setAppliedPromo(promo)}
+                    onApply={(promo) => setAppliedPromo(promo)}
                     onRemove={() => setAppliedPromo(null)}
                   />
                 </div>
@@ -1171,13 +1173,13 @@ export default function CartPage() {
                 <div className="flex items-center justify-center gap-2 pt-1">
                   {[
                     {
-                      name: 'bKash',
-                      color: 'bg-gray-200 border border-gray-400 text-black',
+                      name: "bKash",
+                      color: "bg-gray-200 border border-gray-400 text-black",
                     },
-                    { name: 'Nagad', color: 'bg-gray-200 text-black' },
-                    { name: 'Visa', color: 'bg-gray-200 text-black' },
-                    { name: 'COD', color: 'bg-gray-100 text-gray-600' },
-                  ].map(p => (
+                    { name: "Nagad", color: "bg-gray-200 text-black" },
+                    { name: "Visa", color: "bg-gray-200 text-black" },
+                    { name: "COD", color: "bg-gray-100 text-gray-600" },
+                  ].map((p) => (
                     <span
                       key={p.name}
                       className={`px-2 py-0.5 rounded text-[9px] font-bold ${p.color}`}
@@ -1205,7 +1207,7 @@ export default function CartPage() {
               </p>
             )}
           </div>
-          {step === 'cart' ? (
+          {step === "cart" ? (
             <button
               onClick={handleGoCheckout}
               disabled={totalItems === 0}
@@ -1213,13 +1215,13 @@ export default function CartPage() {
             >
               <FiLock size={12} /> Checkout
             </button>
-          ) : step === 'shipping' ? (
+          ) : step === "shipping" ? (
             <button
               onClick={handleContinueToPayment}
               disabled={!shippingValid || savingShipping}
               className="flex-1 h-10 bg-black text-white font-bold text-[16px] uppercase tracking-wide rounded-full flex items-center justify-center disabled:opacity-40 active:scale-95 transition-all"
             >
-              {savingShipping ? '…' : 'Continue →'}
+              {savingShipping ? "…" : "Continue →"}
             </button>
           ) : userEmail ? (
             <div className="flex-1 grid grid-cols-1 gap-1.5">
@@ -1240,7 +1242,7 @@ export default function CartPage() {
                   discount: discountAmount,
                   grandTotal,
                 }}
-                items={allItems.map(i => ({
+                items={allItems.map((i) => ({
                   productId: i.productId,
                   quantity: i.quantity,
                   unitPrice: i.price,
@@ -1254,7 +1256,7 @@ export default function CartPage() {
                 disabled={placingCod}
                 className="w-full h-9 rounded-full border border-gray-300 text-[11px] font-bold disabled:opacity-50"
               >
-                {placingCod ? 'Placing...' : 'COD'}
+                {placingCod ? "Placing..." : "COD"}
               </button>
             </div>
           ) : (
@@ -1277,11 +1279,11 @@ function SavedForLater({ items, moveToCart, removeSavedItem, formatPrice }) {
   return (
     <div className="mt-4">
       <h2 className="text-[16px] sm:text-base font-black text-gray-900 mb-2 flex items-center gap-1.5">
-        <FiBookmark size={14} /> Saved For Later{' '}
+        <FiBookmark size={14} /> Saved For Later{" "}
         <span className="text-gray-400 font-medium">({items.length})</span>
       </h2>
       <div className="bg-white rounded-xl border border-gray-200 divide-y divide-gray-50">
-        {items.map(item => {
+        {items.map((item) => {
           const price = Math.max(0, Number(item.price) || 0);
           return (
             <div key={item.id} className="flex gap-3 p-3">
@@ -1337,7 +1339,7 @@ function SavedForLater({ items, moveToCart, removeSavedItem, formatPrice }) {
 }
 
 /* ─── Input ───────────────────────────────────────────────────────── */
-function Input({ label, name, value, onChange, type = 'text' }) {
+function Input({ label, name, value, onChange, type = "text" }) {
   return (
     <div>
       <label className="block text-[10px] font-bold text-gray-500 mb-1">

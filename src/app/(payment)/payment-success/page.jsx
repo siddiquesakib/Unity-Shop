@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { useEffect, useState, Suspense } from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
-import { useSession } from 'next-auth/react';
-import { useCart } from '@/contexts/CartContext';
+import { useEffect, useRef, useState, Suspense } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
+import { useCart } from "@/contexts/CartContext";
 
 const API_BASE =
   process.env.NEXT_PUBLIC_API_URL || "https://unity-shop-server.vercel.app";
@@ -18,30 +18,28 @@ export default function PaymentSuccess() {
 
 function SuccessContent() {
   const searchParams = useSearchParams();
-  const sessionId = searchParams.get('session_id');
+  const sessionId = searchParams.get("session_id");
   const router = useRouter();
   const { data: session } = useSession();
   const { clearCart } = useCart();
-  const [processing, setProcessing] = useState(true);
+  const hasProcessedRef = useRef(false);
+  const [stage, setStage] = useState("processing");
+  const [detail, setDetail] = useState("Processing your payment...");
 
   useEffect(() => {
+    if (hasProcessedRef.current) return;
+    hasProcessedRef.current = true;
+
     if (!sessionId) {
-      router.replace('/dashboard/user/orders');
+      setStage("error");
+      setDetail("Missing payment session. Redirecting to orders...");
+      setTimeout(() => router.replace("/dashboard/user/orders"), 1500);
       return;
     }
 
     const handlePaymentSuccess = async () => {
       try {
-        console.log('✓ Processing payment...');
-
         // 1. Verify payment with backend
-        const res = await fetch(
-          `${API_BASE}/payment/retrivedsessionAfterPayment?session_id=${sessionId}`,
-          { method: 'PATCH' },
-        );
-
-        const data = await res.json();
-        console.log('Payment verification response:', data);
         const token =
           typeof window !== "undefined" ? localStorage.getItem("token") : null;
 
@@ -61,45 +59,63 @@ function SuccessContent() {
 
         const data = await res.json().catch(() => ({}));
 
-        if (!res.ok && data?.message !== 'Order already processed.') {
-          throw new Error(data?.error || 'Payment verification failed');
+        if (!res.ok && data?.message !== "Order already processed.") {
+          throw new Error(data?.error || "Payment verification failed");
         }
-
-        console.log('✓ Payment verified, clearing cart...');
 
         // 2. Clear cart from frontend
         const userId = session?.user?.id || session?.user?._id;
         if (userId) {
           try {
             await clearCart(userId);
-            console.log('✓ Cart cleared');
           } catch (err) {
-            console.error('Cart clearing error:', err);
+            console.error("Cart clearing error:", err);
             // Continue anyway - don't block redirect
           }
         }
 
-        console.log('✓ Redirecting to orders...');
-        setProcessing(false);
+        setStage("success");
+        setDetail("Payment verified. Redirecting to your orders...");
 
         // 3. Redirect to orders page
-        router.replace('/dashboard/user/orders');
+        setTimeout(() => router.replace("/dashboard/user/orders"), 2000);
       } catch (err) {
-        console.error('Payment processing error:', err);
-        setProcessing(false);
+        console.error("Payment processing error:", err);
+        setStage("error");
+        setDetail(
+          err?.message || "Payment verification failed. Redirecting...",
+        );
         // Still redirect to orders even on error
-        router.replace('/dashboard/user/orders');
+        setTimeout(() => router.replace("/dashboard/user/orders"), 2500);
       }
     };
 
     handlePaymentSuccess();
   }, [sessionId, router, session, clearCart]);
 
-  if (processing) {
+  if (stage === "processing") {
     return <LoadingSpinner />;
   }
 
-  return null;
+  return (
+    <div className="min-h-screen bg-[#f7f6f3] flex items-center justify-center">
+      <div className="max-w-md w-full bg-white border border-gray-200 rounded-2xl p-6 text-center shadow-sm">
+        <div
+          className={`mx-auto mb-4 h-12 w-12 rounded-full flex items-center justify-center ${
+            stage === "success"
+              ? "bg-emerald-50 text-emerald-600"
+              : "bg-amber-50 text-amber-600"
+          }`}
+        >
+          <span className="text-xl">✓</span>
+        </div>
+        <h1 className="text-lg font-black text-gray-900 mb-2">
+          {stage === "success" ? "Payment Successful" : "Payment Update"}
+        </h1>
+        <p className="text-sm text-gray-600">{detail}</p>
+      </div>
+    </div>
+  );
 }
 
 function LoadingSpinner() {
