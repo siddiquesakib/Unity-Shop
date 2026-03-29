@@ -77,6 +77,7 @@ export default function CartPage() {
   const { data: session, status: sessionStatus } = useSession();
   const router = useRouter(); // Added router
   const userEmail = session?.user?.email || "";
+  const userId = session?.user?.id || session?.user?._id || null;
 
   const [removingId, setRemovingId] = useState(null);
   const [appliedPromo, setAppliedPromo] = useState(null);
@@ -1062,6 +1063,7 @@ export default function CartPage() {
                         productId={allProductIds}
                         quantity={1}
                         productName={productSummary}
+                        userId={userId}
                         userEmail={userEmail}
                         sellerName={sellerNames.join(", ") || SHOP_NAME}
                         sellerEmail={sellerEmails.join(",") || SHOP_EMAIL}
