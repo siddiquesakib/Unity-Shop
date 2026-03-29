@@ -20,13 +20,14 @@ function SuccessContent() {
   const searchParams = useSearchParams();
   const sessionId = searchParams.get("session_id");
   const router = useRouter();
-  const { data: session } = useSession();
+  const { data: session, status: sessionStatus } = useSession();
   const { clearCart } = useCart();
   const hasProcessedRef = useRef(false);
   const [stage, setStage] = useState("processing");
   const [detail, setDetail] = useState("Processing your payment...");
 
   useEffect(() => {
+    if (sessionStatus === "loading") return;
     if (hasProcessedRef.current) return;
     hasProcessedRef.current = true;
 
@@ -64,14 +65,23 @@ function SuccessContent() {
         }
 
         // 2. Clear cart from frontend
-        const userId = session?.user?.id || session?.user?._id;
-        if (userId) {
+        let storedUserId = null;
+        if (typeof window !== "undefined") {
           try {
-            await clearCart(userId);
+            const rawUser = localStorage.getItem("user");
+            storedUserId = rawUser ? JSON.parse(rawUser)?._id : null;
           } catch (err) {
-            console.error("Cart clearing error:", err);
-            // Continue anyway - don't block redirect
+            console.warn("Failed to read user from localStorage:", err);
           }
+        }
+
+        const userId =
+          session?.user?.id || session?.user?._id || storedUserId || null;
+        try {
+          await clearCart(userId);
+        } catch (err) {
+          console.error("Cart clearing error:", err);
+          // Continue anyway - don't block redirect
         }
 
         setStage("success");
@@ -91,7 +101,7 @@ function SuccessContent() {
     };
 
     handlePaymentSuccess();
-  }, [sessionId, router, session, clearCart]);
+  }, [sessionId, router, session, sessionStatus, clearCart]);
 
   if (stage === "processing") {
     return <LoadingSpinner />;
