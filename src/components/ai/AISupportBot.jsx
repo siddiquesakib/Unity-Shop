@@ -5,7 +5,14 @@ import { createPortal } from "react-dom";
 import Link from "next/link";
 import Image from "next/image";
 import { useAuth } from "@/hooks/useAuth";
-import { FiHelpCircle, FiX, FiSend, FiLoader } from "react-icons/fi";
+import {
+  FiHelpCircle,
+  FiX,
+  FiSend,
+  FiLoader,
+  FiCheck,
+  FiAlertCircle,
+} from "react-icons/fi";
 
 const AISupportBot = ({ order, product }) => {
   const { user } = useAuth();
@@ -16,7 +23,7 @@ const AISupportBot = ({ order, product }) => {
   const [recommendations, setRecommendations] = useState([]);
   const chatEndRef = useRef(null);
 
-  // Load initial message when modal opens
+  // Load initial message
   useEffect(() => {
     if (isOpen && messages.length === 0) {
       let intro = "Hello! I'm your UnityShop shopping assistant. ";
@@ -37,21 +44,17 @@ const AISupportBot = ({ order, product }) => {
     }
   }, [isOpen, messages.length, order, product]);
 
-  // Scroll to bottom on new messages
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // Prevent body scroll when modal is open
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = "hidden";
     } else {
       document.body.style.overflow = "";
     }
-    return () => {
-      document.body.style.overflow = "";
-    };
+    return () => (document.body.style.overflow = "");
   }, [isOpen]);
 
   const sendMessage = async () => {
@@ -88,11 +91,7 @@ const AISupportBot = ({ order, product }) => {
             timestamp: new Date(),
           },
         ]);
-        if (data.products && data.products.length) {
-          setRecommendations(data.products);
-        } else {
-          setRecommendations([]);
-        }
+        setRecommendations(data.products || []);
       } else {
         throw new Error(data.error || "Failed to get response");
       }
@@ -119,54 +118,68 @@ const AISupportBot = ({ order, product }) => {
     <>
       <button
         onClick={() => setIsOpen(true)}
-        className="inline-flex items-center gap-2 px-4 py-2.5 bg-black text-white rounded-xl font-semibold shadow-lg hover:bg-black/80 transition-all"
+        className="group relative inline-flex items-center gap-2 px-5 py-2.5 bg-black text-white rounded-full font-medium shadow-md hover:shadow-xl transition-all duration-300 hover:scale-105 active:scale-95 overflow-hidden"
       >
-        <FiHelpCircle size={18} />
-        <span>Support</span>
+        <span className="absolute inset-0 bg-gradient-to-r from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+        <FiHelpCircle size={18} className="relative z-10" />
+        <span className="relative z-10">Support</span>
+        <span className="relative z-10 ml-1 text-[10px] font-mono bg-white/20 px-1.5 py-0.5 rounded-full">
+          AI
+        </span>
       </button>
 
       {isOpen &&
         createPortal(
           <div
-            className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm"
+            className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm transition-all duration-300"
             onClick={() => setIsOpen(false)}
           >
             <div
-              className="relative w-full max-w-md mx-4 bg-white rounded-2xl shadow-2xl flex flex-col max-h-[85vh]"
+              className="relative w-full max-w-md mx-4 bg-white rounded-2xl shadow-2xl flex flex-col max-h-[85vh] overflow-hidden animate-scale-in"
               onClick={(e) => e.stopPropagation()}
             >
-              {/* Header */}
-              <div className="bg-blue-600 text-white px-5 py-4 rounded-t-2xl flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <FiHelpCircle size={20} />
-                  <h3 className="font-bold">Shopping Assistant</h3>
+              {/* Header – Premium with subtle gradient */}
+              <div className="relative bg-gradient-to-br from-gray-900 to-black text-white px-6 py-5">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -mr-16 -mt-16 blur-3xl" />
+                <div className="flex items-center justify-between relative z-10">
+                  <div className="flex items-center gap-2">
+                    <div className="p-1.5 bg-white/10 rounded-lg">
+                      <FiHelpCircle size={20} />
+                    </div>
+                    <h3 className="font-semibold text-lg tracking-tight">
+                      Shopping Assistant
+                    </h3>
+                  </div>
+                  <button
+                    onClick={() => setIsOpen(false)}
+                    className="p-1.5 hover:bg-white/10 rounded-full transition-colors"
+                  >
+                    <FiX size={20} />
+                  </button>
                 </div>
-                <button
-                  onClick={() => setIsOpen(false)}
-                  className="p-1 hover:bg-blue-500 rounded-full"
-                >
-                  <FiX size={20} />
-                </button>
+                <p className="text-xs text-gray-300 mt-1 relative z-10">
+                  Powered by AI • Instant answers
+                </p>
               </div>
 
               {/* Messages */}
-              <div className="flex-1 overflow-y-auto p-5 space-y-4 bg-gray-50">
+              <div className="flex-1 overflow-y-auto p-5 space-y-4 bg-gray-50 scrollbar-thin scrollbar-thumb-gray-300">
                 {messages.map((msg, idx) => (
                   <div key={idx}>
                     <div
-                      className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
+                      className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"} animate-message-in`}
                     >
                       <div
-                        className={`max-w-[80%] rounded-2xl px-4 py-3 ${
+                        className={`max-w-[80%] rounded-2xl px-4 py-3 shadow-sm ${
                           msg.role === "user"
-                            ? "bg-blue-600 text-white"
+                            ? "bg-black text-white rounded-br-none"
                             : msg.isError
                               ? "bg-red-50 text-red-700 border border-red-200"
-                              : "bg-white shadow-sm border border-gray-200 text-gray-800"
+                              : "bg-white text-gray-800 border border-gray-100 rounded-bl-none"
                         }`}
                       >
                         <p className="text-sm leading-relaxed">{msg.content}</p>
-                        <p className="text-[10px] mt-1 opacity-70">
+                        <p className="text-[10px] mt-1 opacity-60">
                           {msg.timestamp.toLocaleTimeString([], {
                             hour: "2-digit",
                             minute: "2-digit",
@@ -175,36 +188,47 @@ const AISupportBot = ({ order, product }) => {
                       </div>
                     </div>
 
-                    {/* Show product recommendations after the assistant's message */}
                     {msg.role === "assistant" &&
                       idx === messages.length - 1 &&
                       recommendations.length > 0 && (
-                        <div className="mt-3">
-                          <p className="text-xs font-semibold text-gray-700 mb-2">
-                            Recommended for you:
+                        <div className="mt-4 animate-fade-in">
+                          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
+                            Recommended for you
                           </p>
-                          <div className="flex gap-3 overflow-x-auto pb-2">
+                          <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-gray-300">
                             {recommendations.map((prod) => (
                               <Link
                                 key={prod._id}
                                 href={prod.url}
-                                className="shrink-0 w-28 bg-white rounded-lg border border-gray-200 p-2 hover:shadow-md transition"
+                                className="shrink-0 w-28 group bg-white rounded-xl border border-gray-200 hover:shadow-lg hover:-translate-y-1 transition-all duration-200 overflow-hidden"
                                 onClick={() => setIsOpen(false)}
                               >
-                                <div className="relative aspect-square bg-gray-50 rounded mb-2 overflow-hidden">
+                                <div className="relative aspect-square bg-gray-50 overflow-hidden">
                                   <Image
                                     src={prod.image || "/placeholder.png"}
                                     alt={prod.name}
                                     fill
-                                    className="object-cover"
+                                    className="object-cover group-hover:scale-105 transition-transform duration-300"
                                   />
                                 </div>
-                                <h4 className="text-xs font-medium truncate">
-                                  {prod.name}
-                                </h4>
-                                <p className="text-xs font-bold">
-                                  ${prod.price}
-                                </p>
+                                <div className="p-2">
+                                  <h4 className="text-xs font-medium truncate">
+                                    {prod.name}
+                                  </h4>
+                                  <p className="text-xs font-bold mt-0.5">
+                                    ${prod.price}
+                                  </p>
+                                  {!prod.inStock && (
+                                    <span className="text-[10px] text-red-500 mt-1 block">
+                                      Out of stock
+                                    </span>
+                                  )}
+                                  {prod.inStock && prod.stock < 5 && (
+                                    <span className="text-[10px] text-amber-600 mt-1 block">
+                                      Only {prod.stock} left
+                                    </span>
+                                  )}
+                                </div>
                               </Link>
                             ))}
                           </div>
@@ -214,12 +238,9 @@ const AISupportBot = ({ order, product }) => {
                 ))}
 
                 {loading && (
-                  <div className="flex justify-start">
+                  <div className="flex justify-start animate-pulse">
                     <div className="bg-white shadow-sm border border-gray-200 rounded-2xl px-4 py-3">
-                      <FiLoader
-                        size={18}
-                        className="animate-spin text-blue-600"
-                      />
+                      <FiLoader size={18} className="animate-spin text-black" />
                     </div>
                   </div>
                 )}
@@ -227,7 +248,7 @@ const AISupportBot = ({ order, product }) => {
               </div>
 
               {/* Input */}
-              <div className="p-4 bg-white border-t border-gray-200 rounded-b-2xl">
+              <div className="p-4 bg-white border-t border-gray-100">
                 <form
                   onSubmit={(e) => {
                     e.preventDefault();
@@ -239,14 +260,14 @@ const AISupportBot = ({ order, product }) => {
                     type="text"
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
-                    placeholder="Type your question..."
-                    className="flex-1 px-4 py-3 bg-gray-100 border-0 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:bg-white outline-none"
+                    placeholder="Ask anything about products, orders, or policies..."
+                    className="flex-1 px-4 py-3 bg-gray-100 border-0 rounded-full text-sm focus:ring-2 focus:ring-black focus:bg-white outline-none transition-all"
                     disabled={loading}
                   />
                   <button
                     type="submit"
                     disabled={loading || !input.trim()}
-                    className="px-5 py-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 disabled:opacity-50"
+                    className="p-3 bg-black text-white rounded-full hover:bg-gray-800 disabled:opacity-50 transition-all duration-200 shadow-md hover:shadow-lg"
                   >
                     <FiSend size={18} />
                   </button>

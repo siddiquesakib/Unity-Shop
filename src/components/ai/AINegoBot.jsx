@@ -83,40 +83,30 @@ const AINegoBot = ({ product, sellerId }) => {
 
   const fetchNegotiationStatus = useCallback(async () => {
     if (!product?._id || !user?._id || !token) return;
-
     try {
       const url = `${API_BASE}/api/negotiations/user-product?productId=${product._id}&buyerId=${user._id}`;
       const res = await fetch(url, {
         headers: { Authorization: `Bearer ${token}` },
       });
-
       if (!res.ok) return;
-
       const data = await res.json();
-      if (DEBUG_NEGOTIATION) {
-        console.log("📡 Fetched negotiation data:", data);
-      }
+      if (DEBUG_NEGOTIATION) console.log("📡 Fetched negotiation data:", data);
       setNegotiationData(data || null);
       if (!data?.status) return;
-
       setNegotiationStatus(data.status);
-
       const latestSystemStatusMessage = [...(data.messages || [])]
         .reverse()
         .find((m) => m?.system && typeof m.message === "string");
-
       if (data.status !== lastStatusRef.current) {
         appendStatusMessage(data.status, latestSystemStatusMessage?.message);
         lastStatusRef.current = data.status;
       }
     } catch (err) {
-      if (DEBUG_NEGOTIATION) {
+      if (DEBUG_NEGOTIATION)
         console.error("Failed to fetch negotiation status:", err);
-      }
     }
   }, [appendStatusMessage, product?._id, user?._id, token]);
 
-  // Initialize welcome message
   useEffect(() => {
     if (isOpen && messages.length === 0) {
       setMessages([
@@ -129,27 +119,20 @@ const AINegoBot = ({ product, sellerId }) => {
     }
   }, [isOpen, messages.length, product]);
 
-  // Fetch existing negotiation status when modal opens
   useEffect(() => {
     if (!isOpen) return;
     fetchNegotiationStatus();
   }, [fetchNegotiationStatus, isOpen]);
 
-  // Poll for status only in debug mode.
   useEffect(() => {
     if (!isOpen || !DEBUG_NEGOTIATION) return;
-    const interval = setInterval(() => {
-      fetchNegotiationStatus();
-    }, 10000);
+    const interval = setInterval(() => fetchNegotiationStatus(), 10000);
     return () => clearInterval(interval);
   }, [fetchNegotiationStatus, isOpen]);
 
-  // Real-time updates
   useEffect(() => {
     if (!socket || !isOpen || !product?._id) return;
-
     const productId = normalizeObjectId(product._id);
-
     const handleNegotiationStatusEvent = (payload) => {
       const payloadProductId = normalizeObjectId(payload?.productId);
       if (!payloadProductId || payloadProductId !== productId) return;
@@ -166,7 +149,6 @@ const AINegoBot = ({ product, sellerId }) => {
         lastStatusRef.current = payload.status;
       }
     };
-
     const handleNotificationEvent = (notification) => {
       if (!["offer_accepted", "offer_rejected"].includes(notification?.type))
         return;
@@ -180,12 +162,10 @@ const AINegoBot = ({ product, sellerId }) => {
         appendStatusMessage(nextStatus, notification.message);
         lastStatusRef.current = nextStatus;
       }
-      fetchNegotiationStatus(); // pull latest to get offerPrice
+      fetchNegotiationStatus();
     };
-
     socket.on("negotiation_status_updated", handleNegotiationStatusEvent);
     socket.on("notification", handleNotificationEvent);
-
     return () => {
       socket.off("negotiation_status_updated", handleNegotiationStatusEvent);
       socket.off("notification", handleNotificationEvent);
@@ -198,12 +178,10 @@ const AINegoBot = ({ product, sellerId }) => {
     socket,
   ]);
 
-  // Auto-scroll
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // Prevent body scroll
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = "hidden";
@@ -215,7 +193,6 @@ const AINegoBot = ({ product, sellerId }) => {
 
   const handleSendMessage = async () => {
     if (!input.trim() || loading) return;
-
     const userMessage = {
       role: "user",
       content: input,
@@ -224,7 +201,6 @@ const AINegoBot = ({ product, sellerId }) => {
     setMessages((prev) => [...prev, userMessage]);
     setInput("");
     setLoading(true);
-
     try {
       const response = await fetch("/api/ai/negotiate", {
         method: "POST",
@@ -276,20 +252,17 @@ const AINegoBot = ({ product, sellerId }) => {
 
   const handleBuyNow = () => {
     if (!acceptedOfferPrice || !Number.isFinite(acceptedOfferPrice)) return;
-
     const sellerKey = product.sellerId || product.sellerName || "general";
     const sellerName = product.sellerName || "UnityShop Seller";
     const productId = product._id || product.id;
     const productImage = Array.isArray(product.image)
       ? product.image[0] || ""
       : product.image || "";
-
     const existingItems = (cartGroups || []).flatMap((group) => group.items);
     existingItems
       .filter((item) => item.productId === productId)
       .filter((item) => Number(item.price) !== Number(acceptedOfferPrice))
       .forEach((item) => removeItem(item.id));
-
     addToCart(
       {
         ...product,
@@ -300,7 +273,6 @@ const AINegoBot = ({ product, sellerId }) => {
       1,
       acceptedOfferPrice,
     );
-
     setIsOpen(false);
     router.push("/cart");
   };
@@ -312,74 +284,69 @@ const AINegoBot = ({ product, sellerId }) => {
     <>
       <button
         onClick={() => setIsOpen(true)}
-        className="inline-flex items-center gap-2 px-4 py-2.5 bg-black text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
+        className="group relative inline-flex items-center gap-2 px-5 py-2.5 bg-black text-white rounded-full font-medium shadow-md hover:shadow-xl transition-all duration-300 hover:scale-105 active:scale-95 overflow-hidden"
       >
-        <FiMessageCircle size={18} />
-        <span>Negotiate Price</span>
-        <span className="px-2 py-0.5 bg-white/20 rounded-full text-xs">
-          AI Powered
-        </span>
+        <span className="absolute inset-0 bg-gradient-to-r from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+        <FiMessageCircle size={18} className="relative z-10" />
+        <span className="relative z-10">Negotiate Price</span>
       </button>
 
       {isOpen &&
         createPortal(
           <div
-            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center"
+            className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm transition-all duration-300"
             onClick={() => setIsOpen(false)}
           >
             <div
-              className="relative w-full max-w-md mx-4 bg-white rounded-2xl shadow-2xl flex flex-col max-h-[85vh]"
+              className="relative w-full max-w-md mx-4 bg-white rounded-2xl shadow-2xl flex flex-col max-h-[85vh] overflow-hidden animate-scale-in"
               onClick={(e) => e.stopPropagation()}
             >
               {/* Header */}
-              <div className="relative bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-5 py-4 rounded-t-2xl">
-                <button
-                  onClick={() => setIsOpen(false)}
-                  className="absolute top-4 right-4 p-1.5 hover:bg-white/20 rounded-full transition-colors"
-                >
-                  <FiX size={20} />
-                </button>
-
-                <div className="pr-10">
-                  <div className="flex items-center gap-2 mb-1">
-                    <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-                    <h3 className="font-bold text-lg">
-                      AI Negotiation Assistant
+              <div className="relative bg-gradient-to-br from-gray-900 to-black text-white px-6 py-5">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -mr-16 -mt-16 blur-3xl" />
+                <div className="flex items-center justify-between relative z-10">
+                  <div className="flex items-center gap-2">
+                    <div className="p-1.5 bg-white/10 rounded-lg">
+                      <FiMessageCircle size={20} />
+                    </div>
+                    <h3 className="font-semibold text-lg tracking-tight">
+                      Negotiation Assistant
                     </h3>
                   </div>
-                  <p className="text-xs text-purple-100">
-                    Powered by AI • Real-time assistance
-                  </p>
+                  <button
+                    onClick={() => setIsOpen(false)}
+                    className="p-1.5 hover:bg-white/10 rounded-full transition-colors"
+                  >
+                    <FiX size={20} />
+                  </button>
                 </div>
-
-                {/* Product Info Bar */}
-                <div className="mt-3 p-3 bg-white/10 backdrop-blur-sm rounded-xl">
+                <p className="text-xs text-gray-300 mt-1 relative z-10">
+                  Powered by Unity-Shop • Real‑time assistance
+                </p>
+                <div className="mt-3 p-3 bg-white/5 rounded-xl backdrop-blur-sm border border-white/10 relative z-10">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-xs text-purple-100">Negotiating for</p>
-                      <p className="font-semibold truncate max-w-[200px]">
+                      <p className="text-xs text-gray-400">Negotiating for</p>
+                      <p className="font-medium truncate max-w-[180px]">
                         {product.name}
                       </p>
                     </div>
                     <div className="text-right">
-                      <p className="text-xs text-purple-100">List Price</p>
+                      <p className="text-xs text-gray-400">List Price</p>
                       <p className="font-bold text-lg">${product.price}</p>
                     </div>
                   </div>
                 </div>
-
                 {DEBUG_NEGOTIATION && (
                   <button
                     onClick={fetchNegotiationStatus}
-                    className="mt-3 text-[10px] text-purple-100 underline hover:text-white"
-                    type="button"
+                    className="mt-3 text-[10px] text-gray-300 underline hover:text-white"
                   >
                     Check Status
                   </button>
                 )}
               </div>
 
-              {/* Status Banner */}
               {negotiationStatus && (
                 <div
                   className={`px-5 py-3 text-sm font-medium ${
@@ -393,33 +360,30 @@ const AINegoBot = ({ product, sellerId }) => {
                   <div className="flex items-center gap-2">
                     {negotiationStatus === "pending" && (
                       <>
-                        <FiLoader className="animate-spin" size={16} />
-                        Offer sent to seller • Awaiting response
+                        <FiLoader className="animate-spin" size={16} /> Offer
+                        sent to seller • Awaiting response
                       </>
                     )}
                     {negotiationStatus === "accepted" && (
                       <>
-                        <FiCheck size={16} />
-                        Seller accepted your offer!
+                        <FiCheck size={16} /> Seller accepted your offer!
                       </>
                     )}
                     {negotiationStatus === "rejected" && (
                       <>
-                        <FiX size={16} />
-                        Seller declined this offer
+                        <FiX size={16} /> Seller declined this offer
                       </>
                     )}
                   </div>
                 </div>
               )}
 
-              {/* Buy Now Button for Accepted Offers */}
               {negotiationStatus === "accepted" && acceptedOfferPrice && (
                 <div className="px-5 py-3 border-b border-green-200 bg-green-50/70">
                   <button
                     type="button"
                     onClick={handleBuyNow}
-                    className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-green-600 text-white text-sm font-semibold hover:bg-green-700 transition-colors"
+                    className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-full bg-black text-white text-sm font-semibold hover:bg-gray-800 transition-all shadow-md"
                   >
                     <FiShoppingCart size={16} />
                     Buy Now at ${acceptedOfferPrice}
@@ -427,41 +391,38 @@ const AINegoBot = ({ product, sellerId }) => {
                 </div>
               )}
 
-              {/* Chat Messages */}
-              <div className="flex-1 overflow-y-auto p-5 space-y-4 bg-gray-50">
+              <div className="flex-1 overflow-y-auto p-5 space-y-4 bg-gray-50 scrollbar-thin scrollbar-thumb-gray-300">
                 {messages.map((msg, idx) => (
                   <div
                     key={idx}
-                    className={`flex ${
-                      msg.role === "user" ? "justify-end" : "justify-start"
-                    }`}
+                    className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"} animate-message-in`}
                   >
                     <div
-                      className={`max-w-[80%] rounded-2xl px-4 py-3 ${
+                      className={`max-w-[80%] rounded-2xl px-4 py-3 shadow-sm ${
                         msg.role === "user"
-                          ? "bg-gradient-to-r from-purple-600 to-indigo-600 text-white"
+                          ? "bg-black text-white rounded-br-none"
                           : msg.isError
                             ? "bg-red-50 text-red-700 border border-red-200"
-                            : "bg-white shadow-sm border border-gray-200 text-gray-800"
+                            : "bg-white text-gray-800 border border-gray-100 rounded-bl-none"
                       }`}
                     >
                       <p className="text-sm leading-relaxed">{msg.content}</p>
                       {msg.suggestion && (
-                        <div className="mt-3 p-3 bg-purple-50 border border-purple-200 rounded-xl">
+                        <div className="mt-3 p-3 bg-gray-50 border border-gray-200 rounded-xl">
                           <div className="flex items-start gap-2">
                             <FiTrendingDown
-                              className="text-purple-600 mt-0.5 shrink-0"
+                              className="text-gray-600 mt-0.5 shrink-0"
                               size={16}
                             />
                             <div>
-                              <p className="text-xs font-semibold text-purple-900 mb-1">
+                              <p className="text-xs font-semibold text-gray-800 mb-1">
                                 AI Recommendation
                               </p>
-                              <p className="text-xs text-purple-700">
+                              <p className="text-xs text-gray-600">
                                 {msg.suggestion}
                               </p>
                               {msg.offerPrice && (
-                                <div className="mt-2 inline-flex items-center gap-1.5 px-2.5 py-1 bg-purple-600 text-white rounded-full text-xs font-bold">
+                                <div className="mt-2 inline-flex items-center gap-1.5 px-2.5 py-1 bg-black text-white rounded-full text-xs font-bold">
                                   <span>Suggested Offer:</span>
                                   <span>${msg.offerPrice}</span>
                                 </div>
@@ -479,9 +440,8 @@ const AINegoBot = ({ product, sellerId }) => {
                     </div>
                   </div>
                 ))}
-
                 {loading && (
-                  <div className="flex justify-start">
+                  <div className="flex justify-start animate-pulse">
                     <div className="bg-white shadow-sm border border-gray-200 rounded-2xl px-4 py-3">
                       <div className="flex gap-2">
                         <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></span>
@@ -500,22 +460,20 @@ const AINegoBot = ({ product, sellerId }) => {
                 <div ref={chatEndRef} />
               </div>
 
-              {/* Info Footer */}
-              <div className="px-5 py-2 bg-blue-50 border-t border-blue-100">
+              <div className="px-5 py-2 bg-gray-100 border-t border-gray-200">
                 <div className="flex items-start gap-2">
                   <FiAlertCircle
-                    className="text-blue-600 mt-0.5 shrink-0"
+                    className="text-gray-600 mt-0.5 shrink-0"
                     size={14}
                   />
-                  <p className="text-xs text-blue-700">
-                    Your offer will be sent to the seller for review.
-                    You&apos;ll be notified of their response.
+                  <p className="text-xs text-gray-600">
+                    Your offer will be sent to the seller for review. You'll be
+                    notified of their response.
                   </p>
                 </div>
               </div>
 
-              {/* Input Area */}
-              <div className="p-4 bg-white border-t border-gray-200 rounded-b-2xl">
+              <div className="p-4 bg-white border-t border-gray-100">
                 <form
                   onSubmit={(e) => {
                     e.preventDefault();
@@ -528,13 +486,13 @@ const AINegoBot = ({ product, sellerId }) => {
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
                     placeholder="Type your offer or question..."
-                    className="flex-1 px-4 py-3 bg-gray-100 border-0 rounded-xl text-sm focus:ring-2 focus:ring-purple-500 focus:bg-white outline-none transition-all"
+                    className="flex-1 px-4 py-3 bg-gray-100 border-0 rounded-full text-sm focus:ring-2 focus:ring-black focus:bg-white outline-none transition-all"
                     disabled={loading}
                   />
                   <button
                     type="submit"
                     disabled={loading || !input.trim()}
-                    className="px-5 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-xl font-semibold hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center gap-2"
+                    className="p-3 bg-black text-white rounded-full hover:bg-gray-800 disabled:opacity-50 transition-all duration-200 shadow-md"
                   >
                     <FiSend size={18} />
                   </button>
