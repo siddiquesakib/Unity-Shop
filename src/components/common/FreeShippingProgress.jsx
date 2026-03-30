@@ -3,13 +3,7 @@
 import Link from 'next/link';
 import { FiTruck, FiGift } from 'react-icons/fi';
 
-/**
- * Props:
- * - subtotal: number
- * - threshold: number (free shipping minimum)
- * - formatPrice: function (from useCurrency)
- * - showSuggestion?: boolean
- */
+
 export default function FreeShippingProgress({
   subtotal = 0,
   threshold = 1000,

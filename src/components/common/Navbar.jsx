@@ -21,7 +21,6 @@ import {
   FiGrid,
   FiLogOut,
   FiPackage,
-  FiHeart,
   FiHome,
   FiShoppingBag,
   FiInfo,
@@ -140,6 +139,18 @@ const navLinks = [
   { name: "About", href: "/about", icon: FiInfo },
   { name: "Contact", href: "/contact", icon: FiPhone },
 ];
+
+const getOrdersPathByRole = role => {
+  const roleOrderRoutes = {
+    user: "/dashboard/user/orders",
+    seller: "/dashboard/seller/orders",
+    admin: "/dashboard/admin/orders",
+    manager: "/dashboard/manager/fulfillment",
+    delivery: "/dashboard/delivery/orders",
+  };
+
+  return roleOrderRoutes[role] || "/dashboard/user/orders";
+};
 
 const categoryLinks = [
   "Electronics",
@@ -360,6 +371,7 @@ const Navbar = () => {
   const locationLabel = activeCountry && activeCity
     ? `${activeCity}, ${activeCountry}`
     : 'Set location';
+  const roleBasedOrdersPath = getOrdersPathByRole(user?.role);
 
   const handleSaveLocation = async () => {
     if (!selectedCountry || !selectedCity) {
@@ -735,17 +747,6 @@ const Navbar = () => {
                   </div>
                 </div>
 
-                {/* Wishlist */}
-                <Link
-                  href="/dashboard/wishlist"
-                  className="flex items-center gap-1.5 px-2 py-1.5 text-black hover:text-gray-600 rounded-md transition-colors relative"
-                >
-                  <FiHeart size={20} />
-                  <span className="text-sm font-medium hidden xl:inline">
-                    Wishlist
-                  </span>
-                </Link>
-
                 {/* Cart */}
                 <Link
                   href="/cart"
@@ -804,14 +805,9 @@ const Navbar = () => {
                             label: "Dashboard",
                           },
                           {
-                            href: "/dashboard/orders",
+                            href: roleBasedOrdersPath,
                             icon: FiPackage,
                             label: "My Orders",
-                          },
-                          {
-                            href: "/dashboard/wishlist",
-                            icon: FiHeart,
-                            label: "Wishlist",
                           },
                         ].map((item) => (
                           <Link
@@ -1297,14 +1293,9 @@ const Navbar = () => {
                     {[
                       { href: "/dashboard", icon: FiGrid, label: "Dashboard" },
                       {
-                        href: "/dashboard/orders",
+                        href: roleBasedOrdersPath,
                         icon: FiPackage,
                         label: "My Orders",
-                      },
-                      {
-                        href: "/dashboard/wishlist",
-                        icon: FiHeart,
-                        label: "Wishlist",
                       },
                     ].map((item) => (
                       <Link

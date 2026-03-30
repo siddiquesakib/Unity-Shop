@@ -57,16 +57,23 @@ const safeUrl = (u) => {
     return PLACEHOLDER;
   }
 };
-const gallery = (p) => {
-  let imgs = Array.isArray(p.image)
-    ? p.image.filter(Boolean)
-    : p.image
+const getProductImages = (p) => {
+  const multi = Array.isArray(p?.images) ? p.images : [];
+  const legacy = Array.isArray(p?.image)
+    ? p.image
+    : typeof p?.image === "string"
       ? [p.image]
       : [];
-  const src = [...imgs];
-  while (imgs.length < 5 && src.length)
-    imgs.push(src[imgs.length % src.length]);
-  return imgs.length ? imgs : Array(5).fill(PLACEHOLDER);
+
+  const merged = [...multi, ...legacy].filter(
+    (img) => typeof img === "string" && img.trim(),
+  );
+  const unique = [...new Set(merged)];
+
+  return unique.length ? unique : [PLACEHOLDER];
+};
+const gallery = (p) => {
+  return getProductImages(p);
 };
 
 /* ── Time-ago formatter ── */
@@ -117,7 +124,7 @@ const saveRV = (p) => {
       name: p.name,
       price: p.price,
       originalPrice: p.originalPrice,
-      image: Array.isArray(p.image) ? p.image[0] : p.image,
+      image: getProductImages(p)[0],
       rating: p.rating,
     });
     localStorage.setItem(RV_KEY, JSON.stringify(list.slice(0, 10)));
