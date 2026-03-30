@@ -65,6 +65,6 @@ export const categories = [
   { name: 'Baby & Toys', icon: Baby },
   { name: 'Groceries', icon: Apple },
 
-  // Tools
+  // Tool
   { name: 'Tools & Hardware', icon: Wrench },
 ];
