@@ -1,16 +1,16 @@
 "use client";
 
-import { useEffect, useState, Suspense } from "react";
-import { useSearchParams } from "next/navigation";
-import Link from "next/link";
+import { useEffect, useRef, useState, Suspense } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { useCart } from "@/contexts/CartContext";
-import { useNotifications } from "@/contexts/NotificationContext";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL;
+const API_BASE =
+  process.env.NEXT_PUBLIC_API_URL || "https://unity-shop-server.vercel.app";
 
 export default function PaymentSuccess() {
   return (
-    <Suspense fallback={<FullPageSpinner />}>
+    <Suspense fallback={<LoadingSpinner />}>
       <SuccessContent />
     </Suspense>
   );
@@ -19,232 +19,122 @@ export default function PaymentSuccess() {
 function SuccessContent() {
   const searchParams = useSearchParams();
   const sessionId = searchParams.get("session_id");
-
+  const router = useRouter();
+  const { data: session, status: sessionStatus } = useSession();
   const { clearCart } = useCart();
-  const { fetchNotifications } = useNotifications() || {};
-
-  const [status, setStatus] = useState("loading");
-  const [order, setOrder] = useState(null);
-  const [errorMsg, setErrorMsg] = useState("");
+  const hasProcessedRef = useRef(false);
+  const [stage, setStage] = useState("processing");
+  const [detail, setDetail] = useState("Processing your payment...");
 
   useEffect(() => {
+    if (sessionStatus === "loading") return;
+    if (hasProcessedRef.current) return;
+    hasProcessedRef.current = true;
+
     if (!sessionId) {
-      setErrorMsg("No session ID found in the URL.");
-      setStatus("error");
+      setStage("error");
+      setDetail("Missing payment session. Redirecting to orders...");
+      setTimeout(() => router.replace("/dashboard/user/orders"), 1500);
       return;
     }
 
-    const fetchOrder = async () => {
+    const handlePaymentSuccess = async () => {
       try {
+        // 1. Verify payment with backend
+        const token =
+          typeof window !== "undefined" ? localStorage.getItem("token") : null;
+
+        if (!token) {
+          throw new Error("Please log in again to verify your payment.");
+        }
+
         const res = await fetch(
           `${API_BASE}/payment/retrivedsessionAfterPayment?session_id=${sessionId}`,
-          { method: "PATCH" },
+          {
+            method: "PATCH",
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          },
         );
 
-        const data = await res.json();
+        const data = await res.json().catch(() => ({}));
 
-        if (data?.message === "Order already processed.") {
-          setStatus("already");
-          return;
+        if (!res.ok && data?.message !== "Order already processed.") {
+          throw new Error(data?.error || "Payment verification failed");
         }
 
-        if (!res.ok) {
-          throw new Error(data?.error || "Could not verify payment.");
+        // 2. Clear cart from frontend
+        let storedUserId = null;
+        if (typeof window !== "undefined") {
+          try {
+            const rawUser = localStorage.getItem("user");
+            storedUserId = rawUser ? JSON.parse(rawUser)?._id : null;
+          } catch (err) {
+            console.warn("Failed to read user from localStorage:", err);
+          }
         }
 
-        clearCart();
-
-        // Fetch notifications from server after payment
-        // (socket may not have reconnected yet after Stripe redirect)
-        if (fetchNotifications) {
-          setTimeout(() => fetchNotifications(), 1000);
+        const userId =
+          session?.user?.id || session?.user?._id || storedUserId || null;
+        try {
+          await clearCart(userId);
+        } catch (err) {
+          console.error("Cart clearing error:", err);
+          // Continue anyway - don't block redirect
         }
 
-        setOrder(data);
-        setStatus("success");
+        setStage("success");
+        setDetail("Payment verified. Redirecting to your orders...");
+
+        // 3. Redirect to orders page
+        setTimeout(() => router.replace("/dashboard/user/orders"), 2000);
       } catch (err) {
-        setErrorMsg(err.message || "Something went wrong.");
-        setStatus("error");
+        console.error("Payment processing error:", err);
+        setStage("error");
+        setDetail(
+          err?.message || "Payment verification failed. Redirecting...",
+        );
+        // Still redirect to orders even on error
+        setTimeout(() => router.replace("/dashboard/user/orders"), 2500);
       }
     };
 
-    fetchOrder();
-  }, [sessionId, clearCart, fetchNotifications]);
+    handlePaymentSuccess();
+  }, [sessionId, router, session, sessionStatus, clearCart]);
 
-  if (status === "loading") return <FullPageSpinner />;
-  if (status === "success") return <SuccessView order={order} />;
-  if (status === "already") return <AlreadyView />;
-  if (status === "error") return <ErrorView message={errorMsg} />;
-}
+  if (stage === "processing") {
+    return <LoadingSpinner />;
+  }
 
-function SuccessView({ order }) {
   return (
-    <div className="min-h-screen bg-[#f7f6f3] flex items-center justify-center p-6">
-      <div className="w-full max-w-md">
-        {/* Card */}
-        <div className="bg-white rounded-3xl shadow-2xl shadow-black/10 border border-gray-100 overflow-hidden">
-          {/* Banner */}
-          <div className="bg-black px-8 pt-10 pb-8 text-center text-white relative overflow-hidden">
-            {/* Decorative elements */}
-            <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2" />
-            <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/2" />
-
-            <div className="relative z-10">
-              <div className="w-20 h-20 mx-auto mb-5 rounded-full bg-white/10 flex items-center justify-center ring-4 ring-white/20">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="36"
-                  height="36"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <polyline points="20 6 9 17 4 12" />
-                </svg>
-              </div>
-              <h1 className="text-3xl font-black tracking-tight">
-                Payment Successful!
-              </h1>
-              <p className="mt-2 text-gray-400 text-sm">
-                Thank you for your order. A confirmation has been sent to your
-                email.
-              </p>
-            </div>
-          </div>
-
-          {/* Order details */}
-          {order && (
-            <div className="px-6 pt-6 pb-2 space-y-1">
-              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] mb-3">
-                Order Summary
-              </p>
-              <Row label="Product" value={order.metadata?.productName} />
-              <Row label="Seller" value={order.metadata?.sellerName} />
-              <Row
-                label="Amount Paid"
-                value={`$${(Number(order.metadata?.paidAmount) || 0).toFixed(2)}`}
-                bold
-              />
-              <Row
-                label="Status"
-                value={
-                  <span className="inline-flex items-center gap-1.5 text-black font-bold capitalize">
-                    <span className="w-2 h-2 rounded-full bg-black" />
-                    {order.payment_status}
-                  </span>
-                }
-              />
-              <Row label="Email" value={order.customer_email} />
-            </div>
-          )}
-
-          {/* Buttons */}
-          <div className="px-6 py-6 flex gap-3">
-            <Link
-              href="/"
-              className="flex-1 text-center py-3.5 rounded-full bg-black hover:bg-gray-800 text-white font-bold text-sm transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] shadow-xl shadow-black/20"
-            >
-              Back to Home
-            </Link>
-            <Link
-              href="/dashboard"
-              className="flex-1 text-center py-3.5 rounded-full border-2 border-gray-200 hover:border-black text-gray-700 hover:text-black font-bold text-sm transition-all duration-300"
-            >
-              My Orders
-            </Link>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function AlreadyView() {
-  return (
-    <div className="min-h-screen bg-[#f7f6f3] flex items-center justify-center p-6">
-      <div className="w-full max-w-md bg-white rounded-3xl shadow-2xl shadow-black/10 border border-gray-100 p-10 text-center">
-        <div className="w-16 h-16 mx-auto mb-5 rounded-full bg-gray-100 flex items-center justify-center">
-          <span className="text-xl font-black text-black">i</span>
-        </div>
-        <h2 className="text-2xl font-black text-black mb-2 tracking-tight">
-          Already Processed
-        </h2>
-        <p className="text-gray-400 text-sm mb-6">
-          This payment was already recorded. No duplicate entry was created.
-        </p>
-        <Link
-          href="/"
-          className="inline-flex items-center gap-2 px-8 py-3.5 rounded-full bg-black hover:bg-gray-800 text-white font-bold text-sm transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] shadow-xl shadow-black/20"
+    <div className="min-h-screen bg-[#f7f6f3] flex items-center justify-center">
+      <div className="max-w-md w-full bg-white border border-gray-200 rounded-2xl p-6 text-center shadow-sm">
+        <div
+          className={`mx-auto mb-4 h-12 w-12 rounded-full flex items-center justify-center ${
+            stage === "success"
+              ? "bg-emerald-50 text-emerald-600"
+              : "bg-amber-50 text-amber-600"
+          }`}
         >
-          Back to Home
-        </Link>
-      </div>
-    </div>
-  );
-}
-
-function ErrorView({ message }) {
-  return (
-    <div className="min-h-screen bg-[#f7f6f3] flex items-center justify-center p-6">
-      <div className="w-full max-w-md bg-white rounded-3xl shadow-2xl shadow-black/10 border border-gray-100 p-10 text-center">
-        <div className="w-16 h-16 mx-auto mb-5 rounded-full bg-gray-100 flex items-center justify-center text-gray-500">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="28"
-            height="28"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <line x1="18" y1="6" x2="6" y2="18" />
-            <line x1="6" y1="6" x2="18" y2="18" />
-          </svg>
+          <span className="text-xl">✓</span>
         </div>
-        <h2 className="text-2xl font-black text-black mb-2 tracking-tight">
-          Something Went Wrong
-        </h2>
-        <p className="text-gray-400 text-sm mb-6">{message}</p>
-        <Link
-          href="/"
-          className="inline-flex items-center gap-2 px-8 py-3.5 rounded-full bg-black hover:bg-gray-800 text-white font-bold text-sm transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] shadow-xl shadow-black/20"
-        >
-          Back to Home
-        </Link>
+        <h1 className="text-lg font-black text-gray-900 mb-2">
+          {stage === "success" ? "Payment Successful" : "Payment Update"}
+        </h1>
+        <p className="text-sm text-gray-600">{detail}</p>
       </div>
     </div>
   );
 }
 
-function FullPageSpinner() {
+function LoadingSpinner() {
   return (
-    <div className="min-h-screen bg-[#f7f6f3] flex flex-col items-center justify-center gap-4">
-      <div className="w-14 h-14 rounded-full border-4 border-gray-200 border-t-black animate-spin" />
-      <p className="text-gray-400 text-sm font-medium">
-        Confirming your payment…
-      </p>
-    </div>
-  );
-}
-
-function Row({ label, value, bold }) {
-  return (
-    <div className="flex justify-between items-center py-2.5 border-b border-gray-50 last:border-0">
-      <span className="text-sm text-gray-400">{label}</span>
-      <span
-        className={`text-sm ${
-          bold
-            ? "text-emerald-600 font-bold text-base"
-            : "text-slate-700 font-medium"
-        }`}
-      >
-        {value ?? "—"}
-      </span>
+    <div className="min-h-screen bg-[#f7f6f3] flex items-center justify-center">
+      <div className="text-center">
+        <div className="w-14 h-14 rounded-full border-4 border-gray-200 border-t-black animate-spin mx-auto mb-4" />
+        <p className="text-gray-500 font-medium">Processing your payment...</p>
+      </div>
     </div>
   );
 }

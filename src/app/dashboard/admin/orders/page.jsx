@@ -16,46 +16,67 @@ import {
   AlertCircle,
 } from "lucide-react";
 import OrderTrackingModal from "@/components/common/OrderTrackingModal";
+import {
+  getOrderStatusLabel,
+  normalizeToWorkflowStatus,
+} from "@/utils/orderLifecycle";
 
 const API_BASE =
   process.env.NEXT_PUBLIC_API_URL || "https://unity-shop-server.vercel.app";
-const STATUS_STEPS = ["New", "Processing", "Shipped", "Delivered", "Cancelled"];
+const STATUS_STEPS = [
+  "placed",
+  "confirmed",
+  "packed",
+  "picked",
+  "inTransit",
+  "outForDelivery",
+  "delivered",
+  "cancelled",
+];
+
+function getToken() {
+  if (typeof window === "undefined") return null;
+  return localStorage.getItem("token");
+}
 
 const STATUS_COLOR = {
-  New: "bg-purple-50 text-purple-600 border-purple-200",
-  Processing: "bg-amber-50 text-amber-600 border-amber-200",
-  Shipped: "bg-blue-50 text-blue-600 border-blue-200",
-  Delivered: "bg-emerald-50 text-emerald-600 border-emerald-200",
-  Cancelled: "bg-red-50 text-red-600 border-red-200",
+  placed: "bg-purple-50 text-purple-600 border-purple-200",
+  confirmed: "bg-blue-50 text-blue-600 border-blue-200",
+  packed: "bg-amber-50 text-amber-600 border-amber-200",
+  picked: "bg-indigo-50 text-indigo-600 border-indigo-200",
+  inTransit: "bg-cyan-50 text-cyan-600 border-cyan-200",
+  outForDelivery: "bg-sky-50 text-sky-600 border-sky-200",
+  delivered: "bg-emerald-50 text-emerald-600 border-emerald-200",
+  cancelled: "bg-red-50 text-red-600 border-red-200",
 };
 const STATUS_DOT = {
-  New: "bg-purple-500",
-  Processing: "bg-amber-500",
-  Shipped: "bg-blue-500",
-  Delivered: "bg-emerald-500",
-  Cancelled: "bg-red-500",
-};
-const STATUS_ICON = {
-  New: "Clock",
-  Processing: "Package",
-  Shipped: "Truck",
-  Delivered: "CheckCircle",
-  Cancelled: "XCircle",
+  placed: "bg-purple-500",
+  confirmed: "bg-blue-500",
+  packed: "bg-amber-500",
+  picked: "bg-indigo-500",
+  inTransit: "bg-cyan-500",
+  outForDelivery: "bg-sky-500",
+  delivered: "bg-emerald-500",
+  cancelled: "bg-red-500",
 };
 
 function getIcon(status) {
-  const s = status || "New";
-  if (s === "New") return <Clock size={13} />;
-  if (s === "Processing") return <Package size={13} />;
-  if (s === "Shipped") return <Truck size={13} />;
-  if (s === "Delivered") return <CheckCircle size={13} />;
-  if (s === "Cancelled") return <XCircle size={13} />;
+  const s = normalizeToWorkflowStatus(status || "placed");
+  if (s === "placed") return <Clock size={13} />;
+  if (s === "confirmed" || s === "packed") return <Package size={13} />;
+  if (s === "picked" || s === "inTransit" || s === "outForDelivery") {
+    return <Truck size={13} />;
+  }
+  if (s === "delivered") return <CheckCircle size={13} />;
+  if (s === "cancelled") return <XCircle size={13} />;
   return <Clock size={13} />;
 }
 
 function StatusDropdown({ order, onStatusChange, updating }) {
   const [open, setOpen] = useState(false);
-  const current = order.status || "New";
+  const current = normalizeToWorkflowStatus(
+    order.workflowStatus || order.status || "placed",
+  );
   return (
     <div className="relative">
       <button
@@ -68,7 +89,7 @@ function StatusDropdown({ order, onStatusChange, updating }) {
         ) : (
           getIcon(current)
         )}
-        {current}
+        {getOrderStatusLabel(current)}
         {!updating && (
           <ChevronDown
             size={11}
@@ -92,7 +113,7 @@ function StatusDropdown({ order, onStatusChange, updating }) {
                 <span
                   className={`w-1.5 h-1.5 rounded-full ${STATUS_DOT[status] || "bg-gray-400"}`}
                 />
-                {status}
+                {getOrderStatusLabel(status)}
                 {status === current && (
                   <span className="ml-auto text-[10px] text-gray-400">
                     current
@@ -125,8 +146,27 @@ export default function AdminOrdersPage() {
   const fetchOrders = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${API_BASE}/orders`);
-      if (res.ok) setOrders(await res.json());
+      const token = getToken();
+      if (!token) {
+        setOrders([]);
+        return;
+      }
+
+      const res = await fetch(`${API_BASE}/orders`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        const rows = Array.isArray(data) ? data : [];
+        setOrders(
+          rows.map((o) => ({
+            ...o,
+            workflowStatus: normalizeToWorkflowStatus(
+              o.workflowStatus || o.status,
+            ),
+          })),
+        );
+      }
     } catch (err) {
       console.error(err);
     } finally {
@@ -136,7 +176,16 @@ export default function AdminOrdersPage() {
 
   // Fetch Delivery Men
   useEffect(() => {
-    fetch(`${API_BASE}/users/role/delivery`)
+    const token = getToken();
+    if (!token) {
+      setDeliveryMen([]);
+      fetchOrders();
+      return;
+    }
+
+    fetch(`${API_BASE}/users/role/delivery`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
       .then((res) => res.json())
       .then((data) => setDeliveryMen(data))
       .catch((err) => console.error("Failed to load delivery men", err));
@@ -148,9 +197,15 @@ export default function AdminOrdersPage() {
     if (!selectedDeliveryMan) return;
 
     try {
+      const token = getToken();
+      if (!token) throw new Error("Missing auth token");
+
       const res = await fetch(`${API_BASE}/orders/assign/${orderId}`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
         body: JSON.stringify({ deliveryManId: selectedDeliveryMan }),
       });
 
@@ -169,17 +224,35 @@ export default function AdminOrdersPage() {
     setUpdateError(null);
     setUpdateSuccess(null);
     try {
-      const res = await fetch(`${API_BASE}/orders/track/${orderId}/status`, {
+      const token = getToken();
+      if (!token) throw new Error("Missing auth token");
+
+      const res = await fetch(`${API_BASE}/orders/${orderId}`, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: newStatus }),
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          status: newStatus,
+          actorRole: "admin",
+        }),
       });
       if (!res.ok) {
         const e = await res.json();
         throw new Error(e.error || "Failed");
       }
+
       setOrders((prev) =>
-        prev.map((o) => (o._id === orderId ? { ...o, status: newStatus } : o)),
+        prev.map((o) =>
+          o._id === orderId
+            ? {
+                ...o,
+                status: newStatus,
+                workflowStatus: normalizeToWorkflowStatus(newStatus),
+              }
+            : o,
+        ),
       );
       setUpdateSuccess(`Order updated to "${newStatus}"`);
       setTimeout(() => setUpdateSuccess(null), 3000);
@@ -192,7 +265,9 @@ export default function AdminOrdersPage() {
   };
 
   const stats = STATUS_STEPS.reduce((acc, s) => {
-    acc[s] = orders.filter((o) => (o.status || "New") === s).length;
+    acc[s] = orders.filter(
+      (o) => normalizeToWorkflowStatus(o.workflowStatus || o.status) === s,
+    ).length;
     return acc;
   }, {});
 
@@ -204,10 +279,13 @@ export default function AdminOrdersPage() {
       (order.customerName || "").toLowerCase().includes(q) ||
       (order.transitionId || "").toLowerCase().includes(q);
     return (
-      m && (statusFilter === "All" || (order.status || "New") === statusFilter)
+      m &&
+      (statusFilter === "All" ||
+        normalizeToWorkflowStatus(order.workflowStatus || order.status) ===
+          statusFilter)
     );
   });
-
+  // console.log("filteredorders:", orders);
   return (
     <div className="space-y-6">
       <div className="flex items-end justify-between">
@@ -362,7 +440,7 @@ export default function AdminOrdersPage() {
                 onClick={() => setStatusFilter(status)}
                 className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${statusFilter === status ? "bg-black text-white" : "bg-gray-100 text-gray-500 hover:text-gray-900"}`}
               >
-                {status}
+                {status === "All" ? "All" : getOrderStatusLabel(status)}
               </button>
             ))}
           </div>
@@ -482,8 +560,12 @@ export default function AdminOrdersPage() {
                         <button
                           onClick={() => setAssigningId(order._id)}
                           disabled={
-                            order.status === "Cancelled" ||
-                            order.status === "Delivered"
+                            normalizeToWorkflowStatus(
+                              order.workflowStatus || order.status,
+                            ) === "cancelled" ||
+                            normalizeToWorkflowStatus(
+                              order.workflowStatus || order.status,
+                            ) === "delivered"
                           }
                           className="text-xs font-medium text-blue-600 hover:text-blue-900 disabled:opacity-50 disabled:cursor-not-allowed bg-blue-50 px-3 py-1.5 rounded-lg hover:bg-blue-100 transition-colors"
                         >

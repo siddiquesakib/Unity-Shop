@@ -4,7 +4,6 @@ import SellerStats from "@/components/dashboard/seller/SellerStats";
 import SalesChart from "@/components/dashboard/seller/SalesChart";
 import ProductsTable from "@/components/dashboard/seller/ProductsTable";
 import SellerOrders from "@/components/dashboard/seller/SellerOrders";
-import SellerNegotiations from "@/components/dashboard/seller/SellerNegotiations";
 import { ShoppingBag } from "lucide-react";
 
 export default function SellerDashboard() {
@@ -50,11 +49,6 @@ export default function SellerDashboard() {
       {/* Products Table */}
       <div className="p-2 rounded-[2.5rem] bg-gray-50/50 border border-gray-100">
         <ProductsTable />
-      </div>
-
-      {/* 🆕 Negotiations Section */}
-      <div>
-        <SellerNegotiations />
       </div>
     </div>
   );

@@ -3,6 +3,12 @@ import { useAuth } from "@/hooks/useAuth";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Truck, Package, Clock, CheckCircle } from "lucide-react";
+import { normalizeToWorkflowStatus } from "@/utils/orderLifecycle";
+
+function getToken() {
+  if (typeof window === "undefined") return null;
+  return localStorage.getItem("token");
+}
 
 export default function DeliveryDashboard() {
   const { user } = useAuth();
@@ -14,19 +20,25 @@ export default function DeliveryDashboard() {
 
   useEffect(() => {
     if (user?._id) {
-      fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/orders/my-deliveries/${user._id}`,
-      )
+      const token = getToken();
+      if (!token) return;
+
+      fetch(`${process.env.NEXT_PUBLIC_API_URL}/orders/my-deliveries/${user._id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
         .then((res) => res.json())
         .then((data) => {
-          const pending = data.filter(
-            (o) => o.status !== "Delivered" && o.status !== "Cancelled",
+          const rows = Array.isArray(data) ? data : data?.orders || [];
+          const pending = rows.filter(
+            (o) => normalizeToWorkflowStatus(o.workflowStatus || o.status) !== "delivered",
           ).length;
-          const completed = data.filter((o) => o.status === "Delivered").length;
+          const completed = rows.filter(
+            (o) => normalizeToWorkflowStatus(o.workflowStatus || o.status) === "delivered",
+          ).length;
           setStats({
             pending,
             completed,
-            total: data.length,
+            total: rows.length,
           });
         })
         .catch((err) => console.error(err));

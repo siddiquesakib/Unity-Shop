@@ -17,6 +17,11 @@ import {
 const API_BASE =
   process.env.NEXT_PUBLIC_API_URL || "https://unity-shop-server.vercel.app";
 
+function getToken() {
+  if (typeof window === "undefined") return null;
+  return localStorage.getItem("token");
+}
+
 export default function SalesChart() {
   const { user } = useAuth();
   const [chartData, setChartData] = useState([]);
@@ -27,10 +32,14 @@ export default function SalesChart() {
     const fetchStats = async () => {
       if (!user?.email) return;
       try {
+        const token = getToken();
+        if (!token) return;
+
         const res = await fetch(
-          `${API_BASE}/orders/seller-stats?sellerEmail=${encodeURIComponent(
-            user.email
-          )}`
+          `${API_BASE}/orders/seller-stats?sellerEmail=${encodeURIComponent(user.email)}`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          },
         );
         if (res.ok) {
           const data = await res.json();

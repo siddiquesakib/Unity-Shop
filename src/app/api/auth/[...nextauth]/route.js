@@ -57,6 +57,9 @@ const handler = NextAuth({
             email: data.user.email,
             role: data.user.role,
             sellerRequest: data.user.sellerRequest || null,
+            profileLocation: data.user.profileLocation || null,
+            activeLocation: data.user.activeLocation || null,
+            needsLocationSelection: Boolean(data.user.needsLocationSelection),
             image: data.user.image || null,
             backendToken: data.token,
           };
@@ -92,6 +95,11 @@ const handler = NextAuth({
             user.id = data.user._id;
             user.role = data.user.role;
             user.sellerRequest = data.user.sellerRequest || null;
+            user.profileLocation = data.user.profileLocation || null;
+            user.activeLocation = data.user.activeLocation || null;
+            user.needsLocationSelection = Boolean(
+              data.user.needsLocationSelection,
+            );
             user.backendToken = data.token;
           }
         } catch (error) {
@@ -106,6 +114,9 @@ const handler = NextAuth({
         token.id = user.id;
         token.role = user.role;
         token.sellerRequest = user.sellerRequest;
+        token.profileLocation = user.profileLocation || null;
+        token.activeLocation = user.activeLocation || null;
+        token.needsLocationSelection = Boolean(user.needsLocationSelection);
         token.backendToken = user.backendToken;
       }
       // When session is updated (e.g., role change), update token
@@ -115,6 +126,18 @@ const handler = NextAuth({
       if (trigger === "update" && updateData?.sellerRequest) {
         token.sellerRequest = updateData.sellerRequest;
       }
+      if (trigger === "update" && updateData?.activeLocation !== undefined) {
+        token.activeLocation = updateData.activeLocation;
+      }
+      if (trigger === "update" && updateData?.profileLocation !== undefined) {
+        token.profileLocation = updateData.profileLocation;
+      }
+      if (
+        trigger === "update" &&
+        updateData?.needsLocationSelection !== undefined
+      ) {
+        token.needsLocationSelection = Boolean(updateData.needsLocationSelection);
+      }
       return token;
     },
     async session({ session, token }) {
@@ -122,6 +145,9 @@ const handler = NextAuth({
       session.user.id = token.id;
       session.user.role = token.role;
       session.user.sellerRequest = token.sellerRequest;
+      session.user.profileLocation = token.profileLocation || null;
+      session.user.activeLocation = token.activeLocation || null;
+      session.user.needsLocationSelection = Boolean(token.needsLocationSelection);
       session.backendToken = token.backendToken;
       return session;
     },

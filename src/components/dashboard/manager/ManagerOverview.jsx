@@ -15,6 +15,11 @@ import {
 import { motion } from "framer-motion";
 import Link from "next/link";
 
+function getToken() {
+  if (typeof window === "undefined") return null;
+  return localStorage.getItem("token");
+}
+
 export default function ManagerOverview() {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -22,8 +27,14 @@ export default function ManagerOverview() {
   useEffect(() => {
     const fetchStats = async () => {
       try {
+        const token = getToken();
+        if (!token) return;
+
         const res = await fetch(
           `${process.env.NEXT_PUBLIC_API_URL}/orders/platform-stats`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          },
         );
         if (res.ok) {
           const data = await res.json();
@@ -56,8 +67,9 @@ export default function ManagerOverview() {
   }
 
   const pendingOrders =
-    (stats?.statusCounts?.["New"] || 0) +
-    (stats?.statusCounts?.["Processing"] || 0);
+    (stats?.statusCounts?.["placed"] || 0) +
+    (stats?.statusCounts?.["confirmed"] || 0) +
+    (stats?.statusCounts?.["packed"] || 0);
 
   const panels = [
     {

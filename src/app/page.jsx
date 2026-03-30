@@ -8,7 +8,6 @@ import FlashDeals from "@/components/home/FlashDeals";
 import PromoBanners from "@/components/home/PromoBanners";
 import Testimonials from "@/components/home/Testimonials";
 import ShopByBrand from "@/components/home/ShopByBrand";
-import BecomeSellerCTA from "@/components/home/BecomeSellerCTA";
 
 export default function Home() {
   return (
@@ -21,7 +20,6 @@ export default function Home() {
       <PromoBanners />
       <ShopByBrand />
       <Testimonials />
-      <BecomeSellerCTA />
       <TradeAssuranceBanner />
     </main>
   );

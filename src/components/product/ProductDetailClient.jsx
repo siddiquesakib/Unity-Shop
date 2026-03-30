@@ -217,7 +217,7 @@ const Stars = ({ value = 0, size = 14, interactive = false, onChange }) => (
 export default function ProductDetailClient({ product, relatedProducts = [] }) {
   const API = process.env.NEXT_PUBLIC_API_URL;
   const router = useRouter();
-  const { addToCart } = useCart();
+  const { addToCart, startDirectCheckout } = useCart();
   const { formatPrice } = useCurrency();
   const { user } = useAuth();
   const videoRef = useRef(null);
@@ -403,7 +403,7 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
     setTimeout(() => setCartOk(false), 2000);
   };
   const buyNow = () => {
-    addToCart(
+    startDirectCheckout(
       { ...product, selectedColor: selColor, selectedSize: selSize },
       qty,
     );

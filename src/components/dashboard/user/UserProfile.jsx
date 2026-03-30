@@ -27,15 +27,26 @@ export default function UserProfile() {
   useEffect(() => {
     if (!user?.email) return;
 
+    const token =
+      typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+    if (!token) {
+      setLoading(false);
+      return;
+    }
+
     const email = encodeURIComponent(user.email);
     const baseUrl = (process.env.NEXT_PUBLIC_API_URL || '').replace(/\/$/, '');
 
     // Fetch profile + shipping info in parallel — no waterfall delay
     Promise.all([
-      fetch(`${baseUrl}/users/profile/${email}`).then(r =>
+      fetch(`${baseUrl}/users/profile/${email}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      }).then(r =>
         r.ok ? r.json() : null,
       ),
-      fetch(`${baseUrl}/users/shipping/${email}`).then(r =>
+      fetch(`${baseUrl}/users/shipping/${email}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      }).then(r =>
         r.ok ? r.json() : null,
       ),
     ])

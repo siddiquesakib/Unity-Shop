@@ -64,6 +64,11 @@ export default function Sidebar() {
     { name: "Add Product", href: "/dashboard/seller/add-product", icon: PlusCircle },
     { name: "Orders", href: "/dashboard/seller/orders", icon: ListOrdered },
     { name: "Profile", href: "/dashboard/seller/profile", icon: Users },
+    {
+      name: "Negotiations",
+      href: "/dashboard/seller/negotiations",
+      icon: UserCog,
+    },
   ];
 
   const adminLinks = [

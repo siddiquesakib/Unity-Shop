@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
 import {
   BarChart3,
@@ -18,15 +18,29 @@ import {
   RefreshCw,
 } from "lucide-react";
 
+function getToken() {
+  if (typeof window === "undefined") return null;
+  return localStorage.getItem("token");
+}
+
 export default function PlatformStatsPage() {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  const fetchStats = async () => {
+  const fetchStats = useCallback(async () => {
     setLoading(true);
     try {
+      const token = getToken();
+      if (!token) {
+        setStats(null);
+        return;
+      }
+
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/orders/platform-stats`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        },
       );
       if (res.ok) {
         const data = await res.json();
@@ -37,11 +51,23 @@ export default function PlatformStatsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchStats();
-  }, []);
+  }, [fetchStats]);
+
+  const workflowStatusCounts = stats?.statusCounts || {};
+  const placedCount = workflowStatusCounts.placed || 0;
+  const processingCount =
+    (workflowStatusCounts.confirmed || 0) +
+    (workflowStatusCounts.packed || 0);
+  const shippedCount =
+    (workflowStatusCounts.picked || 0) +
+    (workflowStatusCounts.inTransit || 0) +
+    (workflowStatusCounts.outForDelivery || 0);
+  const deliveredCount = workflowStatusCounts.delivered || 0;
+  const cancelledCount = workflowStatusCounts.cancelled || 0;
 
   const statCards = stats
     ? [
@@ -264,35 +290,35 @@ export default function PlatformStatsPage() {
             {[
               {
                 label: "New",
-                count: stats.statusCounts["New"] || 0,
+                count: placedCount,
                 icon: Clock,
                 color: "text-amber-400",
                 bg: "bg-amber-500/10",
               },
               {
                 label: "Processing",
-                count: stats.statusCounts["Processing"] || 0,
+                count: processingCount,
                 icon: Package,
                 color: "text-blue-400",
                 bg: "bg-blue-500/10",
               },
               {
                 label: "Shipped",
-                count: stats.statusCounts["Shipped"] || 0,
+                count: shippedCount,
                 icon: Truck,
                 color: "text-purple-400",
                 bg: "bg-purple-500/10",
               },
               {
                 label: "Delivered",
-                count: stats.statusCounts["Delivered"] || 0,
+                count: deliveredCount,
                 icon: CheckCircle,
                 color: "text-emerald-400",
                 bg: "bg-emerald-500/10",
               },
               {
                 label: "Cancelled",
-                count: stats.statusCounts["Cancelled"] || 0,
+                count: cancelledCount,
                 icon: Package,
                 color: "text-rose-400",
                 bg: "bg-rose-500/10",
