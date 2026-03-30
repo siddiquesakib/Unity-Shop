@@ -5,6 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
 import { FcGoogle } from "react-icons/fc";
 import { FiMail, FiLock, FiEye, FiEyeOff } from "react-icons/fi";
+import Button from "@/components/common/Button";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -308,7 +309,7 @@ export default function LoginPage() {
             </div>
 
             {/* Login Button */}
-            <button
+            <Button
               type="submit"
               disabled={isLoading}
               style={{
@@ -342,7 +343,7 @@ export default function LoginPage() {
                   animation: "spin 0.7s linear infinite",
                 }} />
               ) : "Login"}
-            </button>
+            </Button>
           </form>
 
           {/* Register */}

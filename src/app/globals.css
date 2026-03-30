@@ -398,3 +398,12 @@ html, body {
     transform: translateX(var(--end));
   }
 }
+
+/* ═══ GLOBAL INTERACTIVITY ═══ */
+a, button, [role="button"], label, select, input[type="submit"], input[type="button"], input[type="checkbox"], input[type="radio"], .cursor-pointer {
+  cursor: pointer !important;
+}
+
+button:disabled, input:disabled, [disabled] {
+  cursor: not-allowed !important;
+}

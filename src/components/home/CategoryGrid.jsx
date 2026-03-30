@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState, useEffect, useRef } from "react";
 import { FiArrowUpRight } from "react-icons/fi";
+import Button from "@/components/common/Button";
 
 /* ━━━━━ Category Data ━━━━━ */
 const categories = [
@@ -438,9 +439,9 @@ const CategoryGrid = () => {
                 {categories.length} collections
               </span>
             </div>
-            <Link href="/products" className="cat-view-all-btn">
-              Browse All <FiArrowUpRight size={13} strokeWidth={2.5} />
-            </Link>
+            <Button href="/products" className="!rounded-full !px-4 !py-1.5 !text-xs !border-[#ddd] hover:!border-black">
+              Browse All
+            </Button>
           </div>
 
           <div className="cat-divider" />

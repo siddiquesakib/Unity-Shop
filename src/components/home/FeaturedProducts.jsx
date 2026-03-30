@@ -2,8 +2,8 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import Link from "next/link";
 import ProductCard from "../product/ProductCard";
+import Button from "@/components/common/Button";
 import { FiGrid, FiArrowRight } from "react-icons/fi";
 
 const filters = [
@@ -134,14 +134,12 @@ const FeaturedProducts = ({
 
         {/* View All */}
         {products.length > 0 && (
-          <div className="text-center mt-12">
-            <Link
-              href={viewAllLink}
-              className="inline-flex items-center gap-2.5 px-10 py-4 text-sm font-bold text-black border-2 border-black rounded-full hover:bg-black hover:text-white transition-all duration-300"
+          <div className="text-center">
+            <Button
+              href={viewAllLink} className="px-20"
             >
               View All
-              <FiArrowRight className="w-4 h-4" />
-            </Link>
+            </Button>
           </div>
         )}
       </div>

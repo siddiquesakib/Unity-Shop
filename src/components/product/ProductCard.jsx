@@ -5,6 +5,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useCurrency } from "@/contexts/CurrencyContext";
 import Image from "next/image";
 import Link from "next/link";
+import Button from "@/components/common/Button";
 import { useState, useCallback } from "react";
 import {
   FiShoppingCart,
@@ -227,13 +228,11 @@ function QuickViewModal({ product, onClose, formatPrice }) {
                   </button>
                 </div>
 
-                <button
+                <Button
                   onClick={handleAdd}
-                  className={`flex-1 h-10 rounded-lg font-bold text-sm flex items-center justify-center gap-2 transition-all duration-200 ${
-                    addedFeedback
-                      ? "bg-black text-white"
-                      : "bg-black text-white hover:bg-gray-800"
-                  }`}
+                  disabled={addedFeedback}
+                  showIcon={false}
+                  className="flex-1 !h-10 !py-0 flex items-center justify-center gap-2"
                 >
                   {addedFeedback ? (
                     <>
@@ -244,7 +243,7 @@ function QuickViewModal({ product, onClose, formatPrice }) {
                       <FiShoppingCart size={16} /> Add to Cart
                     </>
                   )}
-                </button>
+                </Button>
               </div>
 
               <Link

@@ -9,6 +9,7 @@ import {
   FiTruck,
   FiAward,
 } from "react-icons/fi";
+import Button from "@/components/common/Button";
 
 const features = [
   {
@@ -98,12 +99,14 @@ const TradeAssuranceBanner = () => {
             </p>
           </div>
           <div className="relative z-10 flex gap-2.5">
-            <Link
+            <Button
               href="/register"
-              className="px-5 py-2 text-sm font-semibold text-black bg-white rounded-full hover:bg-gray-100 transition-colors"
+              variant="light"
+              className="!px-5 !py-2 !text-sm !font-semibold !rounded-full"
+              showIcon={false}
             >
               Get Started
-            </Link>
+            </Button>
             <Link
               href="/products"
               className="px-5 py-2 text-sm font-medium text-gray-300 bg-white/10 rounded-full hover:bg-white/15 transition-colors"

@@ -2,6 +2,7 @@
 "use client";
 
 import { useState } from "react";
+import Button from "@/components/common/Button";
 
 const PaymentForm = ({ initialData, onSubmit, onBack }) => {
   const [formData, setFormData] = useState(
@@ -199,12 +200,13 @@ const PaymentForm = ({ initialData, onSubmit, onBack }) => {
         >
           Back
         </button>
-        <button
+        <Button
           type="submit"
-          className="px-8 py-3.5 bg-black text-white font-bold rounded-full hover:bg-gray-800 shadow-2xl shadow-black/20 hover:shadow-black/30 hover:scale-[1.02] active:scale-[0.98] transition-all duration-300"
+          showIcon={false}
+          className="!px-8 !py-3 font-bold"
         >
           Continue to Review
-        </button>
+        </Button>
       </div>
     </form>
   );

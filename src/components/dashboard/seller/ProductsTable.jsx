@@ -5,6 +5,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { motion } from "framer-motion";
 import { Plus, Search, Trash } from "lucide-react";
 import Link from "next/link";
+import Button from "@/components/common/Button";
 
 export default function ProductsTable() {
   const { user } = useAuth();
@@ -77,13 +78,11 @@ export default function ProductsTable() {
               className="pl-9 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-gray-400"
             />
           </div>
-          <Link
-            href="/dashboard/seller/add-product"
-            className="flex items-center gap-2 bg-black hover:bg-gray-800 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+          <Button
+            href="/dashboard/seller/add-product" 
           >
-            <Plus size={16} />
             <span className="hidden sm:inline">Add Product</span>
-          </Link>
+          </Button>
         </div>
       </div>
 
@@ -104,12 +103,13 @@ export default function ProductsTable() {
               : "No products match your search."}
           </p>
           {products.length === 0 && (
-            <Link
+            <Button
               href="/dashboard/seller/add-product"
-              className="px-6 py-2.5 bg-black text-white rounded-xl hover:bg-gray-800 transition font-medium inline-block"
+              className="!px-6 !py-2.5 !rounded-xl !font-medium inline-block text-center"
+              showIcon={false}
             >
               Add Your First Product
-            </Link>
+            </Button>
           )}
         </div>
       ) : (

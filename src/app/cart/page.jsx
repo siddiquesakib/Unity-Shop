@@ -468,12 +468,13 @@ export default function CartPage() {
           <p className="text-gray-500 text-[16px] mb-6">
             Browse our products and add items you love.
           </p>
-          <Link
+          <Button
             href="/products"
-            className="inline-flex items-center gap-2 px-7 py-3 bg-black text-white font-bold text-[16px] rounded-full hover:bg-gray-800 active:scale-95 transition-all"
+            className="!px-7 !py-3 font-bold !text-[16px]"
+            showIcon={false}
           >
             Browse Products <FiArrowRight size={14} />
-          </Link>
+          </Button>
         </div>
       </div>
     );
@@ -936,10 +937,11 @@ export default function CartPage() {
                   >
                     ← Back
                   </button>
-                  <button
+                  <Button
                     onClick={handleContinueToPayment}
                     disabled={!shippingValid || savingShipping}
-                    className="flex-1 h-10 bg-black text-white rounded-full text-[16px] font-bold hover:bg-gray-800 disabled:opacity-40 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+                    showIcon={false}
+                    className="flex-1 !h-10 flex items-center justify-center gap-2 font-bold disabled:opacity-40"
                   >
                     {savingShipping ? (
                       <>
@@ -949,7 +951,7 @@ export default function CartPage() {
                     ) : (
                       "Continue to Payment"
                     )}
-                  </button>
+                  </Button>
                 </div>
               </div>
             )}
@@ -1095,12 +1097,13 @@ export default function CartPage() {
                       </button>
                     </div>
                   ) : (
-                    <Link
+                    <Button
                       href="/login"
-                      className="flex-1 h-10 bg-black text-white rounded-full text-[16px] font-bold flex items-center justify-center hover:bg-gray-800 transition-colors"
+                      showIcon={false}
+                      className="flex-1 !h-10 flex items-center justify-center font-bold"
                     >
                       Sign in to Pay
-                    </Link>
+                    </Button>
                   )}
                 </div>
               </div>

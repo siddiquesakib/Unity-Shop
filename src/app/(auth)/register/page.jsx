@@ -5,6 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
 import { FiMail, FiLock, FiUser, FiArrowRight, FiCheck, FiEye, FiEyeOff } from "react-icons/fi";
 import { COUNTRY_OPTIONS, getCityOptions } from "@/lib/locationData";
+import Button from "@/components/common/Button";
 
 const RegisterPage = () => {
   const [name, setName] = useState("");
@@ -445,7 +446,7 @@ const RegisterPage = () => {
                 </div>
 
                 {/* Submit */}
-                <button
+                <Button
                   type="submit"
                   disabled={isLoading}
                   style={{
@@ -472,9 +473,9 @@ const RegisterPage = () => {
                   {isLoading ? (
                     <div style={{ width: "17px", height: "17px", border: "2px solid rgba(255,255,255,0.3)", borderTopColor: "#fff", borderRadius: "50%", animation: "spin 0.7s linear infinite" }} />
                   ) : (
-                    <>Create Account <FiArrowRight size={14} /></>
+                    <>Create Account</>
                   )}
-                </button>
+                </Button>
               </form>
 
               <p style={{ textAlign: "center", fontSize: "12px", color: "#888", marginTop: "16px", fontFamily: "system-ui, sans-serif" }}>
