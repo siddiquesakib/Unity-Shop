@@ -21,6 +21,19 @@ import {
 } from "react-icons/fi";
 import { useCart } from "@/contexts/CartContext";
 
+const getProductImages = (product) => {
+  const multi = Array.isArray(product?.images) ? product.images : [];
+  const legacy = Array.isArray(product?.image)
+    ? product.image
+    : typeof product?.image === "string"
+      ? [product.image]
+      : [];
+
+  return [...new Set([...multi, ...legacy])].filter(
+    (img) => typeof img === "string" && img.trim(),
+  );
+};
+
 /* ━━━━━ QuickView Modal ━━━━━ */
 function QuickViewModal({ product, onClose, formatPrice }) {
   const [imgIdx, setImgIdx] = useState(0);
@@ -28,11 +41,7 @@ function QuickViewModal({ product, onClose, formatPrice }) {
   const [addedFeedback, setAddedFeedback] = useState(false);
   const { addToCart } = useCart();
 
-  const images = Array.isArray(product.image)
-    ? product.image.filter((img) => typeof img === "string" && img.trim())
-    : typeof product.image === "string" && product.image.trim()
-      ? [product.image]
-      : [];
+  const images = getProductImages(product);
 
   const safeImg = (url) => {
     if (!url) return "https://via.placeholder.com/600x600?text=No+Image";
@@ -288,23 +297,18 @@ const ProductCard = ({ product }) => {
 
   const placeholderImage =
     "https://via.placeholder.com/400x400?text=Product+Image";
+  const productImages = getProductImages(product);
 
   const getSafeImageUrl = (index = 0) => {
     if (imageError && index === 0) return placeholderImage;
     let url = null;
-    if (Array.isArray(product.image)) {
+    if (Array.isArray(productImages)) {
       if (
-        typeof product.image[index] === "string" &&
-        product.image[index].trim() !== ""
+        typeof productImages[index] === "string" &&
+        productImages[index].trim() !== ""
       ) {
-        url = product.image[index];
+        url = productImages[index];
       }
-    } else if (
-      index === 0 &&
-      typeof product.image === "string" &&
-      product.image.trim() !== ""
-    ) {
-      url = product.image;
     }
     if (!url) return index === 0 ? placeholderImage : null;
     try {
