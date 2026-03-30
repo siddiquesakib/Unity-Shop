@@ -40,6 +40,12 @@ export default function PaymentButton({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
+  const itemsQuantity = Array.isArray(items)
+    ? items.reduce((sum, item) => sum + (Number(item?.quantity) || 0), 0)
+    : 0;
+  const effectiveQuantity =
+    itemsQuantity > 0 ? itemsQuantity : Number(quantity) || 1;
+
   const handlePayment = async () => {
     if (disabled) return;
 
@@ -79,7 +85,7 @@ export default function PaymentButton({
           body: JSON.stringify({
             price,
             productId,
-            quantity,
+            quantity: effectiveQuantity,
             productName,
             userId,
             userEmail,

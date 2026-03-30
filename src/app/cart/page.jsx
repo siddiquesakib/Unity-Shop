@@ -1063,7 +1063,7 @@ export default function CartPage() {
                       <PaymentButton
                         price={grandTotal}
                         productId={allProductIds}
-                        quantity={1}
+                        quantity={Math.max(1, totalQty)}
                         productName={productSummary}
                         userId={userId}
                         userEmail={userEmail}
@@ -1247,7 +1247,7 @@ export default function CartPage() {
               <PaymentButton
                 price={grandTotal}
                 productId={allProductIds}
-                quantity={1}
+                quantity={Math.max(1, totalQty)}
                 productName={productSummary}
                 userId={session?.user?._id || null}
                 userEmail={userEmail}
