@@ -416,13 +416,13 @@ const ProductCard = ({ product }) => {
             </button>
 
             {/* View Details */}
-            <Link
-              href={`/products/${productId}`}
+            <span
               title="View Details"
               className="w-8 h-8 rounded-full bg-white hover:bg-black hover:text-white text-gray-700 flex items-center justify-center shadow-md transition-all duration-200"
+              aria-hidden="true"
             >
               <FiExternalLink size={14} />
-            </Link>
+            </span>
           </div>
 
           {/* Mobile: small quick-add + quick-view row */}

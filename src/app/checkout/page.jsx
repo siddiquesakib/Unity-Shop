@@ -25,6 +25,11 @@ export default function CheckoutPage() {
     [checkoutGroups],
   );
 
+  const totalQty = flattenedItems.reduce(
+    (sum, item) => sum + Number(item.quantity || 1),
+    0,
+  );
+
   useEffect(() => {
     if (!checkoutGroups || checkoutGroups.length === 0) {
       router.replace("/cart");
@@ -208,11 +213,17 @@ export default function CheckoutPage() {
             <PaymentButton
               price={grandTotal}
               productId={allProductIds}
-              quantity={1}
+              quantity={Math.max(1, totalQty)}
               productName={productSummary || "Checkout Items"}
               userEmail={userEmail}
               sellerName={sellerNames.join(", ") || SHOP_NAME}
               sellerEmail={sellerEmails.join(",") || SHOP_EMAIL}
+              items={flattenedItems.map((item) => ({
+                productId: item.productId,
+                quantity: item.quantity,
+                unitPrice: item.price,
+                name: item.name,
+              }))}
               breakdown={{
                 subtotal,
                 shipping: shippingCost,
