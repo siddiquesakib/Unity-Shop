@@ -32,24 +32,20 @@ export default function ProductLiveStats({ productId, initialViews = 0 }) {
   }, [productId]);
 
   return (
-    <div className="flex flex-col gap-1.5 mt-3">
+    <div className="flex items-center flex-wrap gap-3 sm:gap-4 md:mt-0">
       {/* Live right now */}
-      <div className="flex items-center gap-2 text-sm text-gray-700">
-        <span className="relative flex h-2 w-2">
-          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
-          <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500" />
+      <div className="flex items-center gap-1.5 text-[10px] sm:text-xs font-black uppercase tracking-widest text-gray-500">
+        <span className="relative flex h-2 w-2 mr-1">
+          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+          <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
         </span>
-        <span>
-          <strong>{liveViewers}</strong> people viewing this right now
-        </span>
+        <span className="text-black">{liveViewers}</span> viewing
       </div>
 
       {/* Total views */}
-      <div className="flex items-center gap-2 text-sm text-gray-500">
-        <Eye size={14} />
-        <span>
-          <strong>{totalViews.toLocaleString()}</strong> 
-        </span>
+      <div className="flex items-center gap-1.5 text-[10px] sm:text-xs font-black uppercase tracking-widest text-gray-500">
+        <Eye size={12} strokeWidth={3} className="text-black" />
+        <span className="text-black">{totalViews.toLocaleString()}</span> views
       </div>
     </div>
   );

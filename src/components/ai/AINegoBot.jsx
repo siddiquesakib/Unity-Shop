@@ -284,11 +284,11 @@ const AINegoBot = ({ product, sellerId }) => {
     <>
       <button
         onClick={() => setIsOpen(true)}
-        className="group relative inline-flex items-center gap-2 px-5 py-2.5 bg-black text-white rounded-full font-medium shadow-md hover:shadow-xl transition-all duration-300 hover:scale-105 active:scale-95 overflow-hidden"
+        className="group relative flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-4 py-3 bg-black text-white rounded-xl border-2 border-black font-black text-[11px] sm:text-xs uppercase tracking-widest hover:bg-gray-900 shadow-md hover:shadow-xl transition-all duration-300 active:scale-95 overflow-hidden"
       >
         <span className="absolute inset-0 bg-gradient-to-r from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-        <FiMessageCircle size={18} className="relative z-10" />
-        <span className="relative z-10">Negotiate Price</span>
+        <FiMessageCircle size={16} strokeWidth={2.5} className="relative z-10 shrink-0" />
+        <span className="relative z-10 whitespace-nowrap">Negotiate Price</span>
       </button>
 
       {isOpen &&

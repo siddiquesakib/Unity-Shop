@@ -79,9 +79,6 @@ export default function Sidebar() {
     { name: "Sellers Info", href: "/dashboard/admin/sellers", icon: UserCog },
     { name: "Delivery Requests", href: "/dashboard/admin/delivery-requests", icon: Truck },
     { name: "Orders", href: "/dashboard/admin/orders", icon: ListOrdered },
-    { name: "System Settings", href: "/dashboard/admin/settings", icon: Settings2 },
-    { name: "Health Logs", href: "/dashboard/admin/health", icon: Activity },
-    { name: "Promo Code", href: "/dashboard/admin/promo", icon: Megaphone },
     { name: "Profile", href: "/dashboard/admin/profile", icon: Users },
   ];
 

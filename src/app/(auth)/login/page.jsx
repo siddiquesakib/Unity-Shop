@@ -47,27 +47,10 @@ export default function LoginPage() {
       fontFamily: "'Georgia', 'Times New Roman', serif",
       padding: "24px",
     }}>
-      <div style={{
-        display: "flex",
-        width: "100%",
-        maxWidth: "900px",
-        background: "#ffffff",
-        borderRadius: "20px",
-        overflow: "hidden",
-        boxShadow: "0 8px 60px rgba(0,0,0,0.12)",
-        border: "1px solid #e8e8e8",
-        minHeight: "580px",
-      }}>
+      <div className="flex flex-col md:flex-row w-full max-w-[900px] bg-white rounded-[20px] overflow-hidden shadow-[0_8px_60px_rgba(0,0,0,0.12)] border border-[#e8e8e8] min-h-[580px]">
 
         {/* Left Side - Form */}
-        <div style={{
-          flex: "0 0 50%",
-          padding: "52px 48px",
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "center",
-          background: "#fafafa",
-        }}>
+        <div className="flex-1 md:flex-none md:w-1/2 p-8 md:p-[52px_48px] flex flex-col justify-center bg-[#fafafa]">
 
           {/* Logo */}
           <div style={{ marginBottom: "36px" }}>
@@ -362,16 +345,7 @@ export default function LoginPage() {
         </div>
 
         {/* Right Side - Product Image */}
-        <div style={{
-          flex: "0 0 50%",
-          background: "#e8e2d9",
-          position: "relative",
-          overflow: "hidden",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          minHeight: "400px",
-        }}>
+        <div className="hidden md:flex flex-1 bg-[#e8e2d9] relative overflow-hidden items-center justify-center min-h-[400px]">
           {/* Subtle gradient overlay */}
           <div style={{
             position: "absolute",

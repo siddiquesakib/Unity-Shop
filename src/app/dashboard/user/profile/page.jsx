@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { motion } from "framer-motion";
 import { useAuth } from "@/hooks/useAuth";
 import Image from "next/image";
@@ -18,13 +18,54 @@ import {
   FileText,
 } from "lucide-react";
 
+/* ── Shared styles ────────────────────────────────────────────── */
+const INPUT_CLASS =
+  "w-full bg-gray-50 border border-gray-200 text-gray-900 rounded-xl px-4 py-2.5 text-sm outline-none focus:bg-white focus:border-gray-400 focus:ring-2 focus:ring-gray-100 transition-all placeholder-gray-400";
+
+const LABEL_CLASS =
+  "block text-[11px] font-semibold tracking-widest uppercase text-gray-400 mb-1.5";
+
+/* ── View-mode row ───────────────────────────────────────────── */
+const InfoRow = ({ icon: Icon, value, fallback = "Not set" }) => (
+  <div className="flex items-center gap-2.5">
+    <span className="w-7 h-7 rounded-lg bg-gray-100 flex items-center justify-center shrink-0">
+      <Icon size={13} className="text-gray-400" />
+    </span>
+    <span className="text-sm text-gray-800 font-medium truncate">{value || fallback}</span>
+  </div>
+);
+
+/* ── Card primitives ─────────────────────────────────────────── */
+const Card = ({ children, delay = 0, className = "" }) => (
+  <motion.div
+    initial={{ opacity: 0, y: 14 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ delay, duration: 0.22 }}
+    className={`bg-white border border-gray-100 rounded-2xl shadow-sm overflow-hidden ${className}`}
+  >
+    {children}
+  </motion.div>
+);
+
+const CardHead = ({ icon: Icon, title, color = "text-gray-500", bg = "bg-gray-100" }) => (
+  <div className="flex items-center gap-3 px-6 py-3.5 border-b border-gray-50 bg-gray-50/70">
+    <span className={`w-7 h-7 rounded-lg ${bg} flex items-center justify-center shrink-0`}>
+      <Icon size={14} className={color} />
+    </span>
+    <span className="text-[11px] font-bold tracking-widest uppercase text-gray-400">{title}</span>
+  </div>
+);
+
 export default function ProfilePage() {
-  const { user } = useAuth();
+  const { user, token } = useAuth();
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
   const [message, setMessage] = useState({ type: "", text: "" });
+  const [imagePreviewUrl, setImagePreviewUrl] = useState("");
+  const fileInputRef = useRef(null);
   const [formData, setFormData] = useState({
     name: "",
     phone: "",
@@ -33,14 +74,33 @@ export default function ProfilePage() {
     bio: "",
   });
 
-  // Fetch profile from backend
+  const baseUrl = useMemo(
+    () => (process.env.NEXT_PUBLIC_API_URL || "").replace(/\/$/, ""),
+    [],
+  );
+
+  const authHeaders = useMemo(() => {
+    const authToken =
+      token || (typeof window !== "undefined" ? localStorage.getItem("token") : null);
+    return authToken ? { Authorization: `Bearer ${authToken}` } : {};
+  }, [token]);
+
+  useEffect(() => {
+    return () => {
+      if (imagePreviewUrl) URL.revokeObjectURL(imagePreviewUrl);
+    };
+  }, [imagePreviewUrl]);
+
   useEffect(() => {
     const loadProfile = async () => {
       try {
         setLoading(true);
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/users/profile/${user.email}`,
-        );
+        const email = encodeURIComponent(user.email);
+        const res = await fetch(`${baseUrl}/users/profile/${email}`, {
+          headers: {
+            ...authHeaders,
+          },
+        });
         const data = await res.json();
         if (res.ok) {
           setProfile(data);
@@ -61,13 +121,17 @@ export default function ProfilePage() {
     if (user?.email) {
       loadProfile();
     }
-  }, [user?.email]);
+  }, [user?.email, baseUrl, authHeaders]);
 
   const refetchProfile = async () => {
     try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/users/profile/${user.email}`,
-      );
+      if (!user?.email) return;
+      const email = encodeURIComponent(user.email);
+      const res = await fetch(`${baseUrl}/users/profile/${email}`, {
+        headers: {
+          ...authHeaders,
+        },
+      });
       const data = await res.json();
       if (res.ok) {
         setProfile(data);
@@ -84,32 +148,92 @@ export default function ProfilePage() {
     }
   };
 
+  const uploadImageFile = async (file) => {
+    const fd = new FormData();
+    fd.append("image", file);
+
+    const res = await fetch(`${baseUrl}/upload`, {
+      method: "POST",
+      headers: {
+        ...authHeaders,
+      },
+      body: fd,
+    });
+
+    const data = await res.json().catch(() => null);
+    const imageUrl = data?.imageUrl;
+    if (!res.ok || !imageUrl) {
+      throw new Error(data?.message || data?.error || "Image upload failed");
+    }
+    return imageUrl;
+  };
+
+  const handlePickImage = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleImageChange = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type?.startsWith("image/")) {
+      setMessage({ type: "error", text: "Please select an image file" });
+      return;
+    }
+
+    if (imagePreviewUrl) URL.revokeObjectURL(imagePreviewUrl);
+    const preview = URL.createObjectURL(file);
+    setImagePreviewUrl(preview);
+
+    try {
+      setUploadingImage(true);
+      setMessage({ type: "", text: "" });
+      const uploadedUrl = await uploadImageFile(file);
+      setFormData((prev) => ({ ...prev, image: uploadedUrl }));
+      setMessage({
+        type: "success",
+        text: "Photo uploaded. Click Save Changes to apply.",
+      });
+      setTimeout(() => setMessage({ type: "", text: "" }), 3000);
+    } catch (error) {
+      setMessage({
+        type: "error",
+        text: error?.message || "Failed to upload photo",
+      });
+    } finally {
+      setUploadingImage(false);
+      // Allow re-selecting the same file again
+      e.target.value = "";
+    }
+  };
+
   const handleSave = async () => {
     try {
       setSaving(true);
       setMessage({ type: "", text: "" });
 
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/users/profile/${user.email}`,
-        {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(formData),
+      const email = encodeURIComponent(user.email);
+      const res = await fetch(`${baseUrl}/users/profile/${email}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          ...authHeaders,
         },
-      );
-
+        body: JSON.stringify(formData),
+      });
       const data = await res.json();
-
       if (res.ok) {
-        setProfile(data.user);
+        // Backend may return the updated doc in different shapes; safest is refetch.
+        const nextProfile = data?.user?.value || data?.user || null;
+        if (nextProfile && typeof nextProfile === "object" && nextProfile.email) {
+          setProfile(nextProfile);
+        }
+        await refetchProfile();
         setEditing(false);
         setMessage({ type: "success", text: "Profile updated successfully!" });
         setTimeout(() => setMessage({ type: "", text: "" }), 3000);
       } else {
-        setMessage({
-          type: "error",
-          text: data.message || "Failed to update profile",
-        });
+        setMessage({ type: "error", text: data.message || "Failed to update profile" });
       }
     } catch (error) {
       setMessage({ type: "error", text: "Something went wrong" });
@@ -126,6 +250,8 @@ export default function ProfilePage() {
       image: profile?.image || "",
       bio: profile?.bio || "",
     });
+    if (imagePreviewUrl) URL.revokeObjectURL(imagePreviewUrl);
+    setImagePreviewUrl("");
     setEditing(false);
   };
 
@@ -138,336 +264,368 @@ export default function ProfilePage() {
     });
   };
 
+  /* ── Loading ─────────────────────────────────────────────────── */
   if (loading) {
     return (
       <div className="flex items-center justify-center h-[60vh]">
         <div className="flex flex-col items-center gap-4">
-          <div className="w-12 h-12 border-4 border-gray-200 border-t-gray-900 rounded-full animate-spin"></div>
-          <p className="text-gray-400">Loading profile...</p>
+          <div className="w-10 h-10 border-2 border-gray-200 border-t-gray-800 rounded-full animate-spin" />
+          <p className="text-sm text-gray-400 tracking-wide">Loading profile…</p>
         </div>
       </div>
     );
   }
 
+  /* ── Render ─────────────────────────────────────────────────── */
   return (
-    <div className="space-y-6 max-w-4xl mx-auto">
-      {/* Page Header */}
-      <div className="flex items-center justify-between">
+    <div className="max-w-4xl mx-auto pb-16 space-y-5">
+
+      {/* ── Header ── */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">My Profile</h1>
-          <p className="text-gray-500 text-sm mt-1">
-            Manage your personal information
-          </p>
+          <h1 className="text-2xl font-bold text-gray-900 tracking-tight">My Profile</h1>
+          <p className="text-sm text-gray-400 mt-0.5">Manage your personal information</p>
         </div>
+
         {!editing ? (
           <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
+            whileHover={{ scale: 1.03 }}
+            whileTap={{ scale: 0.97 }}
             onClick={() => setEditing(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-black hover:bg-gray-800 text-white rounded-xl transition-colors"
+            className="inline-flex items-center gap-2 px-5 py-2.5 bg-gray-900 text-white text-sm font-semibold rounded-xl hover:bg-black transition-all shadow-md shadow-gray-900/15"
           >
-            <Edit2 size={16} />
+            <Edit2 size={14} />
             Edit Profile
           </motion.button>
         ) : (
-          <div className="flex gap-3">
+          <div className="flex gap-2.5">
             <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
               onClick={handleCancel}
-              className="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl transition-colors"
+              className="inline-flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-200 text-gray-600 text-sm font-medium rounded-xl hover:bg-gray-50 hover:border-gray-300 transition-all"
             >
-              <X size={16} />
+              <X size={14} />
               Cancel
             </motion.button>
             <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
               onClick={handleSave}
               disabled={saving}
-              className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-xl transition-colors disabled:opacity-50"
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-emerald-600 text-white text-sm font-semibold rounded-xl hover:bg-emerald-700 transition-all shadow-md shadow-emerald-600/20 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <Save size={16} />
-              {saving ? "Saving..." : "Save Changes"}
+              <Save size={14} />
+              {saving ? "Saving…" : "Save Changes"}
             </motion.button>
           </div>
         )}
       </div>
 
-      {/* Success/Error Message */}
+      {/* ── Toast message ── */}
       {message.text && (
         <motion.div
-          initial={{ opacity: 0, y: -10 }}
+          initial={{ opacity: 0, y: -8 }}
           animate={{ opacity: 1, y: 0 }}
-          className={`p-4 rounded-xl text-sm font-medium ${
+          className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium border ${
             message.type === "success"
-              ? "bg-emerald-50 border border-emerald-200 text-emerald-600"
-              : "bg-red-50 border border-red-200 text-red-500"
+              ? "bg-emerald-50 border-emerald-100 text-emerald-700"
+              : "bg-red-50 border-red-100 text-red-600"
           }`}
         >
+          <span className={`w-2 h-2 rounded-full shrink-0 ${message.type === "success" ? "bg-emerald-400" : "bg-red-400"}`} />
           {message.text}
         </motion.div>
       )}
 
-      {/* Profile Card */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="bg-white border border-gray-200 rounded-2xl overflow-hidden"
-      >
-        {/* Cover / Avatar Section */}
-        <div className="bg-gradient-to-r from-gray-800 via-gray-700 to-gray-900 h-32 relative">
-          <div className="absolute -bottom-12 left-8">
-            <div className="w-24 h-24 rounded-2xl bg-gradient-to-tr from-gray-700 to-gray-900 p-1 shadow-xl">
-              <div className="w-full h-full rounded-2xl bg-white flex items-center justify-center overflow-hidden">
-                {profile?.image ? (
+      {/* ── Hero card ── */}
+      <Card delay={0}>
+        {/* Cover banner */}
+        <div className="relative h-32 bg-linear-to-br from-gray-800 via-gray-700 to-gray-900">
+          {/* Subtle grid overlay */}
+          <div
+            className="absolute inset-0 opacity-10"
+            style={{
+              backgroundImage:
+                "repeating-linear-gradient(0deg,transparent,transparent 23px,rgba(255,255,255,.15) 24px),repeating-linear-gradient(90deg,transparent,transparent 23px,rgba(255,255,255,.15) 24px)",
+            }}
+          />
+
+          {/* Avatar */}
+          <div className="absolute -bottom-11 left-7">
+            <div className="relative">
+              <button
+                type="button"
+                onClick={editing ? handlePickImage : undefined}
+                className={`w-21.5 h-21.5 rounded-2xl ring-4 ring-white shadow-xl bg-white overflow-hidden flex items-center justify-center ${
+                  editing ? "cursor-pointer" : "cursor-default"
+                }`}
+                aria-label={editing ? "Upload profile photo" : "Profile photo"}
+              >
+                {imagePreviewUrl ? (
                   <Image
-                    src={profile.image}
-                    alt={profile.name || "Profile"}
-                    width={96}
-                    height={96}
-                    className="w-full h-full object-cover rounded-2xl"
+                    src={imagePreviewUrl}
+                    alt={profile?.name || "Profile"}
+                    width={86}
+                    height={86}
+                    unoptimized
+                    className="w-full h-full object-cover"
+                  />
+                ) : formData.image || profile?.image ? (
+                  <Image
+                    src={formData.image || profile.image}
+                    alt={profile?.name || "Profile"}
+                    width={86}
+                    height={86}
+                    className="w-full h-full object-cover"
                   />
                 ) : (
-                  <User size={40} className="text-gray-300" />
+                  <div className="w-full h-full bg-linear-to-br from-gray-100 to-gray-200 flex items-center justify-center">
+                    <User size={36} className="text-gray-400" />
+                  </div>
                 )}
-              </div>
+              </button>
+
+              {editing && (
+                <div className="absolute -bottom-2 -right-2">
+                  <div className="w-8 h-8 rounded-xl bg-gray-900 text-white flex items-center justify-center shadow-lg shadow-gray-900/20">
+                    {uploadingImage ? (
+                      <div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+                    ) : (
+                      <Camera size={14} />
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
+
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleImageChange}
+            />
           </div>
         </div>
 
-        {/* Name & Role */}
-        <div className="pt-16 px-8 pb-6">
-          <div className="flex items-center gap-3 mb-1">
-            <h2 className="text-2xl font-bold text-gray-900">
+        {/* Name & meta */}
+        <div className="pt-14 px-7 pb-6">
+          <div className="flex flex-wrap items-center gap-2.5 mb-1">
+            <h2 className="text-xl font-bold text-gray-900 tracking-tight">
               {profile?.name || "User"}
             </h2>
-            <span className="px-3 py-1 bg-gray-100 text-gray-600 text-xs font-semibold rounded-full border border-gray-200 capitalize">
+            <span className="px-2.5 py-0.5 bg-gray-100 border border-gray-200 text-gray-500 text-[11px] font-bold rounded-full uppercase tracking-wider">
               {profile?.role || "User"}
             </span>
           </div>
-          <p className="text-gray-500 text-sm">{profile?.email}</p>
+          <p className="text-sm text-gray-400">{profile?.email}</p>
+          {profile?.bio && (
+            <p className="text-sm text-gray-500 mt-3 leading-relaxed max-w-lg border-t border-gray-50 pt-3">
+              {profile.bio}
+            </p>
+          )}
         </div>
-      </motion.div>
+      </Card>
 
-      {/* Info Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      {/* ── Info grid ── */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+
         {/* Personal Information */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="bg-white border border-gray-200 rounded-2xl p-6"
-        >
-          <h3 className="text-lg font-bold text-gray-900 mb-5 flex items-center gap-2">
-            <User size={20} className="text-gray-500" />
-            Personal Information
-          </h3>
+        <Card delay={0.1}>
+          <CardHead icon={User} title="Personal Information" color="text-blue-500" bg="bg-blue-50" />
+          <div className="p-6 space-y-5">
 
-          <div className="space-y-5">
             {/* Name */}
             <div>
-              <label className="text-gray-400 text-xs font-medium uppercase tracking-wide mb-1.5 block">
-                Full Name
-              </label>
+              <label className={LABEL_CLASS}>Full Name</label>
               {editing ? (
-                <input
-                  type="text"
-                  value={formData.name}
-                  onChange={(e) =>
-                    setFormData({ ...formData, name: e.target.value })
-                  }
-                  className="w-full bg-gray-50 border border-gray-200 text-gray-900 rounded-xl px-4 py-2.5 focus:outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-300 transition-colors"
-                />
+                <input type="text" value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  className={INPUT_CLASS} placeholder="Your full name" />
               ) : (
-                <p className="text-gray-900 font-medium">
-                  {profile?.name || "Not set"}
-                </p>
+                <InfoRow icon={User} value={profile?.name} />
               )}
             </div>
 
             {/* Email (read-only) */}
             <div>
-              <label className="text-gray-400 text-xs font-medium uppercase tracking-wide mb-1.5 block">
-                Email Address
-              </label>
-              <div className="flex items-center gap-2">
-                <Mail size={16} className="text-gray-400" />
-                <p className="text-gray-900 font-medium">{profile?.email}</p>
-              </div>
+              <label className={LABEL_CLASS}>Email Address</label>
+              <InfoRow icon={Mail} value={profile?.email} fallback="—" />
             </div>
 
             {/* Phone */}
             <div>
-              <label className="text-gray-400 text-xs font-medium uppercase tracking-wide mb-1.5 block">
-                Phone Number
-              </label>
+              <label className={LABEL_CLASS}>Phone Number</label>
               {editing ? (
-                <input
-                  type="tel"
-                  value={formData.phone}
-                  onChange={(e) =>
-                    setFormData({ ...formData, phone: e.target.value })
-                  }
-                  placeholder="Enter your phone number"
-                  className="w-full bg-gray-50 border border-gray-200 text-gray-900 rounded-xl px-4 py-2.5 focus:outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-300 transition-colors placeholder-gray-400"
-                />
+                <input type="tel" value={formData.phone}
+                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                  placeholder="Enter your phone number" className={INPUT_CLASS} />
               ) : (
-                <div className="flex items-center gap-2">
-                  <Phone size={16} className="text-gray-400" />
-                  <p className="text-gray-900 font-medium">
-                    {profile?.phone || "Not set"}
-                  </p>
-                </div>
+                <InfoRow icon={Phone} value={profile?.phone} />
               )}
             </div>
+
           </div>
-        </motion.div>
+        </Card>
 
-        {/* Address & More */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="bg-white border border-gray-200 rounded-2xl p-6"
-        >
-          <h3 className="text-lg font-bold text-gray-900 mb-5 flex items-center gap-2">
-            <MapPin size={20} className="text-gray-500" />
-            Address & Details
-          </h3>
+        {/* Address & Details */}
+        <Card delay={0.15}>
+          <CardHead icon={MapPin} title="Address & Details" color="text-orange-400" bg="bg-orange-50" />
+          <div className="p-6 space-y-5">
 
-          <div className="space-y-5">
             {/* Address */}
             <div>
-              <label className="text-gray-400 text-xs font-medium uppercase tracking-wide mb-1.5 block">
-                Address
-              </label>
+              <label className={LABEL_CLASS}>Address</label>
               {editing ? (
-                <input
-                  type="text"
-                  value={formData.address}
-                  onChange={(e) =>
-                    setFormData({ ...formData, address: e.target.value })
-                  }
-                  placeholder="Enter your address"
-                  className="w-full bg-gray-50 border border-gray-200 text-gray-900 rounded-xl px-4 py-2.5 focus:outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-300 transition-colors placeholder-gray-400"
-                />
+                <input type="text" value={formData.address}
+                  onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                  placeholder="Enter your address" className={INPUT_CLASS} />
               ) : (
-                <div className="flex items-center gap-2">
-                  <MapPin size={16} className="text-gray-400" />
-                  <p className="text-gray-900 font-medium">
-                    {profile?.address || "Not set"}
-                  </p>
-                </div>
+                <InfoRow icon={MapPin} value={profile?.address} />
               )}
             </div>
 
-            {/* Image URL */}
+            {/* Profile Photo */}
             <div>
-              <label className="text-gray-400 text-xs font-medium uppercase tracking-wide mb-1.5 block">
-                Profile Image URL
-              </label>
+              <label className={LABEL_CLASS}>Profile Photo</label>
               {editing ? (
-                <input
-                  type="url"
-                  value={formData.image}
-                  onChange={(e) =>
-                    setFormData({ ...formData, image: e.target.value })
-                  }
-                  placeholder="https://example.com/photo.jpg"
-                  className="w-full bg-gray-50 border border-gray-200 text-gray-900 rounded-xl px-4 py-2.5 focus:outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-300 transition-colors placeholder-gray-400"
-                />
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-gray-100 overflow-hidden flex items-center justify-center shrink-0">
+                      {imagePreviewUrl ? (
+                        <Image
+                          src={imagePreviewUrl}
+                          alt="Preview"
+                          width={40}
+                          height={40}
+                          unoptimized
+                          className="w-full h-full object-cover"
+                        />
+                      ) : formData.image ? (
+                        <Image
+                          src={formData.image}
+                          alt="Profile"
+                          width={40}
+                          height={40}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <Camera size={16} className="text-gray-400" />
+                      )}
+                    </div>
+
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-semibold text-gray-800">
+                        Upload a new photo
+                      </p>
+                      <p className="text-xs text-gray-400 truncate">
+                        JPG/PNG/WEBP supported
+                      </p>
+                    </div>
+
+                    <motion.button
+                      type="button"
+                      whileHover={{ scale: 1.03 }}
+                      whileTap={{ scale: 0.97 }}
+                      onClick={handlePickImage}
+                      disabled={uploadingImage}
+                      className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 text-gray-700 text-sm font-semibold rounded-xl hover:bg-gray-50 hover:border-gray-300 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <Camera size={14} />
+                      {uploadingImage ? "Uploading…" : "Choose File"}
+                    </motion.button>
+                  </div>
+
+                  {formData.image ? (
+                    <p className="text-[11px] text-gray-400 truncate">
+                      {formData.image}
+                    </p>
+                  ) : null}
+                </div>
               ) : (
-                <div className="flex items-center gap-2">
-                  <Camera size={16} className="text-gray-400" />
-                  <p className="text-gray-900 font-medium truncate">
-                    {profile?.image || "No image set"}
-                  </p>
+                <div className="flex items-center gap-2.5">
+                  <span className="w-7 h-7 rounded-lg bg-gray-100 flex items-center justify-center shrink-0">
+                    <Camera size={13} className="text-gray-400" />
+                  </span>
+                  <span className="text-sm text-gray-800 font-medium truncate max-w-50">
+                    {profile?.image ? "Photo set" : "No photo set"}
+                  </span>
                 </div>
               )}
             </div>
 
             {/* Bio */}
             <div>
-              <label className="text-gray-400 text-xs font-medium uppercase tracking-wide mb-1.5 block">
-                Bio
-              </label>
+              <label className={LABEL_CLASS}>Bio</label>
               {editing ? (
-                <textarea
-                  value={formData.bio}
-                  onChange={(e) =>
-                    setFormData({ ...formData, bio: e.target.value })
-                  }
+                <textarea value={formData.bio}
+                  onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
                   placeholder="Tell something about yourself..."
                   rows={3}
-                  className="w-full bg-gray-50 border border-gray-200 text-gray-900 rounded-xl px-4 py-2.5 focus:outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-300 transition-colors placeholder-gray-400 resize-none"
+                  className={`${INPUT_CLASS} resize-none leading-relaxed`}
                 />
               ) : (
-                <div className="flex items-start gap-2">
-                  <FileText size={16} className="text-gray-400 mt-0.5" />
-                  <p className="text-gray-900 font-medium">
+                <div className="flex items-start gap-2.5">
+                  <span className="w-7 h-7 rounded-lg bg-gray-100 flex items-center justify-center shrink-0 mt-0.5">
+                    <FileText size={13} className="text-gray-400" />
+                  </span>
+                  <span className="text-sm text-gray-800 font-medium leading-relaxed">
                     {profile?.bio || "No bio added yet"}
-                  </p>
+                  </span>
                 </div>
               )}
             </div>
+
           </div>
-        </motion.div>
+        </Card>
       </div>
 
-      {/* Account Info Card */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.3 }}
-        className="bg-white border border-gray-200 rounded-2xl p-6"
-      >
-        <h3 className="text-lg font-bold text-gray-900 mb-5 flex items-center gap-2">
-          <Shield size={20} className="text-gray-500" />
-          Account Information
-        </h3>
+      {/* ── Account Info ── */}
+      <Card delay={0.2}>
+        <CardHead icon={Shield} title="Account Information" color="text-violet-500" bg="bg-violet-50" />
+        <div className="p-6">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-6">
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
-          <div>
-            <p className="text-gray-400 text-xs font-medium uppercase tracking-wide mb-1">
-              Role
-            </p>
-            <p className="text-gray-900 font-semibold capitalize">
-              {profile?.role || "User"}
-            </p>
-          </div>
-          <div>
-            <p className="text-gray-400 text-xs font-medium uppercase tracking-wide mb-1">
-              Provider
-            </p>
-            <p className="text-gray-900 font-semibold capitalize">
-              {profile?.provider || "Email"}
-            </p>
-          </div>
-          <div>
-            <p className="text-gray-400 text-xs font-medium uppercase tracking-wide mb-1">
-              Member Since
-            </p>
-            <div className="flex items-center gap-1.5">
-              <Calendar size={14} className="text-gray-400" />
-              <p className="text-gray-900 font-semibold">
-                {formatDate(profile?.createdAt)}
-              </p>
-            </div>
-          </div>
-          <div>
-            <p className="text-gray-400 text-xs font-medium uppercase tracking-wide mb-1">
-              Last Updated
-            </p>
-            <div className="flex items-center gap-1.5">
-              <Calendar size={14} className="text-gray-400" />
-              <p className="text-gray-900 font-semibold">
-                {formatDate(profile?.updatedAt)}
-              </p>
-            </div>
+            {[
+              {
+                label: "Role",
+                value: profile?.role || "User",
+                transform: "capitalize",
+              },
+              {
+                label: "Provider",
+                value: profile?.provider || "Email",
+                transform: "capitalize",
+              },
+              {
+                label: "Member Since",
+                icon: Calendar,
+                value: formatDate(profile?.createdAt),
+              },
+              {
+                label: "Last Updated",
+                icon: Calendar,
+                value: formatDate(profile?.updatedAt),
+              },
+            ].map(({ label, value, icon: Icon, transform }) => (
+              <div key={label}>
+                <p className="text-[11px] font-bold uppercase tracking-widest text-gray-400 mb-1.5">
+                  {label}
+                </p>
+                <div className="flex items-center gap-1.5">
+                  {Icon && <Icon size={13} className="text-gray-400 shrink-0" />}
+                  <p className={`text-sm font-semibold text-gray-800 ${transform || ""}`}>
+                    {value}
+                  </p>
+                </div>
+              </div>
+            ))}
+
           </div>
         </div>
-      </motion.div>
+      </Card>
+
     </div>
   );
 }

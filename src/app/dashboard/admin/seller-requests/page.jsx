@@ -5,16 +5,11 @@ import {
     Store,
     Check,
     X,
-    ExternalLink,
     Calendar,
     Mail,
     Phone,
-    Search,
-    Filter,
     Loader2,
-    AlertCircle,
-    MoreVertical,
-    Infomation
+    MoreVertical
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -76,101 +71,117 @@ export default function AdminSellerRequests() {
     if (loading) {
         return (
             <div className="h-[60vh] flex items-center justify-center">
-                <Loader2 className="animate-spin text-indigo-500" size={40} />
+                <Loader2 className="animate-spin text-black" size={40} strokeWidth={3} />
             </div>
         );
     }
 
     return (
-        <div className="space-y-6">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div>
-                    <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-                        <Store className="text-indigo-500" />
-                        Seller Requests
+        <div className="space-y-10 pb-12 px-4 md:px-0">
+            {/* Header */}
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-gray-100 pb-8">
+                <div className="space-y-3">
+                    <div className="flex items-center gap-3">
+                        <div className="p-1.5 rounded-lg bg-white border border-gray-100 shadow-sm">
+                            <Store className="text-black" size={16} />
+                        </div>
+                        <span className="text-[11px] font-bold text-gray-400 uppercase tracking-[0.3em]">
+                            Admin Review Queue
+                        </span>
+                    </div>
+                    <h1 className="text-4xl md:text-5xl font-black text-black uppercase tracking-tight leading-[0.9]">
+                        Seller <span className="text-gray-200">Requests</span>
                     </h1>
-                    <p className="text-slate-400 text-sm">Review applications for new store registrations.</p>
+                    <p className="text-base text-gray-500 font-medium max-w-2xl">
+                        Review applications for new store registrations.
+                    </p>
                 </div>
 
-                <div className="flex items-center gap-2">
-                    <div className="bg-indigo-500/10 text-indigo-400 px-3 py-1 rounded-full text-xs font-semibold border border-indigo-500/20">
-                        {requests.length} Pending
+                <div className="px-5 py-2.5 rounded-2xl bg-white border border-gray-200 flex items-center gap-3 shadow-[0_8px_30px_rgb(0,0,0,0.04)] self-start">
+                    <div className="relative">
+                        <div className="w-2.5 h-2.5 rounded-full bg-amber-500"></div>
+                        <div className="absolute inset-0 w-2.5 h-2.5 rounded-full bg-amber-500 animate-ping opacity-30"></div>
                     </div>
+                    <span className="text-xs font-black text-black uppercase tracking-widest">
+                        {requests.length} Pending
+                    </span>
                 </div>
             </div>
 
             {requests.length === 0 ? (
-                <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-12 text-center">
-                    <div className="w-16 h-16 bg-slate-800 rounded-2xl flex items-center justify-center mx-auto mb-4 text-slate-500">
-                        <Check size={32} />
+                <div className="p-10 rounded-[2.5rem] bg-white border border-gray-100 shadow-[0_20px_50px_rgba(0,0,0,0.02)]">
+                    <div className="text-center py-20 text-gray-400 text-sm font-bold border-2 border-dashed border-gray-100 rounded-[2.5rem] uppercase tracking-widest">
+                        All caught up — no pending seller requests.
                     </div>
-                    <h3 className="text-lg font-medium text-white mb-1">All Caught Up!</h3>
-                    <p className="text-slate-400">There are no pending seller requests to review.</p>
                 </div>
             ) : (
-                <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
                     {requests.map((request) => (
                         <motion.div
                             layout
                             initial={{ opacity: 0, scale: 0.98 }}
                             animate={{ opacity: 1, scale: 1 }}
                             key={request._id}
-                            className="bg-slate-900/50 border border-slate-800 rounded-2xl p-6 space-y-4 hover:border-slate-700/80 transition-all flex flex-col justify-between"
+                            className="p-10 rounded-[2.5rem] bg-white border border-gray-100 shadow-[0_20px_50px_rgba(0,0,0,0.02)] overflow-hidden relative group/card hover:shadow-[0_40px_80px_rgba(0,0,0,0.05)] transition-all duration-500 flex flex-col justify-between"
                         >
-                            <div className="space-y-4">
+                            <div className="space-y-8">
                                 <div className="flex items-start justify-between gap-4">
-                                    <div className="flex items-center gap-4">
-                                        <div className="w-12 h-12 rounded-xl bg-linear-to-br from-indigo-500/10 to-purple-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-500">
+                                    <div className="flex items-center gap-5">
+                                        <div className="w-14 h-14 rounded-2xl bg-gray-50 border border-gray-100 flex items-center justify-center text-black group-hover/card:bg-black group-hover/card:text-white group-hover/card:border-black transition-all duration-500 shadow-sm">
                                             <Store size={24} />
                                         </div>
                                         <div>
-                                            <h3 className="font-bold text-white text-lg">{request.shopName}</h3>
-                                            <p className="text-slate-400 text-sm flex items-center gap-1.5">
-                                                <Calendar size={14} />
+                                            <h3 className="text-xl font-black text-black tracking-tight leading-tight">
+                                                {request.shopName}
+                                            </h3>
+                                            <p className="text-xs text-gray-400 font-bold uppercase tracking-wider flex items-center gap-2 mt-2">
+                                                <Calendar size={14} className="text-gray-300" />
                                                 Applied {new Date(request.requestedAt).toLocaleDateString()}
                                             </p>
                                         </div>
                                     </div>
+
                                     <button
                                         onClick={() => setSelectedRequest(request === selectedRequest ? null : request)}
-                                        className="p-2 hover:bg-white/5 rounded-lg text-slate-500 hover:text-white transition-colors"
+                                        className="p-2.5 rounded-xl bg-white border border-gray-100 hover:border-black/20 hover:bg-gray-50 transition-colors text-gray-500 hover:text-black"
+                                        aria-label="More options"
                                     >
-                                        <MoreVertical size={20} />
+                                        <MoreVertical size={18} />
                                     </button>
                                 </div>
 
-                                <div className="grid grid-cols-2 gap-4 py-4 border-y border-slate-800/50">
-                                    <div className="space-y-1">
-                                        <p className="text-[10px] uppercase tracking-wider text-slate-500 font-bold">Owner</p>
-                                        <p className="text-sm text-slate-200">{request.ownerName}</p>
+                                <div className="grid grid-cols-2 gap-6 py-6 border-y border-gray-100">
+                                    <div className="space-y-2">
+                                        <p className="text-[10px] text-gray-400 font-black uppercase tracking-[0.2em]">Owner</p>
+                                        <p className="text-sm font-bold text-black">{request.ownerName}</p>
                                     </div>
-                                    <div className="space-y-1">
-                                        <p className="text-[10px] uppercase tracking-wider text-slate-500 font-bold">Business Type</p>
-                                        <p className="text-sm text-slate-200 capitalize">{request.businessType}</p>
+                                    <div className="space-y-2">
+                                        <p className="text-[10px] text-gray-400 font-black uppercase tracking-[0.2em]">Business Type</p>
+                                        <p className="text-sm font-bold text-black capitalize">{request.businessType}</p>
                                     </div>
-                                    <div className="space-y-1">
-                                        <p className="text-[10px] uppercase tracking-wider text-slate-500 font-bold">Contact</p>
-                                        <div className="flex flex-col text-xs text-slate-400">
-                                            <span className="flex items-center gap-1"><Mail size={10} /> {request.email}</span>
-                                            <span className="flex items-center gap-1"><Phone size={10} /> {request.phone}</span>
+                                    <div className="space-y-2">
+                                        <p className="text-[10px] text-gray-400 font-black uppercase tracking-[0.2em]">Contact</p>
+                                        <div className="flex flex-col gap-1 text-xs text-gray-500 font-medium">
+                                            <span className="flex items-center gap-2"><Mail size={12} className="text-gray-400" /> {request.email}</span>
+                                            <span className="flex items-center gap-2"><Phone size={12} className="text-gray-400" /> {request.phone}</span>
                                         </div>
                                     </div>
-                                    <div className="space-y-1">
-                                        <p className="text-[10px] uppercase tracking-wider text-slate-500 font-bold">Categories</p>
-                                        <p className="text-sm text-slate-200 truncate">{request.categories}</p>
+                                    <div className="space-y-2">
+                                        <p className="text-[10px] text-gray-400 font-black uppercase tracking-[0.2em]">Categories</p>
+                                        <p className="text-sm font-bold text-black truncate">{request.categories}</p>
                                     </div>
                                 </div>
 
-                                <div className="bg-slate-950/40 p-3 rounded-xl border border-slate-800/30">
-                                    <p className="text-xs text-slate-400 line-clamp-2 italic">&quot;{request.description}&quot;</p>
+                                <div className="bg-gray-50 p-5 rounded-3xl border border-gray-100">
+                                    <p className="text-sm text-gray-600 italic line-clamp-2">&quot;{request.description}&quot;</p>
                                 </div>
                             </div>
 
-                            <div className="flex gap-3 mt-4 pt-2">
+                            <div className="flex gap-4 mt-8">
                                 <button
                                     disabled={actionLoading === request._id}
                                     onClick={() => handleAction(request._id, "approved")}
-                                    className="flex-1 py-2.5 bg-emerald-500/10 hover:bg-emerald-500 text-emerald-500 hover:text-white rounded-xl text-sm font-bold transition-all border border-emerald-500/20 flex items-center justify-center gap-2 disabled:opacity-50"
+                                    className="flex-1 py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-2xl text-sm font-bold transition-all flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed shadow-sm"
                                 >
                                     {actionLoading === request._id ? <Loader2 className="animate-spin" size={16} /> : <Check size={18} />}
                                     Approve
@@ -181,7 +192,7 @@ export default function AdminSellerRequests() {
                                         setSelectedRequest(request);
                                         setShowRejectModal(true);
                                     }}
-                                    className="flex-1 py-2.5 bg-rose-500/10 hover:bg-rose-500 text-rose-500 hover:text-white rounded-xl text-sm font-bold transition-all border border-rose-500/20 flex items-center justify-center gap-2 disabled:opacity-50"
+                                    className="flex-1 py-3 bg-rose-600 hover:bg-rose-500 text-white rounded-2xl text-sm font-bold transition-all flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed shadow-sm"
                                 >
                                     <X size={18} />
                                     Reject
@@ -195,43 +206,43 @@ export default function AdminSellerRequests() {
             {/* Reject Modal */}
             <AnimatePresence>
                 {showRejectModal && (
-                    <div className="fixed inset-0 z-100 flex items-center justify-center p-4">
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
                         <motion.div
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
                             onClick={() => setShowRejectModal(false)}
-                            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+                            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
                         />
                         <motion.div
                             initial={{ scale: 0.95, opacity: 0 }}
                             animate={{ scale: 1, opacity: 1 }}
                             exit={{ scale: 0.95, opacity: 0 }}
-                            className="relative w-full max-w-md bg-slate-900 border border-slate-800 rounded-3xl p-8 shadow-2xl"
+                            className="relative w-full max-w-md bg-white border border-gray-100 rounded-[2.5rem] p-8 shadow-[0_20px_50px_rgba(0,0,0,0.12)]"
                         >
-                            <h3 className="text-xl font-bold text-white mb-2">Reject Request</h3>
-                            <p className="text-slate-400 text-sm mb-6">
-                                Please provide a reason for rejecting <span className="text-white font-medium">{selectedRequest?.shopName}</span>. This will be sent to the user.
+                            <h3 className="text-2xl font-black text-black mb-2 tracking-tight">Reject Request</h3>
+                            <p className="text-gray-500 text-sm font-medium mb-6">
+                                Please provide a reason for rejecting <span className="text-black font-black">{selectedRequest?.shopName}</span>. This will be sent to the user.
                             </p>
 
                             <textarea
                                 value={rejectionReason}
                                 onChange={(e) => setRejectionReason(e.target.value)}
                                 placeholder="e.g. Incomplete business documents, invalid phone number..."
-                                className="w-full bg-slate-950 border border-slate-800 rounded-2xl p-4 text-slate-200 text-sm outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/20 transition-all mb-6 min-h-[120px]"
+                                className="w-full bg-gray-50 border border-gray-200 rounded-2xl p-4 text-gray-900 text-sm outline-none focus:bg-white focus:border-black/30 focus:ring-2 focus:ring-black/10 transition-all mb-6 min-h-30"
                             />
 
                             <div className="flex gap-4">
                                 <button
                                     onClick={() => setShowRejectModal(false)}
-                                    className="flex-1 py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-2xl text-sm font-bold transition-all"
+                                    className="flex-1 py-3 bg-white border border-gray-200 hover:border-black/30 hover:bg-gray-50 text-black rounded-2xl text-sm font-bold transition-all"
                                 >
                                     Cancel
                                 </button>
                                 <button
                                     onClick={() => handleAction(selectedRequest._id, "rejected", rejectionReason)}
                                     disabled={!rejectionReason || actionLoading}
-                                    className="flex-1 py-3 bg-rose-600 hover:bg-rose-500 text-white rounded-2xl text-sm font-bold transition-all disabled:opacity-50 shadow-lg shadow-rose-600/20"
+                                    className="flex-1 py-3 bg-rose-600 hover:bg-rose-500 text-white rounded-2xl text-sm font-bold transition-all disabled:opacity-60 disabled:cursor-not-allowed shadow-sm"
                                 >
                                     Confirm Reject
                                 </button>

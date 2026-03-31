@@ -600,7 +600,7 @@ const Navbar = () => {
                             }}
                             className="block px-4 py-2.5 text-center text-sm font-medium text-gray-900 hover:bg-gray-100 border-t border-gray-100 transition-colors"
                           >
-                            সব রেজাল্ট দেখুন →
+                            see all result →
                           </Link>
                         </>
                       ) : (
@@ -771,9 +771,21 @@ const Navbar = () => {
                 {user ? (
                   <div className="relative group h-full flex items-center">
                     <button className="flex items-center gap-2 px-2 py-1.5 text-black hover:text-gray-600 rounded-md transition-colors cursor-pointer">
-                      <div className="w-8 h-8 rounded-full bg-black flex items-center justify-center text-[#fcfbf7] text-xs font-bold ring-2 ring-gray-300">
-                        {user.name?.charAt(0)?.toUpperCase() || "U"}
-                      </div>
+                      {user.image || user.picture ? (
+                        <div className="w-8 h-8 rounded-full overflow-hidden ring-2 ring-gray-300 relative shrink-0">
+                          <Image
+                            src={user.image || user.picture}
+                            alt={user.name || "User"}
+                            fill
+                            className="object-cover"
+                            unoptimized={true}
+                          />
+                        </div>
+                      ) : (
+                        <div className="w-8 h-8 rounded-full bg-black flex items-center justify-center text-[#fcfbf7] text-xs font-bold ring-2 ring-gray-300 shrink-0">
+                          {user.name?.charAt(0)?.toUpperCase() || "U"}
+                        </div>
+                      )}
                       <div className="hidden xl:block text-left">
                         <p className="text-[10px] text-gray-500 leading-none">
                           Welcome
@@ -1110,7 +1122,7 @@ const Navbar = () => {
                   setSearchQuery(e.target.value);
                   setShowAutocomplete(true);
                 }}
-                placeholder="কি খুঁজছেন? ফোন, জামা, ব্যাগ..."
+                placeholder="What are you looking for? Phone, Jacket, Bag..."
                 className="flex-1 h-10 px-3 text-base text-gray-900 bg-gray-100 rounded-l-xl outline-none placeholder:text-gray-400"
                 autoFocus
               />
@@ -1183,12 +1195,12 @@ const Navbar = () => {
                   onClick={() => setShowMobileSearch(false)}
                   className="block px-4 py-3 text-center text-sm font-medium text-gray-900"
                 >
-                  সব রেজাল্ট দেখুন →
+                  see all results →
                 </Link>
               </div>
             ) : searchQuery.trim().length >= 2 ? (
               <div className="py-12 text-center text-sm text-gray-400">
-                কোনো ফলাফল নেই
+                No results found
               </div>
             ) : (
               <div className="px-4 py-6">
@@ -1345,9 +1357,21 @@ const Navbar = () => {
               {user ? (
                 <div className="space-y-3">
                   <div className="flex items-center gap-2.5">
-                    <div className="w-9 h-9 rounded-full bg-black flex items-center justify-center text-white text-sm font-bold ring-2 ring-gray-200">
-                      {user.name?.charAt(0)?.toUpperCase() || "U"}
-                    </div>
+                    {user.image || user.picture ? (
+                      <div className="relative w-9 h-9 rounded-full overflow-hidden ring-2 ring-gray-200 shrink-0">
+                        <Image
+                          src={user.image || user.picture}
+                          alt={user.name || "User"}
+                          fill
+                          className="object-cover"
+                          unoptimized={true}
+                        />
+                      </div>
+                    ) : (
+                      <div className="w-9 h-9 rounded-full bg-black flex items-center justify-center text-white text-sm font-bold ring-2 ring-gray-200 shrink-0">
+                        {user.name?.charAt(0)?.toUpperCase() || "U"}
+                      </div>
+                    )}
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-semibold text-black truncate">
                         {user.name}
