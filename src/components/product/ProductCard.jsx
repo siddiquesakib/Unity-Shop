@@ -6,6 +6,7 @@ import { useCurrency } from "@/contexts/CurrencyContext";
 import Image from "next/image";
 import Link from "next/link";
 import Button from "@/components/common/Button";
+import WishlistButton from "@/components/common/WishlistButton";
 import { useState, useCallback } from "react";
 import {
   FiShoppingCart,
@@ -358,6 +359,7 @@ const ProductCard = ({ product }) => {
       >
         {/* Image */}
         <div className="relative aspect-square overflow-hidden bg-transparent">
+          <WishlistButton product={product} />
           {/* Primary image */}
           <Image
             src={primaryImage}
