@@ -168,6 +168,9 @@ const stats = [
 ];
 
 const values = [
+  { icon: FiTruck, title: "Fast Delivery", desc: "Free shipping worldwide on orders $50+. Arrives within 3-5 days." },
+  { icon: FiShield, title: "Secure Shopping", desc: "Your payment info is protected with end-to-end encryption." },
+  { icon: FiHeadphones, title: "Always Here", desc: "Real humans, real support. Reach us anytime via chat or email." },
   {
     icon: FiTruck,
     title: "Fast Delivery",

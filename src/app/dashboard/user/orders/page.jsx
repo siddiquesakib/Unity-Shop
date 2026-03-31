@@ -303,7 +303,7 @@ export default function UserOrdersPage() {
               <thead>
                 <tr className="text-left border-b border-gray-200">
                   <th className="pb-4 pl-4 text-xs font-semibold text-gray-500 uppercase">
-                    Order Code
+                    Product / Order
                   </th>
                   <th className="pb-4 text-xs font-semibold text-gray-500 uppercase">
                     Amount
@@ -326,9 +326,11 @@ export default function UserOrdersPage() {
                     className="group hover:bg-gray-50"
                   >
                     <td className="py-4 pl-4">
-                      <span className="text-sm font-mono text-gray-900">
-                        #
-                        {order.orderCode ||
+                      <div className="text-sm font-medium text-gray-900 mb-0.5">
+                        {order.productName || "Product Name N/A"}
+                      </div>
+                      <span className="text-xs font-mono text-gray-500">
+                        #{order.orderCode ||
                           (order.transitionId || "").slice(-8).toUpperCase()}
                       </span>
                     </td>
@@ -414,15 +416,21 @@ export default function UserOrdersPage() {
             <h3 className="text-lg font-bold mb-6">Order Details</h3>
             <div className="space-y-4">
               <div className="flex justify-between">
-                <span>Order Code</span>
-                <span className="font-mono">{selectedOrder.orderCode}</span>
+                <span className="text-gray-500">Product Name</span>
+                <span className="font-semibold text-right max-w-[60%] line-clamp-2">
+                  {selectedOrder.productName || "Product Name N/A"}
+                </span>
               </div>
               <div className="flex justify-between">
-                <span>Email</span>
+                <span className="text-gray-500">Order Code</span>
+                <span className="font-mono">{selectedOrder.orderCode || (selectedOrder.transitionId || "").slice(-8).toUpperCase()}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-500">Email</span>
                 <span>{selectedOrder.customerEmail}</span>
               </div>
               <div className="flex justify-between">
-                <span>Amount</span>
+                <span className="text-gray-500">Amount</span>
                 <span className="text-emerald-600 font-bold">
                   ${Number(selectedOrder.amountPaid).toFixed(2)}
                 </span>

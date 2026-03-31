@@ -203,7 +203,7 @@ export default function FulfillmentPage() {
             <table className="w-full text-sm">
               <thead className="bg-slate-950 text-slate-500 uppercase text-xs">
                 <tr>
-                  <th className="px-4 py-3 text-left">Order</th>
+                  <th className="px-4 py-3 text-left">Product / Order</th>
                   <th className="px-4 py-3 text-left">Customer</th>
                   <th className="px-4 py-3 text-left">Destination</th>
                   <th className="px-4 py-3 text-left">Shipping</th>
@@ -214,9 +214,14 @@ export default function FulfillmentPage() {
               <tbody>
                 {filteredOrders.map((order) => (
                   <tr key={order._id} className="border-t border-slate-800/70">
-                    <td className="px-4 py-3 text-white font-medium">
-                      {order.orderCode || `#${String(order._id).slice(-6)}`}
-                      <div className="text-xs text-slate-500">{order.sellerEmail}</div>
+                    <td className="px-4 py-3">
+                      <div className="text-sm font-medium text-white mb-0.5 line-clamp-2">
+                        {order.productName || "Product Name N/A"}
+                      </div>
+                      <div className="text-xs font-mono text-slate-400">
+                        {order.orderCode || `#${String(order._id).slice(-6)}`}
+                      </div>
+                      <div className="text-xs text-slate-500 mt-0.5">{order.sellerEmail}</div>
                     </td>
                     <td className="px-4 py-3 text-slate-300">
                       {order.customerName || "N/A"}

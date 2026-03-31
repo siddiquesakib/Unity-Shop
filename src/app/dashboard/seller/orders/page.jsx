@@ -148,7 +148,7 @@ export default function SellerOrdersPage() {
             <table className="w-full text-sm">
               <thead className="bg-gray-50 text-gray-500 uppercase text-xs">
                 <tr>
-                  <th className="px-4 py-3 text-left">Order</th>
+                  <th className="px-4 py-3 text-left">Product / Order</th>
                   <th className="px-4 py-3 text-left">Customer</th>
                   <th className="px-4 py-3 text-left">Amount</th>
                   {/* <th className="px-4 py-3 text-left">Shipping</th> */}
@@ -159,8 +159,13 @@ export default function SellerOrdersPage() {
               <tbody>
                 {filteredOrders.map((order) => (
                   <tr key={order._id} className="border-t border-gray-100">
-                    <td className="px-4 py-3 font-medium text-gray-800">
-                      {order.orderCode || `#${String(order._id).slice(-6)}`}
+                    <td className="px-4 py-3">
+                      <div className="text-sm font-medium text-gray-900 mb-0.5 line-clamp-2">
+                        {order.productName || "Product Name N/A"}
+                      </div>
+                      <div className="text-xs font-mono text-gray-500">
+                        {order.orderCode || `#${String(order._id).slice(-6)}`}
+                      </div>
                     </td>
                     <td className="px-4 py-3">
                       <div>{order.customerName || "N/A"}</div>

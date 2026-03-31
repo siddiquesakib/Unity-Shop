@@ -470,7 +470,7 @@ export default function CartPage() {
           </p>
           <Button
             href="/products"
-            className="!px-7 !py-3 font-bold !text-[16px]"
+            className="!px-8 !py-3 font-bold !text-[16px]"
             showIcon={false}
           >
             Browse Products <FiArrowRight size={14} />
