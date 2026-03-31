@@ -1,217 +1,242 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
-import { useAuth } from "@/hooks/useAuth";
-import { motion } from "framer-motion";
-import { Heart, Trash2, Search, ExternalLink } from "lucide-react";
-import Link from "next/link";
-
-const API_BASE =
-  process.env.NEXT_PUBLIC_API_URL || "https://unity-shop-server.vercel.app";
+import React, { useEffect, useState } from 'react';
+import { useAuth } from '@/hooks/useAuth';
+import { useCart } from '@/contexts/CartContext';
+import { useCurrency } from '@/contexts/CurrencyContext';
+import { toast } from 'react-hot-toast';
+import Image from 'next/image';
+import Link from 'next/link';
+import { motion, AnimatePresence } from 'framer-motion';
+import { HeartCrack, ShoppingCart, Trash2, Loader2, ArrowRight, Share2, TrendingDown, AlertTriangle } from 'lucide-react';
+import Button from '@/components/common/Button';
 
 export default function WishlistPage() {
-  const { user } = useAuth();
-  const [products, setProducts] = useState([]);
+  const { user, token } = useAuth();
+  const { addToCart } = useCart();
+  const { formatPrice } = useCurrency();
+  const [wishlistItems, setWishlistItems] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState("");
 
   useEffect(() => {
+    if (!user || !token) {
+      setLoading(false);
+      return;
+    }
+
     const fetchWishlist = async () => {
-      if (!user?.email) return;
       try {
-        const res = await fetch(
-          `${API_BASE}/users/wishlist/${encodeURIComponent(user.email)}`,
-        );
-        if (res.ok) {
-          const data = await res.json();
-          setProducts(data);
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/wishlist/${user._id}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const data = await res.json();
+        if (Array.isArray(data)) {
+          setWishlistItems(data);
         }
-      } catch (err) {
-        console.error("Failed to fetch wishlist:", err);
+      } catch (error) {
+        console.error("Failed to load wishlist:", error);
+        toast.error('Failed to load wishlist');
       } finally {
         setLoading(false);
       }
     };
-    fetchWishlist();
-  }, [user?.email]);
 
-  const removeFromWishlist = async (productId) => {
+    fetchWishlist();
+  }, [user, token]);
+
+  const handleRemove = async (itemId, productId) => {
+    const prevItems = [...wishlistItems];
+    setWishlistItems(items => items.filter(i => i._id !== itemId));
+
     try {
-      const res = await fetch(
-        `${API_BASE}/users/wishlist/${encodeURIComponent(user.email)}/${productId}`,
-        { method: "DELETE" },
-      );
-      if (res.ok) {
-        setProducts(products.filter((p) => p._id !== productId));
-      }
-    } catch (err) {
-      console.error("Failed to remove from wishlist:", err);
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/wishlist/${itemId}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (!res.ok) throw new Error('Failed to delete');
+      toast.success('Removed from wishlist');
+    } catch (error) {
+      setWishlistItems(prevItems);
+      toast.error('Could not remove item');
     }
   };
 
-  const filteredProducts = products.filter(
-    (p) =>
-      (p.name || "").toLowerCase().includes(search.toLowerCase()) ||
-      (p.category || "").toLowerCase().includes(search.toLowerCase()),
-  );
+  const handleMoveToCart = (item) => {
+    if (!item.product) return;
+    addToCart(item.product, 1);
+    toast.success('Added to cart!');
+    handleRemove(item._id, item.productId);
+  };
+
+  const handleShare = () => {
+    navigator.clipboard.writeText(window.location.href);
+    toast.success('Wishlist link copied to clipboard!');
+  };
+
+  const clearWishlist = async () => {
+    if (!confirm('Are you sure you want to clear your wishlist?')) return;
+    
+    const prevItems = [...wishlistItems];
+    setWishlistItems([]);
+
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/wishlist/clear/${user._id}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (!res.ok) throw new Error('Failed to clear');
+      toast.success('Wishlist cleared');
+    } catch (error) {
+      setWishlistItems(prevItems);
+      toast.error('Could not clear wishlist');
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <Loader2 className="animate-spin text-black" size={32} />
+      </div>
+    );
+  }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-end justify-between">
+    <div className="max-w-7xl mx-auto py-8 px-4">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">My Wishlist</h1>
-          <p className="text-gray-500">
-            Products you've saved for later. {products.length} item
-            {products.length !== 1 ? "s" : ""} saved.
+          <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight flex items-center gap-3">
+            My Wishlist
+          </h1>
+          <p className="text-gray-500 mt-1">
+            {wishlistItems.length} {wishlistItems.length === 1 ? 'item' : 'items'} saved for later
           </p>
         </div>
-      </div>
-
-      {/* Search */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="bg-white border border-gray-200 rounded-2xl p-6"
-      >
-        <div className="relative">
-          <Search
-            size={16}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-          />
-          <input
-            type="text"
-            placeholder="Search your wishlist..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-9 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-gray-400"
-          />
-        </div>
-      </motion.div>
-
-      {/* Wishlist Grid */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.1 }}
-      >
-        {loading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[...Array(6)].map((_, i) => (
-              <div
-                key={i}
-                className="h-64 bg-gray-100 border border-gray-200 rounded-2xl animate-pulse"
-              />
-            ))}
-          </div>
-        ) : filteredProducts.length === 0 ? (
-          <div className="bg-white border border-gray-200 rounded-2xl p-6 text-center py-16">
-            <Heart size={48} className="mx-auto text-gray-300 mb-4" />
-            <p className="text-gray-500 text-lg mb-2">
-              {products.length === 0
-                ? "Your wishlist is empty"
-                : "No items match your search"}
-            </p>
-            <p className="text-gray-400 text-sm mb-6">
-              {products.length === 0
-                ? "Browse products and save your favorites by clicking the heart icon."
-                : "Try adjusting your search."}
-            </p>
-            {products.length === 0 && (
-              <Link
-                href="/products"
-                className="inline-flex items-center gap-2 px-6 py-2.5 bg-black text-white rounded-xl hover:bg-gray-800 transition font-medium"
-              >
-                Browse Products
-              </Link>
-            )}
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredProducts.map((product) => (
-              <motion.div
-                key={product._id}
-                layout
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.9 }}
-                className="bg-white border border-gray-200 rounded-2xl overflow-hidden group hover:border-gray-300 transition-all shadow-sm"
-              >
-                {/* Image */}
-                <div className="relative h-48 bg-gray-100 overflow-hidden">
-                  {product.image ? (
-                    <img
-                      src={product.image}
-                      alt={product.name}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                      onError={(e) => {
-                        e.target.style.display = "none";
-                      }}
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center">
-                      <div className="w-16 h-16 rounded-xl bg-gray-200" />
-                    </div>
-                  )}
-
-                  {/* Remove button */}
-                  <button
-                    onClick={() => removeFromWishlist(product._id)}
-                    className="absolute top-3 right-3 p-2 bg-red-500/80 hover:bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-all shadow-lg"
-                    title="Remove from wishlist"
-                  >
-                    <Trash2 size={16} />
-                  </button>
-
-                  {/* Badge */}
-                  {product.badge && (
-                    <span className="absolute top-3 left-3 px-2.5 py-1 bg-orange-500 text-white text-xs font-bold rounded-lg">
-                      {product.badge}
-                    </span>
-                  )}
-                </div>
-
-                {/* Info */}
-                <div className="p-5">
-                  <p className="text-xs text-gray-500 capitalize mb-1">
-                    {product.category}
-                  </p>
-                  <h3 className="text-gray-900 font-semibold mb-2 truncate">
-                    {product.name}
-                  </h3>
-
-                  <div className="flex items-baseline gap-2 mb-3">
-                    <span className="text-xl font-bold text-gray-900">
-                      ${Number(product.price).toFixed(2)}
-                    </span>
-                    {product.originalPrice &&
-                      product.originalPrice > product.price && (
-                        <span className="text-sm text-gray-400 line-through">
-                          ${Number(product.originalPrice).toFixed(2)}
-                        </span>
-                      )}
-                  </div>
-
-                  {product.sellerName && (
-                    <p className="text-xs text-gray-500 mb-3">
-                      Sold by: {product.sellerName}
-                    </p>
-                  )}
-
-                  <div className="flex items-center gap-2">
-                    <Link
-                      href={`/products/${product._id}`}
-                      className="flex-1 text-center py-2.5 bg-black hover:bg-gray-800 text-white text-sm font-medium rounded-xl transition-colors flex items-center justify-center gap-2"
-                    >
-                      <ExternalLink size={14} />
-                      View Product
-                    </Link>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
+        
+        {wishlistItems.length > 0 && (
+          <div className="flex items-center gap-3">
+            <button
+              onClick={handleShare}
+              className="text-sm font-medium text-gray-700 hover:text-black hover:bg-gray-100 transition-colors flex items-center gap-2 px-4 py-2 rounded-xl border border-gray-200"
+            >
+              <Share2 size={16} />
+              Share
+            </button>
+            <button
+              onClick={clearWishlist}
+              className="text-sm font-medium text-gray-500 hover:text-red-600 transition-colors flex items-center gap-2 px-4 py-2 rounded-xl hover:bg-red-50"
+            >
+              <Trash2 size={16} />
+              Clear All
+            </button>
           </div>
         )}
-      </motion.div>
+      </div>
+
+      {wishlistItems.length === 0 ? (
+        <motion.div 
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-white rounded-3xl p-12 text-center border border-gray-100 shadow-sm flex flex-col items-center justify-center max-w-2xl mx-auto mt-10"
+        >
+          <div className="w-24 h-24 bg-gray-50 rounded-full flex items-center justify-center mb-6">
+            <HeartCrack className="text-gray-300" size={48} />
+          </div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Your wishlist is empty 💔</h2>
+          <p className="text-gray-500 mb-8 max-w-md">
+            Looks like you haven&apos;t added anything to your wishlist yet. Explore our store and find something you love!
+          </p>
+          <Link href="/products" passHref>
+            <Button className="px-8 py-3 rounded-xl font-bold flex items-center gap-2 hover:scale-105 transition-transform duration-300">
+              Explore Products
+            </Button>
+          </Link>
+        </motion.div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <AnimatePresence>
+            {wishlistItems.map((item) => {
+              const product = item.product;
+              if (!product) return null; // Defensive check
+
+              // Resolution logic matching ProductCard.jsx
+              const images = Array.isArray(product.images) ? product.images : [];
+              const legacy = Array.isArray(product.image) ? product.image : (typeof product.image === "string" ? [product.image] : []);
+              const allImages = [...new Set([...images, ...legacy])].filter(i => typeof i === "string" && i.trim());
+              const image = allImages.length > 0 ? allImages[0] : "https://via.placeholder.com/400x400?text=No+Image";
+
+              return (
+                <motion.div
+                  key={item._id}
+                  layout
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.9 }}
+                  transition={{ duration: 0.2 }}
+                  className="group bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col"
+                >
+                  {/* Image container */}
+                  <div className="relative aspect-square w-full bg-gray-50 overflow-hidden">
+                    <Link href={`/products/${product._id || product.id}`}>
+                      <Image
+                        src={image}
+                        alt={product.name}
+                        fill
+                        className="object-cover group-hover:scale-110 transition-transform duration-500"
+                        unoptimized
+                      />
+                    </Link>
+
+                    {/* Placeholder Badges based on probability for demo */}
+                    {Math.random() > 0.7 && (
+                      <span className="absolute top-3 left-3 px-2.5 py-1 bg-red-500 text-white text-[10px] font-bold rounded-full tracking-wide shadow-sm flex items-center gap-1">
+                        <TrendingDown size={12} /> Price Dropped
+                      </span>
+                    )}
+                    {Math.random() > 0.8 && (
+                      <span className="absolute bottom-3 left-3 px-2.5 py-1 bg-yellow-500 text-white text-[10px] font-bold rounded-full tracking-wide shadow-sm flex items-center gap-1">
+                        <AlertTriangle size={12} /> Low Stock
+                      </span>
+                    )}
+
+                    <button
+                      onClick={() => handleRemove(item._id, product._id)}
+                      className="absolute top-3 right-3 w-8 h-8 bg-white/80 backdrop-blur-sm rounded-full flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-white shadow-sm transition-all"
+                      title="Remove from wishlist"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+
+                  {/* Content */}
+                  <div className="p-4 flex flex-col flex-1">
+                    <Link href={`/products/${product._id || product.id}`}>
+                      <h3 className="font-semibold text-gray-900 line-clamp-2 hover:text-gray-600 transition-colors mb-2">
+                        {product.name}
+                      </h3>
+                    </Link>
+                    
+                    <div className="mt-auto pt-4">
+                      <div className="flex items-end justify-between mb-4">
+                        <span className="text-xl font-black text-black">
+                          {formatPrice(product.price, product.currency || "USD")}
+                        </span>
+                      </div>
+                      
+                      <button
+                        onClick={() => handleMoveToCart(item)}
+                        className="w-full py-3 bg-black hover:bg-gray-800 text-white rounded-xl text-sm font-semibold transition-all hover:-translate-y-1 hover:shadow-lg flex items-center justify-center gap-2"
+                      >
+                        <ShoppingCart size={16} />
+                        Move to Cart
+                      </button>
+                    </div>
+                  </div>
+                </motion.div>
+              );
+            })}
+          </AnimatePresence>
+        </div>
+      )}
     </div>
   );
 }

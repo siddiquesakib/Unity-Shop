@@ -17,6 +17,7 @@ import {
   FiX,
   FiSearch,
   FiShoppingCart,
+  FiHeart,
   FiChevronDown,
   FiGrid,
   FiLogOut,
@@ -257,6 +258,7 @@ const Navbar = () => {
   const [savingLocation, setSavingLocation] = useState(false);
   const [locationError, setLocationError] = useState('');
   const [locationNotice, setLocationNotice] = useState('');
+  const [wishlistCount, setWishlistCount] = useState(0);
 
   const { user, logout, updateActiveLocation } = useAuth();
   const { totalUniqueItems: totalItems } = useCart();
@@ -335,6 +337,24 @@ const Navbar = () => {
       setShowLocationMenu(true);
     }
   }, [user?.needsLocationSelection]);
+
+  useEffect(() => {
+    if (!user) {
+      setWishlistCount(0);
+      return;
+    }
+    const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+    if (token) {
+      fetch(`${process.env.NEXT_PUBLIC_API_URL}/wishlist/${user._id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+        .then(res => res.json())
+        .then(data => {
+          if (Array.isArray(data)) setWishlistCount(data.length);
+        })
+        .catch(err => console.error("Wishlist fetch error:", err));
+    }
+  }, [user]);
 
   useEffect(() => {
     document.body.style.overflow = isOpen || showMobileSearch ? "hidden" : "";
@@ -746,6 +766,26 @@ const Navbar = () => {
                     </div>
                   </div>
                 </div>
+
+                {/* Wishlist */}
+                {user && (
+                  <Link
+                    href="/dashboard/user/wishlist"
+                    className="flex items-center gap-1.5 px-2 py-1.5 text-black hover:text-gray-600 rounded-md transition-colors relative"
+                  >
+                    <div className="relative">
+                      <FiHeart size={20} />
+                      {wishlistCount > 0 && (
+                        <span className="absolute -top-2 -right-2.5 min-w-4.5 h-4.5 px-1 bg-black text-white text-[9px] font-bold rounded-full flex items-center justify-center ring-2 ring-white">
+                          {wishlistCount > 99 ? "99+" : wishlistCount}
+                        </span>
+                      )}
+                    </div>
+                    <span className="text-sm font-medium hidden xl:inline ml-1">
+                      Wishlist
+                    </span>
+                  </Link>
+                )}
 
                 {/* Cart */}
                 <Link
