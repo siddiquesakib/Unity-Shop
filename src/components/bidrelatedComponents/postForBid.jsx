@@ -34,7 +34,7 @@ const PostaBId = ({ product }) => {
         console.error("Error fetching products:", error);
       });
   };
-  // effets
+  // effets are here 
   // useEffect(() => {
   //   axios
   //     .patch(`${process.env.NEXT_PUBLIC_API_URL}/bids/${product.id}`, { amount: bidAmount })
