@@ -83,26 +83,38 @@ export default function DeliveryPartnerPage() {
     }
   };
 
-  if (submitted) {
+  if (submitted || user?.deliveryRequest?.status === 'pending' || user?.deliveryRequest === 'pending') {
     return (
-      <div className="min-h-[60vh] flex flex-col items-center justify-center space-y-5">
+      <div className="min-h-[60vh] flex flex-col items-center justify-center space-y-5 pt-10">
         <motion.div
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
-          className="w-24 h-24 bg-black text-white rounded-full flex items-center justify-center shadow-2xl"
+          className="w-24 h-24 bg-green-50 text-green-500 rounded-full flex items-center justify-center border-4 border-green-100 shadow-xl"
         >
           <CheckCircle2 size={48} />
         </motion.div>
         <h2 className="text-3xl font-bold text-gray-900">
-          Application Submitted!
+          {submitted ? 'Application Submitted!' : 'Application Pending'}
         </h2>
         <p className="text-gray-500 text-center max-w-md">
-          Thank you for applying to become a delivery partner. Our team will
-          review your application and get back to you shortly.
+          {submitted
+            ? 'Thank you for applying to become a delivery partner. Our team will review your application and get back to you shortly.'
+            : 'Your application to become a delivery partner is currently under review by our team. Please wait for the approval.'}
         </p>
-        <p className="text-black text-sm font-medium animate-pulse">
-          Redirecting to your dashboard...
-        </p>
+        
+        {submitted && (
+          <p className="text-emerald-600 text-sm font-semibold animate-pulse mt-2">
+            Redirecting to your dashboard...
+          </p>
+        )}
+        {!submitted && (
+          <button
+            onClick={() => router.push('/dashboard/user')}
+            className="mt-6 px-6 py-2.5 bg-black text-white font-bold rounded-xl hover:bg-gray-800 transition-colors"
+          >
+            Go to Dashboard
+          </button>
+        )}
       </div>
     );
   }

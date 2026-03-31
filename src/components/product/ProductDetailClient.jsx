@@ -802,7 +802,9 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
             )}
           </div>
 
-          <GroupBuyUI productId={pid} user={user} formatPrice={formatPrice} />
+          {product.category?.toLowerCase() !== "auction" && (
+            <GroupBuyUI productId={pid} user={user} formatPrice={formatPrice} />
+          )}
 
           {/* Colors */}
           {colors.length > 0 && (
