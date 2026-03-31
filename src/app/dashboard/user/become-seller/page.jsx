@@ -61,26 +61,34 @@ export default function BecomeSellerPage() {
     }
   };
 
-  if (submitted) {
+  if (submitted || user?.sellerRequest === 'pending') {
     return (
-      <div className="min-h-[60vh] flex flex-col items-center justify-center space-y-4">
+      <div className="min-h-[60vh] flex flex-col items-center justify-center space-y-4 pt-10">
         <motion.div
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
-          className="w-20 h-20 bg-green-500/10 text-green-500 rounded-full flex items-center justify-center"
+          className="w-20 h-20 bg-green-50 text-green-500 rounded-full flex items-center justify-center border-4 border-green-100"
         >
           <CheckCircle2 size={40} />
         </motion.div>
-        <h2 className="text-2xl font-bold text-white">
-          Application Submitted!
+        <h2 className="text-2xl font-bold text-gray-900">
+          {submitted ? 'Application Submitted!' : 'Application Pending'}
         </h2>
-        <p className="text-slate-400 text-center max-w-md">
-          Thank you for applying to become a seller on UnityShop. Our team will
-          review your application and get back to you shortly.
+        <p className="text-gray-500 text-center max-w-md">
+          {submitted
+            ? 'Thank you for applying to become a seller on UnityShop. Our team will review your application and get back to you shortly.'
+            : 'Your application to become a seller is currently under review by our team. Please wait for the approval.'}
         </p>
-        <p className="text-indigo-400 text-sm animate-pulse">
-          Redirecting you to dashboard...
-        </p>
+        {submitted && (
+          <p className="text-emerald-600 text-sm font-semibold animate-pulse">
+            Redirecting you to dashboard...
+          </p>
+        )}
+        {!submitted && (
+          <Button onClick={() => router.push('/dashboard/user')} className="mt-4">
+            Go to Dashboard
+          </Button>
+        )}
       </div>
     );
   }

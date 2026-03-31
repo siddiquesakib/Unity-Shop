@@ -51,6 +51,11 @@ export default function Sidebar() {
     { name: "My Orders", href: "/dashboard/user/orders", icon: Package },
     { name: "Wishlist", href: "/dashboard/user/wishlist", icon: Heart },
     {
+      name: "Become a Seller",
+      href: "/dashboard/user/become-seller",
+      icon: Store,
+    },
+    {
       name: "Join Delivery Team",
       href: "/dashboard/user/request-delivery",
       icon: Truck,
