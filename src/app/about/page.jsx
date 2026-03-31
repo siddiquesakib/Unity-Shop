@@ -162,7 +162,7 @@ const teamMembers = [
     name: 'Abu Abdullah Mohammed Iqram',
     role: 'Lead Dev',
     bio: 'Building scalable web solutions.',
-    image: 'https://i.ibb.co/HpGbJjNL/iqram.jpg',
+    image: 'https://i.ibb.co.com/Kz3Sxrb9/dp-s.jpg',
     location: 'Chittagram, Bangladesh',
     skills: ['React', 'Node.js'],
     social: {
@@ -188,11 +188,12 @@ const teamMembers = [
   },
   {
     name: 'Md Ariful Islam',
-    role: 'Backend',
+    role: 'Backend Developer',
     bio: 'Ensuring server performance.',
-    image: 'https://i.ibb.co/7dVWH56g/ariful.jpg',
-    location: 'Rajshahi, Bangladesh',
-    skills: ['API', 'SQL'],
+    image:
+      'https://i.ibb.co.com/DgTxGcbK/Whats-App-Image-2025-10-16-at-10-38-53-PM.jpg',
+    location: 'Dhaka, Bangladesh',
+    skills: ['API', 'MongoDB', 'Express', 'Node.js'],
     social: {
       portfolio: 'https://arifulislam.iam.bd',
       linkedin: 'https://www.linkedin.com/in/arifulislam-dev',
