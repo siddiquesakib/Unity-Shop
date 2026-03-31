@@ -593,35 +593,39 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
   /* ═══════════ RENDER ═══════════ */
   return (
     <div className="space-y-6">
-      {/* Breadcrumb */}
-      <nav className="flex items-center gap-1.5 text-[16px] sm:text-[16px] sm:text-base text-gray-400 overflow-x-auto">
-        <Link href="/" className="hover:text-black">
-          Home
-        </Link>
-        <FiChevronRight size={10} />
-        <Link href="/products" className="hover:text-black">
-          Products
-        </Link>
-        {product.category && (
-          <>
-            <FiChevronRight size={10} />
-            <Link
-              href={`/products?category=${encodeURIComponent(product.category)}`}
-              className="hover:text-black capitalize"
-            >
-              {product.category}
-            </Link>
-          </>
-        )}
-        <FiChevronRight size={10} />
-        <span className="text-gray-700 font-medium truncate max-w-48">
-          {product.name}
-        </span>
-        <ProductLiveStats
-          productId={product._id}
-          initialViews={product.views ?? 0}
-        />
-      </nav>
+      {/* Breadcrumb & Live Stats */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <nav className="flex items-center gap-2 text-[10px] sm:text-xs font-black uppercase tracking-widest text-gray-400 overflow-x-auto no-scrollbar max-w-full">
+          <Link href="/" className="hover:text-black whitespace-nowrap shrink-0">
+            Home
+          </Link>
+          <FiChevronRight size={12} className="shrink-0" />
+          <Link href="/products" className="hover:text-black whitespace-nowrap shrink-0">
+            Products
+          </Link>
+          {product.category && (
+            <>
+              <FiChevronRight size={12} className="shrink-0" />
+              <Link
+                href={`/products?category=${encodeURIComponent(product.category)}`}
+                className="hover:text-black whitespace-nowrap shrink-0 max-w-[100px] truncate"
+              >
+                {product.category}
+              </Link>
+            </>
+          )}
+          <FiChevronRight size={12} className="shrink-0" />
+          <span className="text-black whitespace-nowrap truncate max-w-[120px] sm:max-w-[200px]">
+            {product.name}
+          </span>
+        </nav>
+        <div className="shrink-0">
+          <ProductLiveStats
+            productId={product._id}
+            initialViews={product.views ?? 0}
+          />
+        </div>
+      </div>
 
       {/* ══════ MAIN 2-COL ══════ */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-10">
@@ -637,7 +641,8 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
                   muted
                   loop
                   playsInline
-                  className="w-full h-full object-contain p-3"
+                  className="w-full h-full object-contain p-3 cursor-pointer"
+                  onClick={() => setShowVideo(false)}
                 />
               ) : (
                 <Image
@@ -645,10 +650,11 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
                   alt={product.name}
                   fill
                   unoptimized={true}
-                  className="object-contain p-4 group-hover:scale-105 transition-transform duration-500"
+                  className="object-contain p-4 group-hover:scale-105 transition-transform duration-500 cursor-zoom-in"
                   sizes="(max-width:768px) 100vw, 50vw"
                   onError={() => setImgErr((p) => ({ ...p, [selImg]: true }))}
                   priority
+                  onClick={() => openLightbox(imgs, selImg)}
                 />
               )}
               <div className="absolute top-3 left-3 flex flex-col gap-1.5 z-10">
@@ -690,7 +696,7 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
             </div>
           </div>
           {/* Thumbs */}
-          <div className="flex gap-1.5 overflow-x-auto pb-0.5">
+          <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-none snap-x my-1">
             {imgs.map((img, i) => (
               <button
                 key={i}
@@ -698,15 +704,15 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
                   setSelImg(i);
                   setShowVideo(false);
                 }}
-                className={`shrink-0 w-14 h-14 rounded-lg border-2 bg-white overflow-hidden transition-colors ${selImg === i && !showVideo ? "border-black" : "border-gray-200 hover:border-gray-400"}`}
+                className={`snap-start shrink-0 w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-xl border-2 bg-white overflow-hidden transition-all duration-300 ${selImg === i && !showVideo ? "border-black scale-[1.02]" : "border-gray-100 hover:border-gray-300 hover:scale-100"}`}
               >
                 <Image
                   src={safeUrl(img)}
                   alt=""
-                  width={56}
-                  height={56}
+                  width={64}
+                  height={64}
                   unoptimized={true}
-                  className="object-contain w-full h-full p-0.5"
+                  className="object-contain w-full h-full p-1"
                   onError={() => setImgErr((p) => ({ ...p, [i]: true }))}
                 />
               </button>
@@ -714,7 +720,7 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
             {product.video && (
               <button
                 onClick={() => setShowVideo(true)}
-                className={`shrink-0 w-14 h-14 rounded-lg border-2 bg-gray-900 flex items-center justify-center ${showVideo ? "border-black" : "border-gray-200"}`}
+                className={`snap-start shrink-0 w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-xl border-2 bg-black flex items-center justify-center transition-all ${showVideo ? "border-black scale-[1.02]" : "border-transparent opacity-80 hover:opacity-100"}`}
               >
                 <FiPlay size={18} className="text-white" />
               </button>
@@ -725,7 +731,7 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
         {/* RIGHT — Info */}
         <div className="lg:sticky lg:top-24 lg:self-start space-y-4">
           {/* Cat + Brand */}
-          <div className="flex items-center gap-2 text-[16px] sm:text-xs font-bold uppercase tracking-wider text-gray-400">
+          <div className="flex items-center gap-2 text-[10px] sm:text-xs font-black uppercase tracking-widest text-gray-400">
             {product.category && (
               <Link
                 href={`/products?category=${encodeURIComponent(product.category)}`}
@@ -740,54 +746,54 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
             {product.brand && <span>{product.brand}</span>}
           </div>
 
-          <h1 className="text-xl sm:text-2xl lg:text-3xl font-black text-gray-900 leading-tight">
+          <h1 className="text-xl sm:text-2xl lg:text-3xl font-black text-black leading-tight">
             {product.name}
           </h1>
 
           {/* Rating */}
           <div className="flex items-center gap-2 flex-wrap">
             <Stars value={rating} size={14} />
-            <span className="text-[16px] sm:text-base font-semibold">
+            <span className="text-xs sm:text-sm font-black text-black">
               {rating.toFixed(1)}
             </span>
-            <span className="text-[16px] sm:text-[16px] sm:text-base text-gray-400">
+            <span className="text-xs sm:text-sm font-bold text-gray-400">
               ({reviewCount})
             </span>
             <span
-              className={`text-[16px] sm:text-xs font-bold px-1.5 py-0.5 rounded-full ${verdictColor(rating)}`}
+              className={`text-[10px] font-black px-2 py-0.5 rounded-md uppercase tracking-wider ${verdictColor(rating)}`}
             >
               {verdict(rating)}
             </span>
           </div>
 
           {/* Price */}
-          <div className="py-3 border-y border-gray-100 space-y-1.5">
+          <div className="py-4 border-y-2 border-gray-100 space-y-1.5 flex flex-col items-start">
             <div className="flex items-baseline gap-2 flex-wrap">
-              <span className="text-2xl sm:text-3xl font-black">
+              <span className="text-2xl sm:text-3xl font-black text-black">
                 {formatPrice(product.price)}
               </span>
               {product.originalPrice > product.price && (
-                <span className="text-base text-gray-400 line-through">
+                <span className="text-sm font-bold text-gray-400 line-through">
                   {formatPrice(product.originalPrice)}
                 </span>
               )}
               {disc && (
-                <span className="px-2 py-0.5 bg-red-50 text-red-600 text-[16px] sm:text-xs font-bold rounded">
+                <span className="px-2 py-1 bg-rose-50 text-rose-600 text-[10px] uppercase font-black tracking-widest rounded-md">
                   SAVE {disc}%
                 </span>
               )}
             </div>
             {savings > 0 && (
-              <p className="text-[16px] sm:text-[16px] sm:text-base text-green-600 font-medium">
+              <p className="text-xs text-emerald-600 font-bold uppercase tracking-wide">
                 You save {formatPrice(savings)}
               </p>
             )}
             {product.price >= 50 && (
-              <div className="flex gap-2 flex-wrap mt-1">
+              <div className="flex gap-2 flex-wrap mt-2">
                 {emi.map((m) => (
                   <span
                     key={m}
-                    className="text-[16px] sm:text-xs text-blue-700 bg-blue-50 px-1.5 py-0.5 rounded font-semibold"
+                    className="text-[10px] uppercase tracking-wider text-blue-700 bg-blue-50 px-2 py-1 rounded-md font-black"
                   >
                     {formatPrice(+(product.price / m).toFixed(2))}/mo × {m}
                   </span>
@@ -801,11 +807,11 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
           {/* Colors */}
           {colors.length > 0 && (
             <div>
-              <span className="text-[16px] sm:text-xs font-bold uppercase tracking-wider text-gray-400 mb-2 block">
+              <span className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2 block">
                 Color:{" "}
-                <span className="text-gray-900 capitalize">{selColor}</span>
+                <span className="text-black uppercase">{selColor}</span>
               </span>
-              <div className="flex gap-1.5 flex-wrap">
+              <div className="flex gap-2 flex-wrap">
                 {colors.map((c) => {
                   const map = {
                     black: "#000",
@@ -827,12 +833,13 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
                       key={c}
                       onClick={() => setSelColor(c)}
                       title={c}
-                      className={`w-8 h-8 rounded-full border-2 flex items-center justify-center transition-all ${selColor === c ? "border-black ring-2 ring-black ring-offset-1 scale-110" : "border-gray-200 hover:border-gray-400"}`}
+                      className={`w-8 h-8 rounded-full border-2 flex items-center justify-center transition-all ${selColor === c ? "border-black ring-2 ring-black ring-offset-2 scale-110" : "border-gray-200 hover:border-gray-400"}`}
                       style={{ backgroundColor: map[c.toLowerCase()] || c }}
                     >
                       {selColor === c && (
                         <FiCheck
-                          size={12}
+                          size={14}
+                          strokeWidth={3}
                           className={
                             ["white", "yellow", "beige"].includes(
                               c.toLowerCase(),
@@ -852,15 +859,15 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
           {/* Sizes */}
           {sizes.length > 0 && (
             <div>
-              <span className="text-[16px] sm:text-xs font-bold uppercase tracking-wider text-gray-400 mb-2 block">
-                Size: <span className="text-gray-900 uppercase">{selSize}</span>
+              <span className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2 block">
+                Size: <span className="text-black uppercase">{selSize}</span>
               </span>
-              <div className="flex gap-1.5 flex-wrap">
+              <div className="flex gap-2 flex-wrap">
                 {sizes.map((s) => (
                   <button
                     key={s}
                     onClick={() => setSelSize(s)}
-                    className={`min-w-[2.5rem] px-3 h-8 rounded-md border-2 text-[16px] sm:text-[16px] sm:text-base font-bold uppercase ${selSize === s ? "border-black bg-black text-white" : "border-gray-200 text-gray-700 hover:border-black"}`}
+                    className={`min-w-[3rem] px-3 h-9 rounded-lg border-2 text-xs font-black uppercase transition-all ${selSize === s ? "border-black bg-black text-white" : "border-gray-200 text-gray-700 hover:border-black"}`}
                   >
                     {s}
                   </button>
@@ -873,9 +880,9 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
           {product.stock !== undefined && (
             <div className="flex items-center gap-2">
               <div
-                className={`w-2 h-2 rounded-full ${product.stock > 10 ? "bg-green-500" : product.stock > 0 ? "bg-amber-500 animate-pulse" : "bg-gray-300"}`}
+                className={`w-2.5 h-2.5 rounded-full ${product.stock > 10 ? "bg-emerald-500" : product.stock > 0 ? "bg-amber-500 animate-pulse" : "bg-gray-300"}`}
               />
-              <span className="text-[16px] sm:text-[16px] sm:text-base font-medium text-gray-600">
+              <span className="text-xs font-black text-gray-600 uppercase tracking-wider">
                 {product.stock > 10
                   ? "In Stock"
                   : product.stock > 0
@@ -887,13 +894,13 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
 
           {/* Qty */}
           <div className="flex items-center gap-3">
-            <div className="flex items-center border border-gray-200 rounded-full overflow-hidden">
+            <div className="flex items-center border-2 border-gray-100 rounded-xl overflow-hidden bg-gray-50 h-14">
               <button
                 onClick={() => qtyChange(-1)}
                 disabled={qty <= 1}
-                className="w-9 h-9 flex items-center justify-center text-gray-600 hover:bg-gray-100 disabled:opacity-30"
+                className="w-12 h-full flex items-center justify-center text-gray-400 hover:text-black hover:bg-white transition-colors disabled:opacity-30"
               >
-                <FiMinus size={12} />
+                <FiMinus size={14} strokeWidth={3} />
               </button>
               <input
                 type="number"
@@ -906,47 +913,47 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
                     ),
                   )
                 }
-                className="w-10 text-center text-[16px] sm:text-[16px] sm:text-base font-bold border-x border-gray-200 h-9 outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                className="w-14 text-center text-sm font-black bg-transparent h-full outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
               />
               <button
                 onClick={() => qtyChange(1)}
                 disabled={qty >= (product.stock || 999)}
-                className="w-9 h-9 flex items-center justify-center text-gray-600 hover:bg-gray-100 disabled:opacity-30"
+                className="w-12 h-full flex items-center justify-center text-gray-400 hover:text-black hover:bg-white transition-colors disabled:opacity-30"
               >
-                <FiPlus size={12} />
+                <FiPlus size={14} strokeWidth={3} />
               </button>
             </div>
-            <span className="text-[16px] sm:text-base font-black">
+            <span className="text-2xl font-black text-black tracking-tight">
               {formatPrice(product.price * qty)}
             </span>
           </div>
 
           {/* Buttons */}
-          <div className="pt-2">
+          <div className="pt-4">
             {product.category?.toLowerCase() === "auction" ? (
               <PostaBId product={product} />
             ) : (
-              <div className="flex gap-3">
+              <div className="flex flex-row gap-2">
                 <button
                   onClick={addCart}
                   disabled={product.stock === 0 || cartOk}
-                  className="flex-1 h-12 bg-black text-white font-bold text-sm uppercase tracking-wider rounded-full hover:bg-gray-800 active:scale-95 transition-all flex items-center justify-center gap-2"
+                  className="flex-1 h-14 bg-white border-2 border-gray-100 text-black font-black text-[9px] sm:text-[11px] uppercase tracking-widest rounded-xl hover:border-black active:scale-95 transition-all flex items-center justify-center gap-1.5 sm:gap-2 px-1 sm:px-0"
                 >
-                  {cartOk ? <FiCheck /> : <FiShoppingCart />}{" "}
-                  {cartOk ? "Added" : "Add to Cart"}
+                  {cartOk ? <FiCheck strokeWidth={3} size={14} className="sm:w-4 sm:h-4" /> : <FiShoppingCart strokeWidth={3} size={14} className="sm:w-4 sm:h-4" />}
+                  <span className="whitespace-nowrap">{cartOk ? "Added" : "Add to Cart"}</span>
                 </button>
                 <button
                   onClick={buyNow}
                   disabled={product.stock === 0}
-                  className="flex-1 h-11 bg-black text-white font-bold text-[16px] sm:text-[16px] sm:text-base uppercase tracking-wide rounded-full hover:bg-gray-800 active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-40"
+                  className="flex-1 h-14 bg-black border-2 border-black text-white font-black text-[9px] sm:text-[11px] uppercase tracking-widest rounded-xl hover:bg-gray-900 active:scale-95 transition-all flex items-center justify-center gap-1.5 sm:gap-2 px-1 sm:px-0 disabled:opacity-40"
                 >
-                  <FiZap size={16} /> Buy Now
+                  <FiZap size={14} strokeWidth={3} className="sm:w-4 sm:h-4" /> <span className="whitespace-nowrap">Buy Now</span>
                 </button>
                 <button
                   onClick={() => setWish(!wish)}
-                  className={`w-11 h-11 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${wish ? "bg-red-500 border-red-500 text-white" : "border-gray-200 text-gray-500 hover:border-red-500 hover:text-red-500"}`}
+                  className={`w-12 h-14 sm:w-14 sm:h-14 border-2 rounded-xl flex items-center justify-center shrink-0 transition-all ${wish ? "bg-rose-50 border-rose-500 text-rose-500" : "bg-white border-gray-100 text-gray-400 hover:border-black hover:text-black"}`}
                 >
-                  <FiHeart size={16} className={wish ? "fill-current" : ""} />
+                  <FiHeart size={16} strokeWidth={wish ? 0 : 2.5} className={wish ? "fill-current" : "sm:w-[18px] sm:h-[18px]"} />
                 </button>
               </div>
             )}
@@ -954,27 +961,29 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
 
           {/* AI Bots (only for logged-in buyers who are not the seller) */}
           {user && user._id !== product.seller?._id && (
-            <div className="flex justify-center gap-3 pt-2">
+            <div className="flex flex-row flex-wrap justify-between sm:justify-center gap-2 sm:gap-3 pt-3">
               <AINegoBot product={product} sellerId={product.seller?._id} />
               <AISupportBot product={product} />
             </div>
           )}
 
           {/* Trust */}
-          <div className="grid grid-cols-4 gap-2 pt-3 border-t border-gray-100">
+          <div className="grid grid-cols-4 gap-2 pt-6 border-t-2 border-gray-100 mt-6">
             {[
-              { icon: FiTruck, label: "Free Ship", color: "text-green-600" },
+              { icon: FiTruck, label: "Free Ship", color: "text-black" },
               {
                 icon: FiRefreshCw,
                 label: "30d Return",
-                color: "text-blue-600",
+                color: "text-black",
               },
-              { icon: FiShield, label: "Guarantee", color: "text-purple-600" },
-              { icon: FiLock, label: "Secure", color: "text-gray-600" },
+              { icon: FiShield, label: "Guarantee", color: "text-black" },
+              { icon: FiLock, label: "Secure", color: "text-black" },
             ].map(({ icon: I, label, color }) => (
-              <div key={label} className="text-center py-2">
-                <I size={16} className={`mx-auto mb-1 ${color}`} />
-                <p className="text-[16px] sm:text-xs font-bold text-gray-700">
+              <div key={label} className="text-center py-3 flex flex-col items-center gap-1.5 border-2 border-gray-100 rounded-xl hover:border-black transition-colors group">
+                <div className={`p-2 rounded-lg bg-gray-50 group-hover:bg-black group-hover:text-white transition-colors ${color}`}>
+                  <I size={18} strokeWidth={2.5} />
+                </div>
+                <p className="text-[9px] font-black uppercase tracking-widest text-gray-400 group-hover:text-black">
                   {label}
                 </p>
               </div>
@@ -983,24 +992,24 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
 
           {/* Seller */}
           {product.sellerName && (
-            <div className="flex items-center gap-2 pt-3 border-t border-gray-100">
-              <div className="w-8 h-8 rounded-full bg-black flex items-center justify-center text-white text-[16px] sm:text-[16px] sm:text-base font-bold">
+            <div className="flex items-center gap-4 pt-6 mt-2">
+              <div className="w-12 h-12 rounded-xl bg-black border-2 border-black flex items-center justify-center text-white text-lg font-black shrink-0">
                 {product.sellerName[0].toUpperCase()}
               </div>
               <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-1">
-                  <span className="text-[16px] sm:text-[16px] sm:text-base font-bold truncate">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-sm font-black text-black truncate tracking-wide">
                     {product.sellerName}
                   </span>
-                  <FiCheckCircle size={12} className="text-blue-500 shrink-0" />
+                  <FiCheckCircle size={14} className="text-black shrink-0" strokeWidth={3} />
                 </div>
-                <span className="text-[16px] sm:text-xs text-gray-400">
+                <span className="text-[9px] font-black uppercase tracking-widest text-gray-400 mt-0.5 block">
                   Verified Seller
                 </span>
               </div>
               <Link
                 href={`/products?seller=${encodeURIComponent(product.sellerEmail || "")}`}
-                className="text-[16px] sm:text-xs font-bold text-gray-400 hover:text-black underline underline-offset-2"
+                className="px-4 py-2 border-2 border-gray-100 rounded-lg text-[10px] font-black uppercase tracking-wide text-black hover:border-black hover:bg-black hover:text-white transition-all whitespace-nowrap"
               >
                 Store →
               </Link>
@@ -1010,20 +1019,20 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
       </div>
 
       {/* ══════ WHO IS THIS FOR ══════ */}
-      <div className="bg-gray-50 rounded-xl border border-gray-100 p-4">
-        <h2 className="text-[16px] sm:text-base font-black text-gray-900 mb-3 flex items-center gap-1.5">
-          <FiUser size={16} /> Who is this for?
+      <div className="bg-white rounded-xl border-2 border-gray-100 p-5 mt-4">
+        <h2 className="text-xs font-black uppercase tracking-widest text-black mb-4 flex items-center gap-2">
+          <FiUser size={14} strokeWidth={3} /> Who is this for?
         </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+        <div className="flex flex-wrap gap-2">
           {whoFor.map((t, i) => (
             <div
               key={i}
-              className="flex items-center gap-2 bg-white rounded-lg px-3 py-2 border border-gray-100"
+              className="flex items-center gap-2 bg-gray-50 rounded-lg px-3 py-2 border-2 border-transparent hover:border-black transition-colors"
             >
-              <span className="w-5 h-5 rounded-full bg-black text-white flex items-center justify-center text-[16px] sm:text-xs font-bold shrink-0">
+              <span className="w-5 h-5 rounded-md bg-black text-white flex items-center justify-center text-[10px] font-black shrink-0">
                 {i + 1}
               </span>
-              <span className="text-[16px] sm:text-[16px] sm:text-base text-gray-600">
+              <span className="text-[11px] font-bold text-gray-600 uppercase tracking-wide">
                 {t}
               </span>
             </div>
@@ -1032,8 +1041,8 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
       </div>
 
       {/* ══════ TABS ══════ */}
-      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-        <div className="flex border-b border-gray-200 overflow-x-auto">
+      <div className="bg-white rounded-xl border-2 border-gray-100 overflow-hidden mt-6">
+        <div className="flex border-b-2 border-gray-100 overflow-x-auto no-scrollbar">
           {[
             {
               id: "reviews",
@@ -1048,17 +1057,17 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
             <button
               key={t.id}
               onClick={() => setTab(t.id)}
-              className={`px-4 py-3 text-[16px] sm:text-[16px] sm:text-base font-bold uppercase tracking-wide relative whitespace-nowrap ${tab === t.id ? "text-gray-900" : "text-gray-400 hover:text-gray-600"}`}
+              className={`px-5 py-4 text-[10px] sm:text-xs font-black uppercase tracking-widest relative whitespace-nowrap shrink-0 transition-colors ${tab === t.id ? "text-black bg-gray-50" : "text-gray-400 hover:text-black hover:bg-gray-50"}`}
             >
               {t.label}
               {tab === t.id && (
-                <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-black" />
+                <span className="absolute bottom-[-2px] left-0 right-0 h-0.5 bg-black" />
               )}
             </button>
           ))}
         </div>
 
-        <div className="p-4 sm:p-6">
+        <div className="p-5 sm:p-8 bg-gray-50">
           {/* ── REVIEWS TAB ──────── */}
           {tab === "reviews" && (
             <div className="space-y-6">

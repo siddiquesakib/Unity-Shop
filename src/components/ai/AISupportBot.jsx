@@ -118,12 +118,12 @@ const AISupportBot = ({ order, product }) => {
     <>
       <button
         onClick={() => setIsOpen(true)}
-        className="group relative inline-flex items-center gap-2 px-5 py-2.5 bg-black text-white rounded-full font-medium shadow-md hover:shadow-xl transition-all duration-300 hover:scale-105 active:scale-95 overflow-hidden"
+        className="group relative flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-4 py-3 sm:py-2.5 bg-black text-white rounded-xl border-2 border-black font-black text-[11px] sm:text-xs uppercase tracking-widest hover:bg-gray-900 shadow-md hover:shadow-xl transition-all duration-300 active:scale-95 overflow-hidden"
       >
         <span className="absolute inset-0 bg-gradient-to-r from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-        <FiHelpCircle size={18} className="relative z-10" />
-        <span className="relative z-10">Support</span>
-        <span className="relative z-10 ml-1 text-[10px] font-mono bg-white/20 px-1.5 py-0.5 rounded-full">
+        <FiHelpCircle size={16} strokeWidth={2.5} className="relative z-10 shrink-0" />
+        <span className="relative z-10 whitespace-nowrap">Support</span>
+        <span className="relative z-10 ml-0.5 text-[9px] font-black bg-white/20 px-1.5 py-0.5 rounded-md">
           AI
         </span>
       </button>

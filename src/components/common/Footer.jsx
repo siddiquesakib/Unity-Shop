@@ -62,12 +62,7 @@ const Footer = () => {
             <p className="text-sm tracking-tight leading-relaxed max-w-[220px]">
               Building a future with premium products.
             </p>
-            <Link 
-              href="/signup" 
-              className="inline-flex items-center gap-2 bg-[#141414] text-white px-5 py-2 rounded-full text-xs border border-white/5 hover:bg-[#1f1f1f] transition-all"
-            >
-              <span className="text-[8px] opacity-40">•</span> Sign Up
-            </Link>
+           
           </div>
 
           {/* Links Section */}

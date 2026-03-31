@@ -77,30 +77,30 @@ export default function AdminDashboard() {
   };
 
   return (
-    <div className="space-y-10 pb-12 px-4 md:px-0">
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-gray-100 pb-10">
-        <div className="space-y-4">
-          <div className="flex items-center gap-3">
-            <div className="p-1.5 rounded-lg bg-white border border-gray-100 shadow-sm">
-              <ShieldCheck className="text-black" size={16} />
+    <div className="space-y-6 pb-8 px-4 md:px-0">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b-2 border-gray-100 pb-6">
+        <div className="space-y-2">
+          <div className="flex items-center gap-2">
+            <div className="p-1.5 rounded-lg bg-white border-2 border-gray-100 shadow-sm">
+              <ShieldCheck className="text-black" size={14} strokeWidth={2.5} />
             </div>
-            <span className="text-[11px] font-bold text-gray-400 uppercase tracking-[0.3em]">
+            <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
               Root Administrator
             </span>
           </div>
-          <h1 className="text-5xl font-black text-black uppercase tracking-tight leading-[0.9]">
-            Nexus <span className="text-gray-200">Terminal</span>
+          <h1 className="text-2xl md:text-3xl font-black text-black uppercase tracking-tight leading-none">
+            Nexus <span className="text-gray-300">Terminal</span>
           </h1>
-          <p className="text-base text-gray-500 font-medium max-w-md">
+          <p className="text-xs md:text-sm text-gray-500 font-bold max-w-md">
             Advanced platform metrics and real-time transaction monitoring interface.
           </p>
         </div>
-        <div className="px-5 py-2.5 rounded-2xl bg-white border border-gray-200 flex items-center gap-4 shadow-[0_8px_30px_rgb(0,0,0,0.04)] self-start transition-all hover:border-black/20">
+        <div className="px-4 py-2 rounded-xl bg-white border-2 border-gray-100 flex items-center gap-3 shadow-sm self-start transition-all hover:border-black">
           <div className="relative">
-            <div className="w-2.5 h-2.5 rounded-full bg-emerald-500"></div>
-            <div className="absolute inset-0 w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping opacity-75"></div>
+            <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
+            <div className="absolute inset-0 w-2 h-2 rounded-full bg-emerald-500 animate-ping opacity-75"></div>
           </div>
-          <span className="text-xs font-black text-black uppercase tracking-widest">
+          <span className="text-[10px] font-black text-black uppercase tracking-widest">
             Systems Operational
           </span>
         </div>
@@ -110,54 +110,54 @@ export default function AdminDashboard() {
       <AdminAnalytics />
 
       {/* Bottom Section - Management Grid */}
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-10">
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
         {/* Verification Queue Component */}
         <VerificationQueue />
 
         {/* Recent Orders List */}
-        <div className="p-10 rounded-[2.5rem] bg-white border border-gray-100 shadow-[0_20px_50px_rgba(0,0,0,0.02)] overflow-hidden relative group/card hover:shadow-[0_40px_80px_rgba(0,0,0,0.05)] transition-all duration-500">
-          <div className="flex items-center justify-between mb-10">
+        <div className="p-6 rounded-2xl bg-white border-2 border-gray-100 shadow-sm overflow-hidden relative group/card hover:border-black transition-all duration-300">
+          <div className="flex items-center justify-between mb-6">
             <div>
-              <h3 className="text-2xl font-black text-black flex items-center gap-3 tracking-tight">
+              <h3 className="text-lg font-black text-black flex items-center gap-2 tracking-tight uppercase">
                 Activity Stream
               </h3>
-              <p className="text-[10px] text-gray-400 font-black uppercase tracking-[0.2em] mt-2">Internal Ledger Log</p>
+              <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">Internal Ledger Log</p>
             </div>
-            <div className="w-12 h-12 rounded-2xl bg-gray-50 text-black flex items-center justify-center group-hover/card:bg-black group-hover/card:text-white transition-all duration-500">
-              <Activity size={24} />
+            <div className="w-10 h-10 rounded-xl bg-gray-50 border-2 border-gray-100 text-black flex items-center justify-center group-hover/card:bg-black group-hover/card:text-white group-hover/card:border-black transition-all duration-300">
+              <Activity size={18} strokeWidth={2.5} />
             </div>
           </div>
 
           {loadingOrders ? (
-            <div className="flex flex-col items-center justify-center py-24 gap-4">
-              <Loader2 className="animate-spin text-black" size={40} strokeWidth={3} />
-              <span className="text-xs font-bold text-gray-300 uppercase tracking-widest">Retrieving Data</span>
+            <div className="flex flex-col items-center justify-center py-12 gap-3">
+              <Loader2 className="animate-spin text-black" size={32} strokeWidth={2.5} />
+              <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Retrieving Data</span>
             </div>
           ) : recentOrders.length === 0 ? (
-            <div className="text-center py-24 text-gray-300 text-sm font-bold border-2 border-dashed border-gray-50 rounded-[2.5rem] uppercase tracking-widest">
+            <div className="text-center py-12 text-gray-400 text-xs font-black border-2 border-dashed border-gray-100 rounded-xl uppercase tracking-widest">
               No recent entries found
             </div>
           ) : (
-            <div className="space-y-5">
+            <div className="space-y-3">
               {recentOrders.slice(0, 6).map((order, i) => (
                 <div
                   key={order._id || i}
-                  className="flex items-center justify-between p-6 rounded-[1.5rem] bg-white border border-gray-100 hover:border-black hover:shadow-[0_15px_30px_rgba(0,0,0,0.05)] transition-all duration-300 group/item"
+                  className="flex items-center justify-between p-4 rounded-xl bg-gray-50 border-2 border-transparent hover:bg-white hover:border-black transition-all duration-300 group/item"
                 >
-                  <div className="flex items-center gap-5">
-                    <div className="w-14 h-14 rounded-2xl bg-gray-50 border border-gray-100 flex items-center justify-center text-black group-hover/item:bg-black group-hover/item:text-white group-hover/item:border-black transition-all duration-500 shadow-sm">
-                      <Package size={24} />
+                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 rounded-lg bg-white border-2 border-gray-100 flex items-center justify-center text-black group-hover/item:bg-black group-hover/item:text-white group-hover/item:border-black transition-all duration-300 shadow-sm">
+                      <Package size={18} strokeWidth={2.5} />
                     </div>
                     <div>
-                      <p className="text-base font-black text-black leading-tight">
+                      <p className="text-sm font-black text-black leading-tight">
                         {order.productName || "Product Entry"}
                       </p>
-                      <div className="flex items-center gap-2 mt-1.5">
-                        <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider truncate max-w-[120px]">
+                      <div className="flex items-center gap-2 mt-1">
+                        <span className="text-[10px] text-gray-500 font-bold uppercase tracking-wider truncate max-w-[120px]">
                           {order.customerName || order.customerEmail || "Anonymous"}
                         </span>
-                        <span className="w-1 h-1 rounded-full bg-gray-200"></span>
-                        <span className="text-xs font-black text-black">
+                        <span className="w-1 h-1 rounded-full bg-gray-300"></span>
+                        <span className="text-[10px] font-black text-black">
                           $
                           {Number(
                             order.amountPaid || order.amountpaid || 0,
@@ -166,14 +166,14 @@ export default function AdminDashboard() {
                       </div>
                     </div>
                   </div>
-                  <div className="text-right flex flex-col items-end gap-2">
-                    <div className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border transition-colors ${normalizeToWorkflowStatus(order.workflowStatus || order.status) === 'delivered' ? 'bg-emerald-50 text-emerald-600 border-emerald-100 group-hover/item:bg-emerald-500 group-hover/item:text-white group-hover/item:border-emerald-500' :
+                  <div className="text-right flex flex-col items-end gap-1.5">
+                    <div className={`px-2.5 py-0.5 rounded-md text-[9px] font-black uppercase tracking-widest border-2 transition-colors ${normalizeToWorkflowStatus(order.workflowStatus || order.status) === 'delivered' ? 'bg-emerald-50 text-emerald-600 border-emerald-100 group-hover/item:bg-emerald-500 group-hover/item:text-white group-hover/item:border-emerald-500' :
                       normalizeToWorkflowStatus(order.workflowStatus || order.status) === 'cancelled' ? 'bg-red-50 text-red-600 border-red-100 group-hover/item:bg-red-500 group-hover/item:text-white group-hover/item:border-red-500' :
-                        'bg-gray-50 text-gray-600 border-gray-100 group-hover/item:bg-black group-hover/item:text-white group-hover/item:border-black'
+                        'bg-white text-gray-600 border-gray-200 group-hover/item:bg-black group-hover/item:text-white group-hover/item:border-black'
                       }`}>
                       {getOrderStatusLabel(order.workflowStatus || order.status || "placed")}
                     </div>
-                    <p className="text-[10px] font-bold text-gray-300 uppercase tracking-tighter">
+                    <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest">
                       {order.createdAt ? getTimeAgo(order.createdAt) : "Just Now"}
                     </p>
                   </div>
