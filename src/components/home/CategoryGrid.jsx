@@ -42,7 +42,7 @@ const categories = [
     id: "Toys & Baby",
     label: "Gifts",
     image:
-      "https://images.unsplash.com/photo-1549465220-1a8b9238f7e1?w=400&h=400&fit=crop&q=80",
+      "https://www.sandiegofamily.com/images/stories/holidaygallery/gifts-2021-08-30-09-47-28-utc.jpeg",
   },
   {
     id: "Mobiles",
@@ -60,7 +60,7 @@ const categories = [
     id: "Sports",
     label: "Sports",
     image:
-      "https://images.unsplash.com/photo-1461896836934-bd45ba8fcf9b?w=400&h=400&fit=crop&q=80",
+      "https://media.istockphoto.com/id/146863459/photo/sports-objects.jpg?s=612x612&w=0&k=20&c=AKm_AV9Ghq5kqatAKWnzBvBmCSfr7hMjf9KvTTLtN70=",
   },
   {
     id: "Books",
@@ -79,6 +79,12 @@ const categories = [
     label: "Health",
     image:
       "https://images.unsplash.com/photo-1505751172876-fa1923c5c528?w=400&h=400&fit=crop&q=80",
+  },
+  {
+    id: "Auction",
+    label: "Auction",
+    image:
+      "https://t3.ftcdn.net/jpg/06/36/01/48/360_F_636014891_ne8XUB4YU4WoMeUUjr0TU6wH38wNTU6V.jpg",
   },
 ];
 
