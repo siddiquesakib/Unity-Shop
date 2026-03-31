@@ -49,7 +49,7 @@ const slides = [
   },
 ];
 
-const INTERVAL = 5500;
+const INTERVAL = 2500;
 
 export default function HeroSection() {
   const [cur, setCur] = useState(0);
