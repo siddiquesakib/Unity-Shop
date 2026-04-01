@@ -11,6 +11,7 @@ import {
   FiSearch,
 } from "react-icons/fi";
 import ProductCard from "../product/ProductCard";
+import DOMPurify from "dompurify";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
@@ -280,9 +281,14 @@ const SearchResults = ({ query, filters }) => {
                       {product.category}
                     </p>
                   )}
-                  <p className="text-sm text-gray-600 line-clamp-1 mt-1">
-                    {product.description || "No description"}
-                  </p>
+                  {product.description ? (
+                    <div
+                      className="text-sm text-gray-600 line-clamp-1 mt-1 [&_strong]:font-semibold"
+                      dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(product.description) }}
+                    />
+                  ) : (
+                    <p className="text-sm text-gray-600 line-clamp-1 mt-1">No description</p>
+                  )}
                   <div className="mt-2 flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <span className="text-xl font-bold text-gray-900">

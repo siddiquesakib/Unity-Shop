@@ -451,7 +451,7 @@ const Navbar = () => {
   // ─── DESKTOP ──────────────────────────────────────────────────────────────
   return (
     <>
-      <nav className="sticky top-0 z-50 hidden lg:block">
+      <nav className=" top-0 z-50 hidden lg:block">
         {/* ═══ Row 1: Logo + Search + Actions ═══ */}
         <div className="bg-[#fcfbf7]">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -543,14 +543,6 @@ const Navbar = () => {
                         className="w-full h-10 text-sm bg-transparent text-gray-900 border-0 outline-none placeholder:text-gray-400"
                       />
                     </div>
-                    {/* <button
-                      type="button"
-                      onClick={startVoiceSearch}
-                      className={`h-10 px-3 bg-transparent transition-colors ${isListening ? 'text-red-500 animate-pulse' : 'text-gray-400 hover:text-gray-700'}`}
-                      title="Voice search"
-                    >
-                      <FiMic size={16} />
-                    </button> */}
 
                     <VoiceSearch
                       setSearchQuery={setSearchQuery}
@@ -1078,7 +1070,7 @@ const Navbar = () => {
       {/* ══════════════════════════════════════════════════════════════════════ */}
       {/* ── MOBILE NAVBAR ────────────────────────────────────────────────── */}
       {/* ══════════════════════════════════════════════════════════════════════ */}
-      <nav className="sticky top-0 z-50 lg:hidden bg-[#fcfbf7] border-b border-gray-200">
+      <nav className=" top-0 z-50 lg:hidden bg-[#fcfbf7] border-b border-gray-200">
         <div className="px-3 sm:px-4">
           <div className="flex items-center h-14 gap-3">
             {/* Hamburger */}
@@ -1090,16 +1082,18 @@ const Navbar = () => {
             </button>
 
             {/* Logo */}
-            <Link href="/" className="shrink-0">
-              <Image
-                src="/unityshop.png"
-                alt="UnityShop"
-                width={100}
-                height={28}
-                className="object-contain h-6 sm:h-7 w-auto"
-                priority
-              />
-            </Link>
+            <div className="shrink-0 flex items-center">
+              <Link href="/">
+                <Image
+                  src="/unityshop.png"
+                  alt="UnityShop"
+                  width={120}
+                  height={34}
+                  className="object-contain"
+                  priority
+                />
+              </Link>
+            </div>
 
             {/* Spacer */}
             <div className="flex-1" />

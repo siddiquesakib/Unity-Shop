@@ -7,6 +7,7 @@ import Image from "next/image";
 import Link from "next/link";
 import Button from "@/components/common/Button";
 import WishlistButton from "@/components/common/WishlistButton";
+import DOMPurify from "dompurify";
 import { useState, useCallback } from "react";
 import {
   FiShoppingCart,
@@ -194,9 +195,10 @@ function QuickViewModal({ product, onClose, formatPrice }) {
 
             {/* Description */}
             {product.description && (
-              <p className="text-sm text-gray-500 mt-4 leading-relaxed line-clamp-3">
-                {product.description}
-              </p>
+              <div
+                className="text-sm text-gray-500 mt-4 leading-relaxed line-clamp-3 [&_strong]:font-bold [&_ul]:list-disc [&_ul]:pl-5 [&_li]:mb-1"
+                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(product.description) }}
+              />
             )}
 
             {/* Category / Tags */}
