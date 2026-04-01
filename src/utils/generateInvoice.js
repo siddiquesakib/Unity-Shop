@@ -1,238 +1,268 @@
 import { jsPDF } from "jspdf";
 
+const getBase64ImageFromUrl = async (imageUrl) => {
+  const res = await fetch(imageUrl);
+  const blob = await res.blob();
+
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.addEventListener("load", function () {
+      resolve(reader.result);
+    }, false);
+
+    reader.addEventListener("error", function (err) {
+      reject(err);
+    });
+
+    reader.readAsDataURL(blob);
+  });
+};
+
 /**
  * Generate and download an invoice PDF for an order
  * @param {Object} order - The order object
  */
-export function downloadOrderInvoice(order) {
+export async function downloadOrderInvoice(order) {
   const doc = new jsPDF();
   const pageWidth = doc.internal.pageSize.getWidth();
+  const pageHeight = doc.internal.pageSize.getHeight();
 
   // Colors
-  const primary = [79, 70, 229]; // indigo-600
-  const dark = [30, 41, 59]; // slate-800
-  const gray = [100, 116, 139]; // slate-500
-  const black = [15, 23, 42]; // slate-900
+  const black = [0, 0, 0];
+  const border = [0, 0, 0];
+  
+  // Set background to soft light gray like the image
+  doc.setFillColor(244, 245, 247); // Lighter, cleaner, more white-ish background
+  doc.rect(0, 0, pageWidth, pageHeight, "F");
 
-  // ========== HEADER ==========
-  // Brand background bar
-  doc.setFillColor(...primary);
-  doc.rect(0, 0, pageWidth, 40, "F");
-
-  // Brand name
-  doc.setTextColor(255, 255, 255);
-  doc.setFontSize(24);
-  doc.setFont("helvetica", "bold");
-  doc.text("UnityShop", 20, 22);
-
-  // Invoice label
-  doc.setFontSize(11);
-  doc.setFont("helvetica", "normal");
-  doc.text("INVOICE", 20, 33);
-
-  // Invoice number on right
-  doc.setFontSize(10);
-  doc.setFont("helvetica", "bold");
-  const invoiceId = `#${(order.transitionId || order._id || "N/A").slice(-8).toUpperCase()}`;
-  doc.text(invoiceId, pageWidth - 20, 22, { align: "right" });
-
-  // Date on right
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(9);
+  // Format Date
   const invoiceDate = order.createdAt
-    ? new Date(order.createdAt).toLocaleDateString("en-US", {
-        year: "numeric",
+    ? new Date(order.createdAt).toLocaleDateString("en-GB", {
+        day: "2-digit",
         month: "long",
-        day: "numeric",
+        year: "numeric",
       })
     : "N/A";
-  doc.text(invoiceDate, pageWidth - 20, 33, { align: "right" });
 
-  // ========== CUSTOMER & SELLER INFO ==========
-  let y = 55;
-
-  // Bill To
-  doc.setTextColor(...dark);
-  doc.setFontSize(8);
-  doc.setFont("helvetica", "bold");
-  doc.text("BILL TO", 20, y);
-
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(10);
-  doc.setTextColor(...black);
-  doc.text(order.customerName || "Customer", 20, y + 8);
-  doc.setFontSize(9);
-  doc.setTextColor(...gray);
-  doc.text(order.customerEmail || "N/A", 20, y + 15);
-  if (order.shippingAddress) {
-    const addr = order.shippingAddress;
-    const addressLines = [
-      addr.address,
-      [addr.city, addr.state, addr.zip].filter(Boolean).join(", "),
-      addr.country,
-    ].filter(Boolean);
-    addressLines.forEach((line, i) => {
-      doc.text(line, 20, y + 22 + i * 6);
-    });
-  }
-
-  // Seller Info (right side)
-  doc.setTextColor(...dark);
-  doc.setFontSize(8);
-  doc.setFont("helvetica", "bold");
-  doc.text("SELLER", pageWidth - 80, y);
-
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(10);
-  doc.setTextColor(...black);
-  doc.text(order.sellerName || "Seller", pageWidth - 80, y + 8);
-  doc.setFontSize(9);
-  doc.setTextColor(...gray);
-  doc.text(order.sellerEmail || "N/A", pageWidth - 80, y + 15);
-
-  // ========== DIVIDER ==========
-  y = 100;
-  doc.setDrawColor(226, 232, 240); // slate-200
-  doc.setLineWidth(0.5);
-  doc.line(20, y, pageWidth - 20, y);
-
-  // ========== ORDER TABLE HEADER ==========
-  y = 112;
-  doc.setFillColor(248, 250, 252); // slate-50
-  doc.rect(20, y - 6, pageWidth - 40, 14, "F");
-
-  doc.setFontSize(8);
-  doc.setFont("helvetica", "bold");
-  doc.setTextColor(...dark);
-  doc.text("ITEM", 25, y + 2);
-  doc.text("QTY", 120, y + 2);
-  doc.text("PRICE", 145, y + 2);
-  doc.text("TOTAL", pageWidth - 25, y + 2, { align: "right" });
-
-  // ========== ORDER ITEM ROW ==========
-  y = 126;
-  const quantity = order.quantity || 1;
+  const invoiceId = `#${(order.transitionId || order._id || "N/A").slice(-8).toUpperCase()}`;
   const amountPaid = Number(order.amountPaid || order.amountpaid || 0);
-  const unitPrice = quantity > 0 ? amountPaid / quantity : amountPaid;
 
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(10);
-  doc.setTextColor(...black);
-  doc.text(order.productName || "Product", 25, y + 2);
-
-  doc.setFontSize(9);
-  doc.setTextColor(...gray);
-  doc.text(String(quantity), 125, y + 2);
-  doc.text(`$${unitPrice.toFixed(2)}`, 145, y + 2);
-
-  doc.setFont("helvetica", "bold");
-  doc.setTextColor(...black);
-  doc.text(`$${amountPaid.toFixed(2)}`, pageWidth - 25, y + 2, {
-    align: "right",
-  });
-
-  // ========== DIVIDER ==========
-  y = 142;
-  doc.setDrawColor(226, 232, 240);
-  doc.setLineWidth(0.3);
-  doc.line(20, y, pageWidth - 20, y);
-
-  // ========== TOTALS ==========
-  y = 155;
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(9);
-  doc.setTextColor(...gray);
-  doc.text("Subtotal", 130, y);
-  doc.setTextColor(...black);
-  doc.text(`$${amountPaid.toFixed(2)}`, pageWidth - 25, y, {
-    align: "right",
-  });
-
-  y += 10;
-  doc.setTextColor(...gray);
-  doc.text("Shipping", 130, y);
-  doc.setTextColor(...black);
-  doc.text("$0.00", pageWidth - 25, y, { align: "right" });
-
-  y += 12;
-  doc.setDrawColor(226, 232, 240);
-  doc.line(130, y - 3, pageWidth - 20, y - 3);
-
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(12);
-  doc.setTextColor(...primary);
-  doc.text("Total Paid", 130, y + 5);
-  doc.text(`$${amountPaid.toFixed(2)}`, pageWidth - 25, y + 5, {
-    align: "right",
-  });
-
-  // ========== STATUS BADGE ==========
-  y += 25;
-  const status = order.workflowStatus || order.status || "placed";
-  doc.setFontSize(8);
-  doc.setFont("helvetica", "bold");
-  doc.setTextColor(...dark);
-  doc.text("ORDER STATUS", 20, y);
-
-  y += 8;
-  const statusColors = {
-    placed: [79, 70, 229],
-    confirmed: [245, 158, 11],
-    packed: [217, 119, 6],
-    picked: [37, 99, 235],
-    inTransit: [59, 130, 246],
-    outForDelivery: [29, 78, 216],
-    delivered: [16, 185, 129],
-    cancelled: [239, 68, 68],
-    New: [79, 70, 229],
-    Processing: [245, 158, 11],
-    Shipped: [59, 130, 246],
-    Delivered: [16, 185, 129],
-    Cancelled: [239, 68, 68],
-  };
-  const statusColor = statusColors[status] || [100, 116, 139];
-  doc.setFillColor(...statusColor);
-  doc.roundedRect(20, y - 5, 35, 12, 3, 3, "F");
-  doc.setTextColor(255, 255, 255);
-  doc.setFontSize(8);
-  doc.text(status, 37.5, y + 2, { align: "center" });
-
-  // ========== TRANSACTION ID ==========
-  if (order.transitionId) {
-    y += 20;
-    doc.setFontSize(8);
+  // ================= TOP HEADER (LOGO + INVOICE) =================
+  try {
+    const logoData = await getBase64ImageFromUrl("/unityshop.png");
+    doc.addImage(logoData, 'PNG', 20, 12, 28, 28, undefined, 'FAST'); // Made logo much bigger
+    
     doc.setFont("helvetica", "bold");
-    doc.setTextColor(...dark);
-    doc.text("TRANSACTION ID", 20, y);
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(9);
-    doc.setTextColor(...gray);
-    doc.text(order.transitionId, 20, y + 8);
+    doc.setFontSize(22); // Made title bigger
+    doc.setTextColor(...black);
+    doc.text("UNITY SHOP", 52, 31);
+  } catch (error) {
+    console.error("Could not load logo", error);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(22);
+    doc.setTextColor(...black);
+    doc.text("UNITY SHOP", 20, 31);
   }
 
-  // ========== FOOTER ==========
-  const footerY = 270;
-  doc.setDrawColor(226, 232, 240);
-  doc.setLineWidth(0.3);
-  doc.line(20, footerY, pageWidth - 20, footerY);
-
-  doc.setFontSize(8);
+  // Add "Your Company" type small text at top right to balance
   doc.setFont("helvetica", "normal");
-  doc.setTextColor(...gray);
-  doc.text(
-    "Thank you for shopping with UnityShop!",
-    pageWidth / 2,
-    footerY + 8,
-    {
-      align: "center",
-    },
-  );
-  doc.text(
-    "For support, contact us at support@unityshop.com",
-    pageWidth / 2,
-    footerY + 14,
-    { align: "center" },
-  );
+  doc.setFontSize(9);
+  doc.text("Invoice Document", pageWidth - 20, 31, { align: "right" });
+
+  // Big "Invoice" text below Logo
+  doc.setFont("times", "bold");
+  doc.setFontSize(55);
+  doc.text("Invoice", 19, 58); // Pushed down slightly
+
+  // ================= 2ND ROW (BOXES) =================
+  let boxY = 70;
+  
+  // Left Box (Outline - Invoice From)
+  doc.setDrawColor(...border);
+  doc.setLineWidth(0.3);
+  doc.roundedRect(20, boxY, 80, 32, 3, 3);
+  
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(10);
+  doc.text("Invoice From", 25, boxY + 8);
+  
+  doc.setFont("times", "bold");
+  doc.setFontSize(14);
+  doc.text("Unity Shop", 25, boxY + 16);
+  
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(10);
+  doc.text("Main Street, Dhaka 1200,\nBangladesh", 25, boxY + 24);
+
+  // Right Box (Solid Black - Invoice Info)
+  doc.setFillColor(...black);
+  doc.roundedRect(110, boxY, 80, 32, 3, 3, "F");
+  
+  doc.setTextColor(255, 255, 255);
+  doc.setFont("times", "bold");
+  doc.setFontSize(13);
+  doc.text("Invoice Info", 150, boxY + 11, { align: "center" });
+  
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(10);
+  doc.text(`Invoice No. ${invoiceId}`, 150, boxY + 19, { align: "center" });
+  doc.text(`Issue Date. ${invoiceDate}`, 150, boxY + 25, { align: "center" });
+  doc.setTextColor(...black); // Reset to black
+
+  // ================= TABLE AND DETAILS =================
+  let tY = 115;
+  
+  // --- TABLE LEFT (width 20 to 125) ---
+  doc.setFont("times", "bold");
+  doc.setFontSize(11);
+  doc.text("QTY", 20, tY);
+  doc.text("ITEM DESCRIPTION", 36, tY);
+  doc.text("PRICE", 95, tY);
+  doc.text("TOTAL", 125, tY, { align: "right" });
+  
+  doc.setDrawColor(...border);
+  doc.setLineWidth(0.3);
+  doc.line(20, tY + 4, 125, tY + 4);
+  
+  tY += 15;
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(10);
+  
+  const prodName = order.productName || "Product Name";
+  
+  // Parse items from productName "Item A (x2), Item B (x1)"
+  let itemsList = [];
+  if (prodName.includes("(x")) {
+    const rawItems = prodName.split(", ");
+    rawItems.forEach(rawItem => {
+      const match = rawItem.match(/\(x(\d+)\)/);
+      let tQty = 1;
+      let tName = rawItem;
+      if (match) {
+        tQty = parseInt(match[1], 10);
+        tName = rawItem.replace(match[0], "").trim();
+      }
+      itemsList.push({ name: tName, qty: tQty });
+    });
+  } else {
+    itemsList.push({ name: prodName, qty: order.quantity || 1 });
+  }
+
+  // Distribute prices
+  const totalItemsQty = itemsList.reduce((sum, item) => sum + item.qty, 0);
+  const baseUnitPrice = totalItemsQty > 0 ? amountPaid / totalItemsQty : amountPaid;
+
+  // Draw each product row
+  itemsList.forEach((item, i) => {
+    let lineText = item.name;
+    if (lineText.length > 40) lineText = lineText.substring(0, 37) + "..."; 
+    
+    const itemTotal = baseUnitPrice * item.qty;
+    const qtyFormatted = String(item.qty).padStart(2, '0') + ".";
+
+    doc.text(qtyFormatted, 20, tY);
+    doc.text(lineText, 36, tY);
+    doc.text(`$${baseUnitPrice.toFixed(2)}`, 95, tY);
+    doc.text(`$${itemTotal.toFixed(2)}`, 125, tY, { align: "right" });
+
+    // Move down for the next item
+    tY += 15;
+  });
+
+  doc.line(20, tY - 3, 125, tY - 3);
+  
+  tY += 8;
+  doc.setFont("times", "bold");
+  doc.setFontSize(13);
+  doc.text("Subtotal", 20, tY);
+  doc.text(":", 45, tY);
+  doc.setFont("times", "bold");
+  doc.text(`$${amountPaid.toFixed(2)}`, 125, tY, { align: "right" });
+  
+  tY += 7;
+  doc.text("Tax", 20, tY);
+  doc.text(":", 45, tY);
+  doc.text("$0.00", 125, tY, { align: "right" });
+  
+  tY += 8;
+  doc.line(20, tY - 2, 125, tY - 2);
+  
+  tY += 10;
+  doc.setFontSize(14);
+  doc.text("Total", 20, tY);
+  doc.text(":", 45, tY);
+  doc.text(`$${amountPaid.toFixed(2)}`, 125, tY, { align: "right" });
+
+  // --- DETAILS RIGHT (width 140 to 190) ---
+  let rY = 113;
+  doc.setFont("times", "bold");
+  doc.setFontSize(13);
+  doc.text("Payment Info", 190, rY, { align: "right" });
+  
+  rY += 7;
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(10);
+  doc.text("Account Name : Unity Shop", 190, rY, { align: "right" });
+  rY += 5;
+  doc.text("Bank Account : 01234567890", 190, rY, { align: "right" });
+  rY += 5;
+  doc.text(`Transaction ID : ${(order.transitionId || "N/A").slice(-8).toUpperCase()}`, 190, rY, { align: "right" });
+
+  rY += 18;
+  doc.setFont("times", "bold");
+  doc.setFontSize(13);
+  doc.text("Customer Info", 190, rY, { align: "right" });
+  
+  rY += 7;
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(10);
+  const cName = order.customerName || "Customer";
+  const cEmail = order.customerEmail || "No Email";
+  doc.text(`Name: ${cName}`, 190, rY, { align: "right" });
+  rY += 5;
+  doc.text(`Email: ${cEmail}`, 190, rY, { align: "right" });
+  if (order.shippingAddress) {
+    rY += 5;
+    const addr = `${order.shippingAddress.city || ""}, ${order.shippingAddress.country || ""}`;
+    doc.text(`Region: ${addr}`, 190, rY, { align: "right" });
+  }
+  
+  // ================= BOTTOM BOX (Terms & Sign) =================
+  let bY = pageHeight - 75; // Approx 220
+  
+  doc.setFillColor(...black);
+  doc.roundedRect(20, bY, 170, 52, 6, 6, "F");
+  
+  doc.setTextColor(255, 255, 255);
+  
+  // Terms Left
+  doc.setFont("times", "bold");
+  doc.setFontSize(13);
+  doc.text("Terms & Condition.", 28, bY + 14);
+  
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(10);
+  doc.text("1. Item must be inspected upon delivery.", 28, bY + 24);
+  doc.text("2. Please contact support within 3 days for disputes.", 28, bY + 31);
+  doc.text("3. This software guarantees secure transactions.", 28, bY + 38);
+  doc.text("4. All sales are final based on our policies.", 28, bY + 45);
+  
+  // Manager Sign Right
+  doc.setFont("times", "bold");
+  doc.setFontSize(13);
+  doc.text("Manager Marketing", 175, bY + 14, { align: "right" });
+  
+  doc.setFont("times", "italic");
+  doc.setFontSize(22);
+  doc.text("Ahsan Habib", 150, bY + 33, { align: "center" });
+  
+  doc.setDrawColor(255, 255, 255);
+  doc.setLineWidth(0.3);
+  doc.line(125, bY + 39, 175, bY + 39);
+  
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(10);
+  doc.text("Authorized Sign", 150, bY + 45, { align: "center" });
 
   // ========== DOWNLOAD ==========
   const fileName = `UnityShop_Invoice_${invoiceId.replace("#", "")}.pdf`;
