@@ -9,82 +9,124 @@ import Button from "@/components/common/Button";
 /* ━━━━━ Category Data ━━━━━ */
 const categories = [
   {
-    id: "Fashion",
-    label: "Fashion",
+    id: 'Fashion',
+    label: 'Fashion',
     image:
-      "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=400&h=400&fit=crop&q=80",
+      'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=400&h=400&fit=crop&q=80',
   },
   {
-    id: "Electronics",
-    label: "Electronics",
+    id: 'Electronics',
+    label: 'Electronics',
     image:
-      "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&h=400&fit=crop&q=80",
+      'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&h=400&fit=crop&q=80',
   },
   {
-    id: "Home & Living",
-    label: "Home",
+    id: 'Home & Living',
+    label: 'Home',
     image:
-      "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=400&h=400&fit=crop&q=80",
+      'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=400&h=400&fit=crop&q=80',
   },
   {
-    id: "Beauty",
-    label: "Beauty",
+    id: 'Beauty',
+    label: 'Beauty',
     image:
-      "https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=400&h=400&fit=crop&q=80",
+      'https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=400&h=400&fit=crop&q=80',
   },
   {
-    id: "Watches",
-    label: "Accessories",
+    id: 'Watches',
+    label: 'Accessories',
     image:
-      "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400&h=400&fit=crop&q=80",
+      'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400&h=400&fit=crop&q=80',
   },
   {
-    id: "Toys & Baby",
-    label: "Gifts",
+    id: 'Toys & Baby',
+    label: 'Gifts',
     image:
-      "https://www.sandiegofamily.com/images/stories/holidaygallery/gifts-2021-08-30-09-47-28-utc.jpeg",
+      'https://www.sandiegofamily.com/images/stories/holidaygallery/gifts-2021-08-30-09-47-28-utc.jpeg',
   },
   {
-    id: "Mobiles",
-    label: "Mobiles",
+    id: 'Mobiles',
+    label: 'Mobiles',
     image:
-      "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=400&h=400&fit=crop&q=80",
+      'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=400&h=400&fit=crop&q=80',
   },
   {
-    id: "Gaming",
-    label: "Gaming",
+    id: 'Gaming',
+    label: 'Gaming',
     image:
-      "https://images.unsplash.com/photo-1612287230202-1ff1d85d1bdf?w=400&h=400&fit=crop&q=80",
+      'https://images.unsplash.com/photo-1612287230202-1ff1d85d1bdf?w=400&h=400&fit=crop&q=80',
   },
   {
-    id: "Sports",
-    label: "Sports",
+    id: 'Sports',
+    label: 'Sports',
     image:
-      "https://media.istockphoto.com/id/146863459/photo/sports-objects.jpg?s=612x612&w=0&k=20&c=AKm_AV9Ghq5kqatAKWnzBvBmCSfr7hMjf9KvTTLtN70=",
+      'https://media.istockphoto.com/id/146863459/photo/sports-objects.jpg?s=612x612&w=0&k=20&c=AKm_AV9Ghq5kqatAKWnzBvBmCSfr7hMjf9KvTTLtN70=',
   },
   {
-    id: "Books",
-    label: "Books",
+    id: 'Books',
+    label: 'Books',
     image:
-      "https://images.unsplash.com/photo-1512820790803-83ca734da794?w=400&h=400&fit=crop&q=80",
+      'https://images.unsplash.com/photo-1512820790803-83ca734da794?w=400&h=400&fit=crop&q=80',
   },
   {
-    id: "Grocery",
-    label: "Grocery",
+    id: 'Grocery',
+    label: 'Grocery',
     image:
-      "https://images.unsplash.com/photo-1542838132-92c53300491e?w=400&h=400&fit=crop&q=80",
+      'https://images.unsplash.com/photo-1542838132-92c53300491e?w=400&h=400&fit=crop&q=80',
   },
   {
-    id: "Health",
-    label: "Health",
+    id: 'Health',
+    label: 'Health',
     image:
-      "https://images.unsplash.com/photo-1505751172876-fa1923c5c528?w=400&h=400&fit=crop&q=80",
+      'https://images.unsplash.com/photo-1505751172876-fa1923c5c528?w=400&h=400&fit=crop&q=80',
   },
   {
-    id: "Auction",
-    label: "Auction",
+    id: 'Kitchen',
+    label: 'Kitchen',
     image:
-      "https://t3.ftcdn.net/jpg/06/36/01/48/360_F_636014891_ne8XUB4YU4WoMeUUjr0TU6wH38wNTU6V.jpg",
+      'https://plus.unsplash.com/premium_photo-1678375722686-c7ea507c3003?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+  },
+  {
+    id: 'Bedroom',
+    label: 'Bedroom',
+    image:
+      'https://images.unsplash.com/photo-1595526114035-0d45ed16cfbf?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+  },
+  {
+    id: 'Office',
+    label: 'Office',
+    image:
+      'https://images.unsplash.com/photo-1746021535489-00edc5efb203?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+  },
+  {
+    id: 'Audio',
+    label: 'Audio',
+    image:
+      'https://images.unsplash.com/photo-1631586552668-b31039d4921d?q=80&w=1174&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+  },
+  {
+    id: 'Stationery',
+    label: 'Stationery',
+    image:
+      'https://images.unsplash.com/photo-1551925608-12e169132446?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+  },
+  {
+    id: 'Tools',
+    label: 'Tools',
+    image:
+      'https://images.unsplash.com/photo-1683115099191-51e617fc5ff1?q=80&w=1176&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+  },
+  {
+    id: 'Toys',
+    label: 'Toys',
+    image:
+      'https://images.unsplash.com/photo-1599623560574-39d485900c95?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+  },
+  {
+    id: 'Auction',
+    label: 'Auction',
+    image:
+      'https://t3.ftcdn.net/jpg/06/36/01/48/360_F_636014891_ne8XUB4YU4WoMeUUjr0TU6wH38wNTU6V.jpg',
   },
 ];
 
