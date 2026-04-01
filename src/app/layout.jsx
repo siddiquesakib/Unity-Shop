@@ -12,6 +12,7 @@ import { SocketProvider } from "@/contexts/SocketContext";
 import { NotificationProvider } from "@/contexts/NotificationContext";
 import { Toaster } from "react-hot-toast";
 import NotificationListener from "@/components/common/NotificationListener";
+import ScrollToTop from "@/components/home/ScrollToTop";
 
 const lexend = Lexend({
   variable: "--font-lexend",
@@ -40,6 +41,7 @@ export default function RootLayout({ children }) {
                       <Toaster position="top-right" />
                       {children}
                       <Footer />
+                      <ScrollToTop />
                     </CartProvider>
                   </NotificationProvider>
                 </SocketProvider>
