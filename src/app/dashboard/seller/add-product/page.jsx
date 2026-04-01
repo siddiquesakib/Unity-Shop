@@ -362,7 +362,18 @@ export default function AddProductPage() {
         return;
       }
 
-      setFormData((prev) => ({ ...prev, description: data.description }));
+      // Remove any trailing hashtags, "Tags:", or "Keywords:" block that AI might generate
+      let cleanDescription = data.description
+        .replace(/<p>\s*<strong>(?:Tags|Keywords):?<\/strong>.*<\/p>/gi, '')
+        .replace(/(?:<br\s*\/?>)?\s*<strong>(?:Tags|Keywords):?<\/strong>.*$/gi, '')
+        .replace(/<p>\s*(?:Tags|Keywords):?.*<\/p>/gi, '')
+        .replace(/#[\w-]+/g, "")
+        .trim();
+
+      // Clean up empty paragraphs
+      cleanDescription = cleanDescription.replace(/<p>\s*<\/p>/g, '').trim();
+
+      setFormData((prev) => ({ ...prev, description: cleanDescription }));
     } catch (err) {
       setError(err.message);
     } finally {
@@ -523,12 +534,12 @@ export default function AddProductPage() {
                   </button>
                 </div>
                 <textarea
-                  rows={5}
+                  rows={8}
                   name="description"
                   value={formData.description}
                   onChange={handleChange}
                   placeholder="Describe your product features, materials, and benefits... or click 'Generate with AI' to auto-write a description."
-                  className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 outline-none resize-none"
+                  className="w-full min-h-[160px] bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 outline-none resize-y"
                 />
               </div>
             </div>

@@ -41,11 +41,13 @@ export default function UserProfile() {
     Promise.all([
       fetch(`${baseUrl}/users/profile/${email}`, {
         headers: { Authorization: `Bearer ${token}` },
+        cache: 'no-store'
       }).then(r =>
         r.ok ? r.json() : null,
       ),
       fetch(`${baseUrl}/users/shipping/${email}`, {
         headers: { Authorization: `Bearer ${token}` },
+        cache: 'no-store'
       }).then(r =>
         r.ok ? r.json() : null,
       ),
@@ -79,8 +81,8 @@ export default function UserProfile() {
       <div className="h-20 bg-gray-900 relative" />
 
       {/* Avatar + Name */}
-      <div className="px-6 -mt-10 flex flex-col items-center text-center">
-        <div className="w-20 h-20 rounded-full border-4 border-white bg-gray-100 flex items-center justify-center overflow-hidden shadow-md">
+      <div className="px-6 -mt-10 flex flex-col items-center text-center relative z-10">
+        <div className="w-20 h-20 rounded-full border-4 border-white bg-gray-100 flex items-center justify-center overflow-hidden shadow-md bg-white">
           {loading ? (
             <div className="w-full h-full bg-gray-200 animate-pulse rounded-full" />
           ) : profile?.image ? (

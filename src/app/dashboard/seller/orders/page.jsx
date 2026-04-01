@@ -10,7 +10,7 @@ import {
 import { useCurrency } from "@/contexts/CurrencyContext";
 
 const API_BASE =
-  process.env.NEXT_PUBLIC_API_URL || "https://unity-shop-server.vercel.app";
+  process.env.NEXT_PUBLIC_API_URL || "https://unityshop-server.onrender.com";
 
 function getToken() {
   if (typeof window === "undefined") return null;
@@ -182,7 +182,7 @@ export default function SellerOrdersPage() {
                     </td> */}
                     <td className="px-4 py-3">
                       <span
-                        className={`px-2.5 py-1 rounded-full text-xs font-semibold ${STATUS_COLOR[order.status] || "bg-gray-100 text-gray-700"}`}
+                        className={`px-2.5 py-1 rounded-full text-xs font-semibold whitespace-nowrap ${STATUS_COLOR[order.status] || "bg-gray-100 text-gray-700"}`}
                       >
                         {getOrderStatusLabel(
                           order.status || order.status || "Placed",

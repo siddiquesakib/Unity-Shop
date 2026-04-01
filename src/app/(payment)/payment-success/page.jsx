@@ -6,7 +6,7 @@ import { useSession } from "next-auth/react";
 import { useCart } from "@/contexts/CartContext";
 
 const API_BASE =
-  process.env.NEXT_PUBLIC_API_URL || "https://unity-shop-server.vercel.app";
+  process.env.NEXT_PUBLIC_API_URL || "https://unityshop-server.onrender.com";
 
 export default function PaymentSuccess() {
   return (

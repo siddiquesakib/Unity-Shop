@@ -6,7 +6,7 @@ import { motion } from "framer-motion";
 import { ShoppingBag, Clock, CreditCard, Heart } from "lucide-react";
 
 const API_BASE =
-  process.env.NEXT_PUBLIC_API_URL || "https://unity-shop-server.vercel.app";
+  process.env.NEXT_PUBLIC_API_URL || "https://unityshop-server.onrender.com";
 
 function getToken() {
   if (typeof window === "undefined") return null;

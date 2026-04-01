@@ -25,7 +25,7 @@ import {
 } from "@/utils/orderLifecycle";
 
 const API_BASE =
-  process.env.NEXT_PUBLIC_API_URL || "https://unity-shop-server.vercel.app";
+  process.env.NEXT_PUBLIC_API_URL || "https://unityshop-server.onrender.com";
 
 function resolveOrderId(order) {
   if (!order) return "";
@@ -344,7 +344,7 @@ export default function UserOrdersPage() {
                     </td>
                     <td className="py-4">
                       <span
-                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${getStatusColor(order.workflowStatus || order.status)}`}
+                          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border whitespace-nowrap ${getStatusColor(order.workflowStatus || order.status)}`}
                       >
                         {getStatusIcon(order.workflowStatus || order.status)}
                         {getOrderStatusLabel(
