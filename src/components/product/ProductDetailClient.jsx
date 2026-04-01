@@ -235,7 +235,7 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
   const [wish, setWish] = useState(false);
   const [imgErr, setImgErr] = useState({});
   const [cartOk, setCartOk] = useState(false);
-  const [tab, setTab] = useState("reviews");
+  const [tab, setTab] = useState(product.description ? "desc" : "reviews");
   const [selColor, setSelColor] = useState(null);
   const [selSize, setSelSize] = useState(null);
   const [showVideo, setShowVideo] = useState(false);
@@ -1046,20 +1046,20 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
       <div className="bg-white rounded-xl border-2 border-gray-100 overflow-hidden mt-6">
         <div className="flex border-b-2 border-gray-100 overflow-x-auto no-scrollbar">
           {[
+            ...(product.description
+              ? [{ id: "desc", label: "Description" }]
+              : []),
+            { id: "vendor", label: "Vendor" },
+            { id: "shipping", label: "Shipping" },
             {
               id: "reviews",
               label: `Reviews (${reviewMeta.totalCount || reviewCount})`,
             },
-            { id: "vendor", label: "Vendor" },
-            { id: "shipping", label: "Shipping" },
-            ...(product.description
-              ? [{ id: "desc", label: "Description" }]
-              : []),
           ].map((t) => (
             <button
               key={t.id}
               onClick={() => setTab(t.id)}
-              className={`px-5 py-4 text-[10px] sm:text-xs font-black uppercase tracking-widest relative whitespace-nowrap shrink-0 transition-colors ${tab === t.id ? "text-black bg-gray-50" : "text-gray-400 hover:text-black hover:bg-gray-50"}`}
+              className={`px-5 py-4 text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider relative whitespace-nowrap shrink-0 transition-colors ${tab === t.id ? "text-black bg-gray-50" : "text-gray-400 hover:text-black hover:bg-gray-50"}`}
             >
               {t.label}
               {tab === t.id && (

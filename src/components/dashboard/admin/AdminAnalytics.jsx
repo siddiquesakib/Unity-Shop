@@ -6,7 +6,7 @@ import GrowthChart from "./GrowthChart";
 import DailyOrdersChart from "./DailyOrdersChart";
 import axios from "axios";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "https://unity-shop-server.vercel.app";
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "https://unityshop-server.onrender.com";
 
 function getToken() {
     if (typeof window === "undefined") return null;

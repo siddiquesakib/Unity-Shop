@@ -6,7 +6,7 @@ import { Package, RefreshCw, Search, Truck } from "lucide-react";
 import { getOrderStatusLabel, normalizeToWorkflowStatus } from "@/utils/orderLifecycle";
 
 const API_BASE =
-  process.env.NEXT_PUBLIC_API_URL || "https://unity-shop-server.vercel.app";
+  process.env.NEXT_PUBLIC_API_URL || "https://unityshop-server.onrender.com";
 
 const STATUS_OPTIONS = ["confirmed"];
 

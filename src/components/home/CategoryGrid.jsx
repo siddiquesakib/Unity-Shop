@@ -184,8 +184,6 @@ const CategoryGrid = () => {
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600;700&display=swap');
-
         .cat-section {
           padding: 52px 0 60px;
           background: rgba(255, 255, 255, 0.1);
@@ -215,20 +213,18 @@ const CategoryGrid = () => {
           flex-wrap: wrap;
         }
         .cat-title {
-          font-family: 'Instrument Serif', Georgia, serif;
           font-size: clamp(1.35rem, 2.4vw, 1.9rem);
-          font-weight: 400;
+          font-weight: 600;
           color: #0f0f0f;
           letter-spacing: -0.025em;
           line-height: 1;
           margin: 0;
         }
         .cat-title em {
-          font-style: italic;
+          font-style: normal;
           color: #888;
         }
         .cat-count-pill {
-          font-family: 'Geist', sans-serif;
           font-size: 0.68rem;
           font-weight: 600;
           color: #999;
@@ -239,7 +235,6 @@ const CategoryGrid = () => {
           text-transform: uppercase;
         }
         .cat-view-all-btn {
-          font-family: 'Geist', sans-serif;
           font-size: 0.78rem;
           font-weight: 600;
           color: #111;
@@ -362,14 +357,12 @@ const CategoryGrid = () => {
           padding: 4px 7px;
         }
         .cat-card-name {
-          font-family: 'Geist', sans-serif;
           font-size: 0.65rem; font-weight: 700;
           color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,0.22);
           letter-spacing: 0.01em;
           white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
         }
         .cat-card-badge {
-          font-family: 'Geist', sans-serif;
           font-size: 0.52rem; font-weight: 600;
           color: rgba(255,255,255,0.78);
           background: rgba(255,255,255,0.14);
@@ -418,7 +411,6 @@ const CategoryGrid = () => {
           text-decoration: none; white-space: nowrap;
           box-shadow: 0 1px 3px rgba(0,0,0,0.05);
           transition: all 0.16s ease;
-          font-family: 'Geist', sans-serif;
           font-size: 0.72rem; font-weight: 600; color: #444;
           flex-shrink: 0;
         }

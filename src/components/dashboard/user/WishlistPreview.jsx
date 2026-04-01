@@ -7,7 +7,7 @@ import { Heart, Trash2 } from "lucide-react";
 import Link from "next/link";
 
 const API_BASE =
-  process.env.NEXT_PUBLIC_API_URL || "https://unity-shop-server.vercel.app";
+  process.env.NEXT_PUBLIC_API_URL || "https://unityshop-server.onrender.com";
 
 export default function WishlistPreview() {
   const { user } = useAuth();

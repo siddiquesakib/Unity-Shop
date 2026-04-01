@@ -8,7 +8,7 @@ import Link from "next/link";
 import { getOrderStatusLabel, normalizeToWorkflowStatus } from "@/utils/orderLifecycle";
 
 const API_BASE =
-  process.env.NEXT_PUBLIC_API_URL || "https://unity-shop-server.vercel.app";
+  process.env.NEXT_PUBLIC_API_URL || "https://unityshop-server.onrender.com";
 
 function getToken() {
   if (typeof window === "undefined") return null;
@@ -158,7 +158,7 @@ export default function RecentOrders() {
                   </div>
                 </div>
                 <div className="text-right flex flex-col items-end gap-3">
-                  <span className={`px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest border ${getStatusColor(order.workflowStatus || order.status)
+                <span className={`px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest border whitespace-nowrap ${getStatusColor(order.workflowStatus || order.status)
                     } group-hover/item:border-black transition-colors`}>
                     {getOrderStatusLabel(order.workflowStatus || order.status || "placed")}
                   </span>
@@ -238,7 +238,7 @@ export default function RecentOrders() {
               <div className="flex justify-between items-center">
                 <span className="text-gray-500">Status</span>
                 <span
-                  className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(
+                  className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium border whitespace-nowrap ${getStatusColor(
                     selectedOrder.workflowStatus || selectedOrder.status || "placed",
                   )}`}
                 >

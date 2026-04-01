@@ -22,7 +22,7 @@ import {
 } from "@/utils/orderLifecycle";
 
 const API_BASE =
-  process.env.NEXT_PUBLIC_API_URL || "https://unity-shop-server.vercel.app";
+  process.env.NEXT_PUBLIC_API_URL || "https://unityshop-server.onrender.com";
 const STATUS_STEPS = [
   "placed",
   "confirmed",
@@ -379,14 +379,14 @@ export default function AdminOrdersPage() {
                   deliveryMen.map((man) => (
                     <label
                       key={man._id}
-                      className="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-gray-50 transition-colors has-[:checked]:bg-blue-50 has-[:checked]:border-blue-200"
+                      className="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-gray-50 transition-colors has-[:checked]:bg-gray-50 has-[:checked]:border-black"
                     >
                       <input
                         type="radio"
                         name="deliveryMan"
                         value={man._id}
                         onChange={(e) => setSelectedDeliveryMan(e.target.value)}
-                        className="accent-blue-600 w-4 h-4"
+                        className="accent-black w-4 h-4 cursor-pointer"
                       />
                       <div>
                         <p className="text-sm font-medium text-gray-900">
@@ -404,7 +404,7 @@ export default function AdminOrdersPage() {
               <button
                 onClick={() => handleAssignDelivery(assigningId)}
                 disabled={!selectedDeliveryMan}
-                className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white rounded-lg font-medium text-sm transition-colors"
+                className="w-full py-2.5 bg-black hover:bg-gray-800 disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed text-white rounded-lg font-medium text-sm transition-colors"
               >
                 Confirm Assignment
               </button>
@@ -557,20 +557,20 @@ export default function AdminOrdersPage() {
                           Assigned
                         </span>
                       ) : (
-                        <button
-                          onClick={() => setAssigningId(order._id)}
-                          disabled={
-                            normalizeToWorkflowStatus(
-                              order.workflowStatus || order.status,
-                            ) === "cancelled" ||
-                            normalizeToWorkflowStatus(
-                              order.workflowStatus || order.status,
-                            ) === "delivered"
-                          }
-                          className="text-xs font-medium text-blue-600 hover:text-blue-900 disabled:opacity-50 disabled:cursor-not-allowed bg-blue-50 px-3 py-1.5 rounded-lg hover:bg-blue-100 transition-colors"
-                        >
-                          Assign
-                        </button>
+                          <button
+                            onClick={() => setAssigningId(order._id)}
+                            disabled={
+                              normalizeToWorkflowStatus(
+                                order.workflowStatus || order.status
+                              ) === "cancelled" ||
+                              normalizeToWorkflowStatus(
+                                order.workflowStatus || order.status
+                              ) === "delivered"
+                            }
+                            className="text-xs font-medium text-black hover:text-white disabled:opacity-50 disabled:cursor-not-allowed bg-gray-100 border border-gray-200 px-3 py-1.5 rounded-lg hover:bg-black hover:border-black transition-all"
+                          >
+                            Assign
+                          </button>
                       )}
                     </td>
                     <td className="py-4 pr-6 text-right">

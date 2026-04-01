@@ -100,6 +100,7 @@ export default function ProfilePage() {
           headers: {
             ...authHeaders,
           },
+          cache: "no-store"
         });
         const data = await res.json();
         if (res.ok) {
@@ -131,6 +132,7 @@ export default function ProfilePage() {
         headers: {
           ...authHeaders,
         },
+        cache: "no-store"
       });
       const data = await res.json();
       if (res.ok) {
@@ -230,6 +232,7 @@ export default function ProfilePage() {
         }
         await refetchProfile();
         setEditing(false);
+        setImagePreviewUrl("");
         setMessage({ type: "success", text: "Profile updated successfully!" });
         setTimeout(() => setMessage({ type: "", text: "" }), 3000);
       } else {
@@ -312,11 +315,11 @@ export default function ProfilePage() {
               whileHover={{ scale: 1.03 }}
               whileTap={{ scale: 0.97 }}
               onClick={handleSave}
-              disabled={saving}
+              disabled={saving || uploadingImage}
               className="inline-flex items-center gap-2 px-5 py-2.5 bg-emerald-600 text-white text-sm font-semibold rounded-xl hover:bg-emerald-700 transition-all shadow-md shadow-emerald-600/20 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Save size={14} />
-              {saving ? "Saving…" : "Save Changes"}
+              {saving ? "Saving…" : uploadingImage ? "Uploading..." : "Save Changes"}
             </motion.button>
           </div>
         )}
@@ -357,7 +360,7 @@ export default function ProfilePage() {
               <button
                 type="button"
                 onClick={editing ? handlePickImage : undefined}
-                className={`w-21.5 h-21.5 rounded-2xl ring-4 ring-white shadow-xl bg-white overflow-hidden flex items-center justify-center ${
+                className={`w-[86px] h-[86px] rounded-2xl ring-4 ring-white shadow-xl bg-white overflow-hidden flex items-center justify-center ${
                   editing ? "cursor-pointer" : "cursor-default"
                 }`}
                 aria-label={editing ? "Upload profile photo" : "Profile photo"}
