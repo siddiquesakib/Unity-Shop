@@ -132,27 +132,27 @@ export default function GroupBuyUI({ productId, user, formatPrice }) {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between gap-4 p-4 bg-black border border-gray-200 rounded-xl">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-black rounded-full flex items-center justify-center text-white">
-            <FiUsers size={20} />
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-3 bg-gray-50 border border-gray-200 rounded-lg relative overflow-hidden group w-full">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-white border border-gray-200 rounded-md flex items-center justify-center text-black shadow-sm shrink-0 group-hover:bg-black group-hover:text-white transition-colors duration-300">
+              <FiUsers size={18} />
+            </div>
+            <div>
+              <p className="font-bold text-black text-[13px] leading-tight">Team Discount</p>
+              <p className="text-gray-500 text-[11px] font-medium leading-snug mt-0.5">
+                Save 20% with peers
+              </p>
+            </div>
           </div>
-          <div>
-            <p className="font-bold text-white text-sm">Team Discount</p>
-            <p className="text-gray-500 text-xs font-medium">
-              Save 20% with friends
-            </p>
-          </div>
+          <button
+            onClick={startGroup}
+            disabled={starting}
+            className="w-full mt-3 sm:mt-0 sm:w-auto px-4 h-9 border-2 border-black bg-black hover:bg-transparent text-white hover:text-black text-[11px] uppercase tracking-wide font-bold rounded-md transition-colors flex items-center justify-center gap-1.5 shrink-0"
+          >
+            {starting ? <FiLoader className="animate-spin" /> : <FiPlus size={14} />}
+            New Group
+          </button>
         </div>
-        <button
-          onClick={startGroup}
-          disabled={starting}
-          className="px-4 py-2 bg-black hover:bg-gray-800 text-white  text-xs font-bold rounded-lg transition-all flex items-center gap-2"
-        >
-          {starting ? <FiLoader className="animate-spin" /> : <FiPlus />}
-          Start New Group
-        </button>
-      </div>
 
       <AnimatePresence>
         {activeGroups.map((group) => {
@@ -308,3 +308,4 @@ function FiX({ size }) {
     </svg>
   );
 }
+

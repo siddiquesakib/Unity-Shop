@@ -896,7 +896,7 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
 
           {/* Qty */}
           <div className="flex items-center gap-3">
-            <div className="flex items-center border-2 border-gray-100 rounded-xl overflow-hidden bg-gray-50 h-14">
+            <div className="flex items-center border-2 border-gray-200 rounded-lg overflow-hidden bg-white h-12">
               <button
                 onClick={() => qtyChange(-1)}
                 disabled={qty <= 1}
@@ -936,24 +936,25 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
               <PostaBId product={product} />
             ) : (
               <div className="flex flex-row gap-2">
-                <button
-                  onClick={addCart}
-                  disabled={product.stock === 0 || cartOk}
-                  className="flex-1 h-14 bg-white border-2 border-gray-100 text-black font-black text-[9px] sm:text-[11px] uppercase tracking-widest rounded-xl hover:border-black active:scale-95 transition-all flex items-center justify-center gap-1.5 sm:gap-2 px-1 sm:px-0"
-                >
-                  {cartOk ? <FiCheck strokeWidth={3} size={14} className="sm:w-4 sm:h-4" /> : <FiShoppingCart strokeWidth={3} size={14} className="sm:w-4 sm:h-4" />}
-                  <span className="whitespace-nowrap">{cartOk ? "Added" : "Add to Cart"}</span>
-                </button>
-                <button
-                  onClick={buyNow}
-                  disabled={product.stock === 0}
-                  className="flex-1 h-14 bg-black border-2 border-black text-white font-black text-[9px] sm:text-[11px] uppercase tracking-widest rounded-xl hover:bg-gray-900 active:scale-95 transition-all flex items-center justify-center gap-1.5 sm:gap-2 px-1 sm:px-0 disabled:opacity-40"
-                >
-                  <FiZap size={14} strokeWidth={3} className="sm:w-4 sm:h-4" /> <span className="whitespace-nowrap">Buy Now</span>
-                </button>
+                  <button
+                    onClick={addCart}
+                    disabled={product.stock === 0 || cartOk}
+                    className="flex-1 h-12 bg-white border-2 border-black text-black font-bold text-[10px] sm:text-[12px] uppercase tracking-widest rounded-lg hover:bg-black hover:text-white active:scale-95 transition-colors duration-300 flex items-center justify-center gap-1.5 sm:gap-2 px-1 sm:px-0 disabled:opacity-40 group"
+                  >
+                    {cartOk ? <FiCheck strokeWidth={3} size={15} className="sm:w-[18px] sm:h-[18px]" /> : <FiShoppingCart strokeWidth={3} size={15} className="sm:w-[18px] sm:h-[18px]" />}
+                    <span className="whitespace-nowrap group-hover:text-white transition-colors">{cartOk ? "Added" : "Add to Cart"}</span>
+                  </button>
+                  <button
+                    onClick={buyNow}
+                    disabled={product.stock === 0}
+                    className="flex-1 h-12 bg-black border-2 border-black text-white font-bold text-[10px] sm:text-[12px] uppercase tracking-widest rounded-lg hover:bg-transparent hover:text-black active:scale-95 transition-colors flex items-center justify-center gap-1.5 sm:gap-2 px-1 sm:px-0 disabled:opacity-40 group"
+                  >
+                    <FiZap size={15} strokeWidth={3} className="sm:w-[18px] sm:h-[18px] group-hover:text-black transition-colors" /> 
+                    <span className="whitespace-nowrap group-hover:text-black transition-colors">Buy Now</span>
+                  </button>
                 <button
                   onClick={() => setWish(!wish)}
-                  className={`w-12 h-14 sm:w-14 sm:h-14 border-2 rounded-xl flex items-center justify-center shrink-0 transition-all ${wish ? "bg-rose-50 border-rose-500 text-rose-500" : "bg-white border-gray-100 text-gray-400 hover:border-black hover:text-black"}`}
+                  className={`w-12 h-12 border-2 rounded-lg flex items-center justify-center shrink-0 transition-colors ${wish ? "bg-rose-50 border-rose-500 text-rose-500" : "bg-white border-black text-black hover:bg-black hover:text-white group"}`}
                 >
                   <FiHeart size={16} strokeWidth={wish ? 0 : 2.5} className={wish ? "fill-current" : "sm:w-[18px] sm:h-[18px]"} />
                 </button>
@@ -1947,3 +1948,6 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
     </div>
   );
 }
+
+
+

@@ -39,127 +39,214 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div className="min-h-screen flex">
-      {/* Left Side - Branding */}
-      <div className="hidden lg:flex lg:w-1/2 bg-black relative overflow-hidden items-center justify-center">
-        {/* Decorative Elements */}
-        <div className="absolute top-0 right-0 w-96 h-96 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2" />
-        <div className="absolute bottom-0 left-0 w-72 h-72 bg-white/5 rounded-full translate-y-1/3 -translate-x-1/3" />
-        <div className="absolute top-1/4 left-1/4 w-2 h-2 bg-white/20 rounded-full" />
-        <div className="absolute top-1/3 right-1/3 w-3 h-3 bg-white/10 rounded-full" />
-        <div className="absolute bottom-1/4 right-1/4 w-2 h-2 bg-white/15 rounded-full" />
+    <div style={{
+      minHeight: "100vh",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      background: "#f5f5f0",
+      fontFamily: "'Georgia', 'Times New Roman', serif",
+      padding: "24px",
+    }}>
+      <div className="flex flex-col md:flex-row w-full max-w-[900px] bg-white rounded-[20px] overflow-hidden shadow-[0_8px_60px_rgba(0,0,0,0.12)] border border-[#e8e8e8] min-h-[580px]">
 
-        <div className="relative z-10 text-center px-12">
-          <div className="w-20 h-20 mx-auto mb-8 bg-white rounded-2xl flex items-center justify-center shadow-2xl">
-            <FiMail className="text-3xl text-black" />
-          </div>
-          <h1 className="text-4xl font-bold text-white mb-4">Reset Password</h1>
-          <p className="text-gray-400 text-lg leading-relaxed max-w-sm mx-auto">
-            Don&apos;t worry, it happens to the best of us. We&apos;ll help you
-            get back into your account.
-          </p>
-        </div>
-      </div>
-
-      {/* Right Side - Form */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center bg-white px-6 py-12">
-        <div className="w-full max-w-md">
-          {/* Mobile Logo */}
-          <div className="lg:hidden flex justify-center mb-8">
-            <div className="w-14 h-14 bg-black rounded-xl flex items-center justify-center">
-              <FiMail className="text-xl text-white" />
-            </div>
+        {/* Left Side - Form */}
+        <div className="flex-1 md:flex-none md:w-1/2 p-8 md:p-[52px_48px] flex flex-col justify-center bg-[#fafafa]">
+          {/* Logo */}
+          <div style={{ marginBottom: "36px" }}>
+            <span style={{
+              fontFamily: "'Georgia', serif",
+              fontSize: "15px",
+              fontWeight: "700",
+              letterSpacing: "0.22em",
+              color: "#111",
+              textTransform: "uppercase",
+            }}>
+              Unity Shop
+            </span>
           </div>
 
           {!success ? (
             <>
-              <div className="mb-8">
-                <h2 className="text-3xl font-bold text-gray-900">
+              {/* Title */}
+              <div style={{ marginBottom: "28px" }}>
+                <h2 style={{
+                  fontSize: "26px",
+                  fontWeight: "700",
+                  color: "#111",
+                  margin: "0 0 6px 0",
+                  fontFamily: "'Georgia', serif",
+                  letterSpacing: "-0.01em",
+                }}>
                   Forgot Password?
                 </h2>
-                <p className="text-gray-500 mt-2">
-                  No worries! Enter your email and we&apos;ll send you a reset
-                  link.
+                <p style={{
+                  fontSize: "13px",
+                  color: "#888",
+                  margin: 0,
+                  fontFamily: "system-ui, sans-serif",
+                  fontWeight: "400",
+                }}>
+                  No worries! Enter your email and we&apos;ll send you a reset link.
                 </p>
               </div>
 
               {error && (
-                <div className="mb-5 px-4 py-3 bg-red-50 border border-red-200 rounded-xl text-red-600 text-sm">
+                <div style={{
+                  marginBottom: "16px",
+                  padding: "10px 14px",
+                  background: "#fff5f5",
+                  border: "1px solid #ffc0c0",
+                  borderRadius: "10px",
+                  color: "#c00",
+                  fontSize: "13px",
+                  fontFamily: "system-ui, sans-serif",
+                }}>
                   {error}
                 </div>
               )}
 
-              <form onSubmit={handleSubmit} className="space-y-5">
+              <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                  <label style={{
+                    display: "block",
+                    fontSize: "12px",
+                    fontWeight: "500",
+                    color: "#555",
+                    marginBottom: "6px",
+                    fontFamily: "system-ui, sans-serif",
+                    letterSpacing: "0.02em",
+                  }}>
                     Email Address
                   </label>
-                  <div className="relative">
-                    <FiMail
-                      className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
-                      size={16}
-                    />
+                  <div style={{ position: "relative" }}>
                     <input
                       type="email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="you@example.com"
-                      className="w-full pl-11 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder:text-gray-400 outline-none focus:border-black focus:ring-1 focus:ring-black transition-colors"
                       required
+                      style={{
+                        width: "100%",
+                        padding: "10px 14px",
+                        background: "#fff",
+                        border: "1.5px solid #e0e0e0",
+                        borderRadius: "10px",
+                        fontSize: "13.5px",
+                        color: "#111",
+                        fontFamily: "system-ui, sans-serif",
+                        outline: "none",
+                        boxSizing: "border-box",
+                        transition: "border-color 0.2s",
+                      }}
+                      onFocus={e => e.target.style.borderColor = "#111"}
+                      onBlur={e => e.target.style.borderColor = "#e0e0e0"}
                     />
                   </div>
                 </div>
 
-                <button
+                <Button
                   type="submit"
                   disabled={isLoading}
-                  className="w-full flex items-center justify-center gap-2 bg-black hover:bg-gray-900 text-white py-3 rounded-xl font-semibold shadow-lg shadow-black/20 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                  style={{
+                    width: "100%",
+                    padding: "12px",
+                    background: "#1a1a1a",
+                    color: "#fff",
+                    border: "none",
+                    borderRadius: "10px",
+                    fontSize: "14px",
+                    fontWeight: "600",
+                    fontFamily: "system-ui, sans-serif",
+                    letterSpacing: "0.02em",
+                    cursor: "pointer",
+                    marginTop: "4px",
+                    transition: "background 0.2s",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: "8px",
+                  }}
+                  onMouseEnter={e => { if (!isLoading) e.currentTarget.style.background = "#333"; }}
+                  onMouseLeave={e => { e.currentTarget.style.background = "#1a1a1a"; }}
                 >
                   {isLoading ? (
-                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    <div style={{
+                      width: "18px",
+                      height: "18px",
+                      border: "2px solid rgba(255,255,255,0.3)",
+                      borderTopColor: "#fff",
+                      borderRadius: "50%",
+                      animation: "spin 0.7s linear infinite",
+                    }} />
                   ) : (
                     <>
                       Send Reset Link
-                      <FiArrowRight size={16} />
+                      <FiArrowRight size={15} />
                     </>
                   )}
-                </button>
+                </Button>
               </form>
 
-              <p className="text-center text-gray-500 text-sm mt-6">
+              <p style={{
+                textAlign: "center",
+                fontSize: "12.5px",
+                color: "#888",
+                marginTop: "20px",
+                fontFamily: "system-ui, sans-serif",
+              }}>
                 Remember your password?{" "}
-                <Link
-                  href="/login"
-                  className="text-black font-semibold hover:underline"
-                >
+                <Link href="/login" style={{ color: "#111", fontWeight: "600", textDecoration: "none" }}>
                   Sign In
                 </Link>
               </p>
             </>
           ) : (
             /* Success State */
-            <div className="text-center py-8">
-              <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-black flex items-center justify-center">
-                <FiCheck className="text-white" size={32} />
+            <div style={{ textAlign: "center", padding: "24px 0" }}>
+              <div style={{
+                width: "64px",
+                height: "64px",
+                borderRadius: "50%",
+                background: "#111",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                margin: "0 auto 20px",
+              }}>
+                <FiCheck color="#fff" size={26} />
               </div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+              <h2 style={{
+                fontSize: "22px",
+                fontWeight: "700",
+                color: "#111",
+                margin: "0 0 8px 0",
+                fontFamily: "'Georgia', serif",
+              }}>
                 Check Your Email
               </h2>
-              <p className="text-gray-500 text-sm mb-2">
+              <p style={{ fontSize: "12.5px", color: "#888", margin: "0 0 4px 0", fontFamily: "system-ui, sans-serif" }}>
                 We&apos;ve sent a password reset link to:
               </p>
-              <p className="text-black font-semibold text-lg mb-6">{email}</p>
-
-              <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 mb-6 max-w-xs mx-auto text-left">
-                <p className="text-gray-500 text-xs mb-2 font-medium">
+              <p style={{ fontSize: "14px", fontWeight: "600", color: "#111", margin: "0 0 14px 0", fontFamily: "system-ui, sans-serif" }}>
+                {email}
+              </p>
+              
+              <div style={{
+                background: "#fff",
+                border: "1px solid #e8e8e8",
+                borderRadius: "10px",
+                padding: "12px 16px",
+                marginBottom: "20px",
+                textAlign: "left"
+              }}>
+                <p style={{ fontSize: "11.5px", color: "#aaa", margin: "0 0 6px 0", fontFamily: "system-ui, sans-serif", fontWeight: "600" }}>
                   💡 Tips:
                 </p>
-                <ul className="text-gray-400 text-xs space-y-1">
-                  <li>
-                    • Check your spam folder if you don&apos;t see the email
-                  </li>
-                  <li>• The link expires in 1 hour</li>
-                  <li>• Only the latest link will work</li>
+                <ul style={{ fontSize: "11px", color: "#888", margin: 0, paddingLeft: "16px", fontFamily: "system-ui, sans-serif", lineHeight: "1.6" }}>
+                  <li>Check your spam folder if you don&apos;t see the email</li>
+                  <li>The link expires in 1 hour</li>
+                  <li>Only the latest link will work</li>
                 </ul>
               </div>
 
@@ -168,22 +255,95 @@ export default function ForgotPasswordPage() {
                   setSuccess(false);
                   setEmail("");
                 }}
-                className="text-gray-500 hover:text-black text-sm transition-colors underline underline-offset-4"
+                style={{
+                  background: "none",
+                  border: "none",
+                  color: "#777",
+                  fontSize: "12.5px",
+                  cursor: "pointer",
+                  textDecoration: "underline",
+                  fontFamily: "system-ui, sans-serif",
+                  marginBottom: "20px"
+                }}
               >
                 Didn&apos;t receive it? Try again
               </button>
 
-              <div className="mt-4">
-                <Link
-                  href="/login"
-                  className="inline-flex items-center gap-2 text-sm font-semibold text-black hover:underline"
-                >
-                  <FiArrowLeft size={14} />
+              <div>
+                <Link href="/login" style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "6px",
+                  fontSize: "12.5px",
+                  fontWeight: "600",
+                  color: "#111",
+                  textDecoration: "none",
+                  fontFamily: "system-ui, sans-serif",
+                }}>
+                  <FiArrowLeft size={13} />
                   Back to Login
                 </Link>
               </div>
             </div>
           )}
+        </div>
+
+        {/* Right Side - Product Image */}
+        <div className="hidden md:flex flex-1 bg-[#e8e2d9] relative overflow-hidden items-center justify-center min-h-[400px]">
+          {/* Subtle gradient overlay */}
+          <div style={{
+            position: "absolute",
+            inset: 0,
+            background: "linear-gradient(135deg, #ede8e0 0%, #d4cfc7 50%, #c9c2b8 100%)",
+          }} />
+
+          {/* Decorative circle shadow on floor */}
+          <div style={{
+            position: "absolute",
+            bottom: "18%",
+            left: "50%",
+            transform: "translateX(-50%)",
+            width: "200px",
+            height: "30px",
+            background: "rgba(0,0,0,0.12)",
+            borderRadius: "50%",
+            filter: "blur(14px)",
+            zIndex: 1,
+          }} />
+
+          {/* Chair SVG illustration — black & white monochrome version */}
+          <div style={{ position: "relative", zIndex: 2 }}>
+            <svg width="260" height="320" viewBox="0 0 260 320" fill="none" xmlns="http://www.w3.org/2000/svg">
+              {/* Seat shell */}
+              <ellipse cx="130" cy="118" rx="82" ry="52" fill="#1a1a1a" opacity="0.92"/>
+              {/* Seat highlight */}
+              <ellipse cx="108" cy="103" rx="38" ry="22" fill="white" opacity="0.12" transform="rotate(-12 108 103)"/>
+              {/* Backrest */}
+              <path d="M70 118 C60 90 65 55 130 50 C195 55 200 90 190 118" fill="#111" opacity="0.9"/>
+              <path d="M80 115 C72 90 76 62 130 57 C184 62 188 90 180 115" fill="#2a2a2a" opacity="0.6"/>
+              {/* Backrest highlight */}
+              <ellipse cx="110" cy="80" rx="26" ry="16" fill="white" opacity="0.1" transform="rotate(-8 110 80)"/>
+
+              {/* Front left leg */}
+              <line x1="100" y1="155" x2="75" y2="268" stroke="#444" strokeWidth="5" strokeLinecap="round"/>
+              {/* Front right leg */}
+              <line x1="160" y1="155" x2="185" y2="268" stroke="#444" strokeWidth="5" strokeLinecap="round"/>
+              {/* Back left leg */}
+              <line x1="88" y1="148" x2="55" y2="260" stroke="#333" strokeWidth="5" strokeLinecap="round"/>
+              {/* Back right leg */}
+              <line x1="172" y1="148" x2="205" y2="260" stroke="#333" strokeWidth="5" strokeLinecap="round"/>
+
+              {/* Cross braces */}
+              <line x1="75" y1="215" x2="185" y2="225" stroke="#555" strokeWidth="3" strokeLinecap="round"/>
+              <line x1="55" y1="210" x2="205" y2="220" stroke="#555" strokeWidth="2.5" strokeLinecap="round" opacity="0.5"/>
+
+              {/* Leg feet dots */}
+              <circle cx="75" cy="268" r="5" fill="#222"/>
+              <circle cx="185" cy="268" r="5" fill="#222"/>
+              <circle cx="55" cy="260" r="5" fill="#333" opacity="0.7"/>
+              <circle cx="205" cy="260" r="5" fill="#333" opacity="0.7"/>
+            </svg>
+          </div>
         </div>
       </div>
     </div>
