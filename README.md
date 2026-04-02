@@ -1,6 +1,14 @@
 <div align="center">
-
-# ✦ Unity Shop ✦
+  <table>
+    <tr>
+      <td align="center" style="vertical-align: middle; border: none; background: none;">
+        <img src="https://i.ibb.co.com/FqVS6VG2/Unity-Shop-logo-removebg-preview.png" width="130" alt="Unity Shop logo" style="border-radius: 8px; margin-bottom: 0; margin-right: 16px; display: inline-block; vertical-align: middle;"/>
+      </td>
+      <td align="center" style="vertical-align: middle; border: none; background: none;">
+        <span style="font-size: 2.5rem; font-weight: bold; vertical-align: middle; display: inline-block;">✦ Unity Shop ✦</span>
+      </td>
+    </tr>
+  </table>
 
 ### _A Scalable, AI-Driven Multi-Vendor E-Commerce Platform_
 
