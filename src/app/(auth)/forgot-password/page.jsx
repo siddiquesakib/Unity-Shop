@@ -1,4 +1,5 @@
 "use client";
+import Button from "@/components/common/Button";
 import Link from "next/link";
 import { useState } from "react";
 import { FiMail, FiArrowLeft, FiCheck, FiArrowRight } from "react-icons/fi";
