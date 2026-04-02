@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useRouter } from "next/navigation";
 import { FiDollarSign, FiPackage, FiUser, FiClock } from "react-icons/fi";
+import toast from "react-hot-toast";
 
 export default function SellerNegotiationsPage() {
   const { user, token } = useAuth();
@@ -52,9 +53,16 @@ export default function SellerNegotiationsPage() {
         },
       );
       if (!res.ok) throw new Error("Failed to update");
+      
+      if (action === "accepted") {
+        toast.success("Offer Accepted successfully!");
+      } else {
+        toast.error("Offer Declined!");
+      }
+
       fetchNegotiations(); // refresh
     } catch (err) {
-      alert(err.message);
+      toast.error(err.message);
     }
   };
 
