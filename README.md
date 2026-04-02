@@ -1,36 +1,41 @@
+
+<p align="center">
+  <img src="https://i.ibb.co.com/FqVS6VG2/Unity-Shop-logo-removebg-preview.png" width="130" alt="Unity Shop logo" style="vertical-align: middle; border-radius: 8px; margin-right: 18px;"/>
+  <span style="font-size:2.5rem; font-weight:bold; vertical-align: middle;">✦ Unity Shop ✦</span>
+</p>
+
+
 <div align="center">
-  <table>
-    <tr>
-      <td align="center" style="vertical-align: middle; border: none; background: none;">
-        <img src="https://i.ibb.co.com/FqVS6VG2/Unity-Shop-logo-removebg-preview.png" width="130" alt="Unity Shop logo" style="border-radius: 8px; margin-bottom: 0; margin-right: 16px; display: inline-block; vertical-align: middle;"/>
-      </td>
-      <td align="center" style="vertical-align: middle; border: none; background: none;">
-        <span style="font-size: 2.5rem; font-weight: bold; vertical-align: middle; display: inline-block;">✦ Unity Shop ✦</span>
-      </td>
-    </tr>
-  </table>
-
-### _A Scalable, AI-Driven Multi-Vendor E-Commerce Platform_
-
-_Unity Shop isn't just another online storefront. It's a highly scalable, AI-driven ecosystem built for the real world._
+  <h3><em>A Scalable, AI-Driven Multi-Vendor E-Commerce Platform</em></h3>
+  <p><em>Unity Shop isn't just another online storefront. It's a highly scalable, AI-driven ecosystem built for the real world.</em></p>
+</div>
 
 ---
 
-[![Next.js](https://img.shields.io/badge/Next.js-16%2B-000000?style=for-the-badge&logo=next.js&logoColor=white)](https://nextjs.org/)
-[![React](https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://reactjs.org/)
-[![TailwindCSS](https://img.shields.io/badge/TailwindCSS-v4-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
-[![Node.js](https://img.shields.io/badge/Node.js-20%2B-339933?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org/)
-[![Express](https://img.shields.io/badge/Express-5.x-000000?style=for-the-badge&logo=express&logoColor=white)](https://expressjs.com/)
-[![MongoDB](https://img.shields.io/badge/MongoDB-Atlas-47A248?style=for-the-badge&logo=mongodb&logoColor=white)](https://mongodb.com/atlas)
 
-[![Live Demo](https://img.shields.io/badge/Live_Demo-View_Site-FF4154?style=for-the-badge&logo=vercel&logoColor=white)](https://unity-shop-three.vercel.app)
-[![GitHub](https://img.shields.io/badge/GitHub-Repo-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/siddiquesakib/Unity-Shop)
+<div align="center">
+  <a href="https://nextjs.org/"><img src="https://img.shields.io/badge/Next.js-16%2B-000000?style=for-the-badge&logo=next.js&logoColor=white" alt="Next.js"/></a>
+  <a href="https://reactjs.org/"><img src="https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react&logoColor=black" alt="React"/></a>
+  <a href="https://tailwindcss.com/"><img src="https://img.shields.io/badge/TailwindCSS-v4-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white" alt="TailwindCSS"/></a>
+  <a href="https://nodejs.org/"><img src="https://img.shields.io/badge/Node.js-20%2B-339933?style=for-the-badge&logo=node.js&logoColor=white" alt="Node.js"/></a>
+  <a href="https://expressjs.com/"><img src="https://img.shields.io/badge/Express-5.x-000000?style=for-the-badge&logo=express&logoColor=white" alt="Express"/></a>
+  <a href="https://mongodb.com/atlas"><img src="https://img.shields.io/badge/MongoDB-Atlas-47A248?style=for-the-badge&logo=mongodb&logoColor=white" alt="MongoDB"/></a>
+</div>
+
+
+<div align="center">
+  <a href="https://unity-shop-three.vercel.app"><img src="https://img.shields.io/badge/Live_Demo-View_Site-FF4154?style=for-the-badge&logo=vercel&logoColor=white" alt="Live Demo"/></a>
+  <a href="https://github.com/siddiquesakib/Unity-Shop"><img src="https://img.shields.io/badge/GitHub-Repo-181717?style=for-the-badge&logo=github&logoColor=white" alt="GitHub"/></a>
+</div>
 
 ---
 
-[![Version](https://img.shields.io/badge/version-1.0.0-C9A84C?style=flat-square)](.)
-[![Status](https://img.shields.io/badge/status-Production_Ready-green?style=flat-square)](.)
-[![Built By](https://img.shields.io/badge/Built_By-Unity--Stack-C9A84C?style=flat-square)](.)
+
+<div align="center">
+  <img src="https://img.shields.io/badge/version-1.0.0-C9A84C?style=flat-square" alt="Version"/>
+  <img src="https://img.shields.io/badge/status-Production_Ready-green?style=flat-square" alt="Status"/>
+  <img src="https://img.shields.io/badge/Built_By-Unity--Stack-C9A84C?style=flat-square" alt="Built By"/>
+</div>
 
 </div>
 
