@@ -97,20 +97,23 @@ function TeamMemberCard({ member }) {
           <div className="relative z-10 text-center">
             {/* avatar */}
             <div className="mb-5 flex justify-center">
-              <div className="relative h-24 w-24 overflow-hidden rounded-full border-2 border-gray-50 ring-2 ring-gray-100 group-hover:ring-black transition-all duration-500">
-                <Image
-                  src={member.image}
-                  alt={member.name}
-                  fill
-                  className="object-cover grayscale group-hover:grayscale-0 transition-all duration-500"
-                />
+              <div className="relative h-24 w-24 rounded-full p-[1px] bg-gray-200 group-hover:bg-gray-300 transition-colors duration-500 hover:scale-105">
+                <div className="relative h-full w-full rounded-full overflow-hidden border-4 border-white">
+                  <Image
+                    sizes="(max-width: 768px) 100vw, 50vw"
+                    src={member.image}
+                    alt={member.name}
+                    fill
+                    className="object-cover grayscale group-hover:grayscale-0 transition-all duration-500"
+                  />
+                </div>
               </div>
             </div>
 
             <h3 className="text-lg font-bold text-black tracking-tight">
               {member.name}
             </h3>
-            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400 mb-3">
+            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500 mb-3 mt-1">
               {member.role}
             </p>
 
@@ -128,7 +131,7 @@ function TeamMemberCard({ member }) {
               {member.skills.map((skill) => (
                 <span
                   key={skill}
-                  className="rounded-full bg-gray-50 border border-gray-100 px-2.5 py-0.5 text-[10px] font-medium text-gray-500"
+                  className="rounded-full bg-gray-50 border border-gray-200 px-3 py-1 text-[10px] font-semibold text-gray-500 shadow-sm"
                 >
                   {skill}
                 </span>
@@ -193,7 +196,7 @@ const teamMembers = [
     name: "Mohammad Siddique Sakib",
     role: "Team Lead",
     bio: "Leading with vision and passion.",
-    image: "https://i.ibb.co/C50XzpB0/sakib.png",
+    image: "https://i.ibb.co.com/fzxZkrsw/Whats-App-Image-2026-04-02-at-2-40-06-PM.jpg",
     location: "Chattagram, Bangladesh",
     skills: ["Strategy", "Leadership"],
     social: {
@@ -264,9 +267,14 @@ const teamMembers = [
 
 const AboutPage = () => {
   return (
-    <div className="min-h-screen bg-white text-black font-sans selection:bg-black selection:text-white">
+    <div className="min-h-screen bg-white text-black font-sans selection:bg-gray-100 selection:text-black relative overflow-hidden">
+      
+      {/* Subtle Background Pattern */}
+      <div className="absolute inset-0 z-0 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:40px_40px]" />
+      <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-gray-100 blur-[100px] -z-10" />
+
       {/* HERO */}
-      <section className="relative pt-32 pb-20 px-6">
+      <section className="relative pt-40 pb-24 px-6 z-10">
         <div className="max-w-4xl mx-auto text-center">
           <motion.div
             initial="hidden"
@@ -275,17 +283,17 @@ const AboutPage = () => {
           >
             <motion.div
               variants={itemVariants}
-              className="mb-6 inline-flex items-center gap-2 rounded-full border border-gray-100 bg-gray-50/50 px-4 py-1 text-[11px] font-bold uppercase tracking-widest text-gray-400"
+              className="mb-6 inline-flex items-center gap-2 rounded-full border border-gray-100 bg-gray-50 px-4 py-1 text-[11px] font-bold uppercase tracking-widest text-gray-400"
             >
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="h-1.5 w-1.5 rounded-full bg-black animate-pulse" />
               Our Story
             </motion.div>
             <motion.h1
               variants={itemVariants}
-              className="text-5xl md:text-7xl font-bold tracking-tight mb-8 leading-[0.95]"
+              className="text-5xl md:text-7xl font-extrabold tracking-tight mb-8 leading-[1.1]"
             >
               We build tools for the{" "}
-              <span className="text-gray-300 italic font-medium">
+              <span className="text-gray-400 italic font-light">
                 next generation
               </span>{" "}
               of shopping.
@@ -302,9 +310,9 @@ const AboutPage = () => {
       </section>
 
       {/* STATS */}
-      <section className="border-y border-gray-100 bg-gray-50/30">
-        <div className="max-w-6xl mx-auto px-6 py-12">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+      <section className="border-y border-gray-100 bg-white/60 backdrop-blur-3xl relative z-10">
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 divide-y md:divide-y-0 md:divide-x divide-gray-100">
             {stats.map((stat, i) => (
               <motion.div
                 key={i}
@@ -313,12 +321,12 @@ const AboutPage = () => {
                 whileInView="visible"
                 variants={fadeUp}
                 viewport={{ once: true }}
-                className="text-center md:text-left"
+                className="flex flex-col items-center justify-center py-12 md:py-16 transition-colors hover:bg-gray-50/50"
               >
-                <p className="text-3xl font-bold tracking-tighter">
+                <p className="text-4xl md:text-5xl font-extrabold tracking-tighter text-black">
                   {stat.value}
                 </p>
-                <p className="text-xs font-bold uppercase tracking-widest text-gray-400 mt-1">
+                <p className="text-[10px] sm:text-xs font-semibold uppercase tracking-[0.2em] text-gray-400 mt-3">
                   {stat.label}
                 </p>
               </motion.div>
@@ -327,17 +335,62 @@ const AboutPage = () => {
         </div>
       </section>
 
-      {/* TEAM SECTION */}
-      <section className="py-24 px-6">
+      {/* VALUES SECTION */}
+      <section className="py-24 px-6 bg-white relative z-10">
         <div className="max-w-6xl mx-auto">
-          <div className="mb-16 text-center md:text-left">
-            <h2 className="text-3xl font-bold tracking-tight mb-4">
-              The people behind the pixels
-            </h2>
-            <p className="text-gray-500 max-w-md">
-              Our team is a small group of thinkers and makers dedicated to
-              building the best commerce experience.
-            </p>
+          <div className="flex flex-col md:flex-row justify-between items-end mb-16 pb-8 border-b border-gray-100">
+            <div className="max-w-lg mb-6 md:mb-0">
+              <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-4 text-black">
+                Why Choose UnityShop
+              </h2>
+              <p className="text-gray-500 text-lg leading-relaxed">
+                We provide the best ecosystem for both buyers and sellers around the world, focusing on what matters most.
+              </p>
+            </div>
+            <div className="hidden md:flex h-12 w-12 rounded-full border border-gray-200 items-center justify-center text-gray-300">
+              <Sparkles className="h-5 w-5" />
+            </div>
+          </div>
+          
+          <div className="grid md:grid-cols-3 gap-6">
+            {values.slice(0, 3).map((val, i) => (
+              <motion.div 
+                key={i} 
+                className="p-8 rounded-[2rem] bg-gray-50/50 border border-gray-100 hover:bg-white hover:border-gray-200 hover:shadow-[0_8px_30px_rgb(0,0,0,0.04)] transition-all duration-500 group"
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: i * 0.15 }}
+              >
+                <div className="h-12 w-12 rounded-full bg-white border border-gray-100 text-black flex items-center justify-center mb-8 group-hover:scale-110 transition-transform duration-500 shadow-sm">
+                  <val.icon className="h-5 w-5" />
+                </div>
+                <h3 className="text-xl font-bold mb-3 text-black">{val.title}</h3>
+                <p className="text-sm text-gray-500 leading-relaxed font-medium">{val.desc}</p>
+                <div className="mt-8 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-gray-300 group-hover:text-black transition-colors duration-500 cursor-pointer">
+                  Learn More <FiArrowRight className="h-4 w-4 -translate-x-2 opacity-0 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-500" />
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* TEAM SECTION */}
+      <section className="py-24 px-6 relative z-10 border-t border-gray-100 bg-gray-50/30">
+        <div className="max-w-6xl mx-auto">
+          <div className="flex flex-col md:flex-row justify-between items-center md:items-end mb-16 pb-8 border-b border-gray-200/60">
+            <div className="max-w-2xl mb-6 md:mb-0 text-center md:text-left">
+              <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white px-4 py-1.5 text-[11px] font-bold uppercase tracking-widest text-black shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
+                <FiUsers className="h-3.5 w-3.5" /> Core Team
+              </div>
+              <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-4 text-black">
+                Meet the minds behind UnityShop.
+              </h2>
+              <p className="text-gray-500 text-lg leading-relaxed">
+                A passionate group of developers, designers, and strategists working together to redefine global commerce through elegant engineering.
+              </p>
+            </div>
           </div>
 
           <motion.div
