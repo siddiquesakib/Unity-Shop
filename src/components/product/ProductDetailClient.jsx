@@ -1051,7 +1051,7 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
                 </span>
               </div>
               <Link
-                href={`/products?seller=${encodeURIComponent(product.sellerEmail || "")}&sellerName=${encodeURIComponent(product.sellerName || "")}`}
+                href={`/seller/${encodeURIComponent(product.sellerName || "UnityShop Seller")}`}
                 className="px-4 py-2 border-2 border-gray-100 rounded-lg text-[10px] font-black uppercase tracking-wide text-black hover:border-black hover:bg-black hover:text-white transition-all whitespace-nowrap"
               >
                 Store →
@@ -1657,7 +1657,7 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
                 </div>
                 <div className="flex gap-2 mt-4">
                   <Link
-                    href={`/products?seller=${encodeURIComponent(vendor.email)}&sellerName=${encodeURIComponent(vendor.name)}`}
+                    href={`/seller/${encodeURIComponent(vendor.name)}`}
                     className="flex-1 h-9 bg-black text-white text-[16px] sm:text-[16px] sm:text-base font-bold rounded-lg flex items-center justify-center hover:bg-gray-800"
                   >
                     All Products
