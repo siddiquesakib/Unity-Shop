@@ -1,11 +1,10 @@
 
-<p align="center">
-  <img src="https://i.ibb.co.com/FqVS6VG2/Unity-Shop-logo-removebg-preview.png" width="130" alt="Unity Shop logo" style="vertical-align: middle; border-radius: 8px; margin-right: 18px;"/>
-  <span style="font-size:2.5rem; font-weight:bold; vertical-align: middle;">✦ Unity Shop ✦</span>
-</p>
-
-
 <div align="center">
+  <h1>
+    <img src="https://i.ibb.co.com/FqVS6VG2/Unity-Shop-logo-removebg-preview.png" width="120" alt="Unity Shop logo" align="center" /> 
+    Unity Shop 
+  </h1>
+
   <h3><em>A Scalable, AI-Driven Multi-Vendor E-Commerce Platform</em></h3>
   <p><em>Unity Shop isn't just another online storefront. It's a highly scalable, AI-driven ecosystem built for the real world.</em></p>
 </div>
@@ -91,14 +90,14 @@ To build a complete digital commerce infrastructure that empowers businesses to:
 ## 📸 Platform Gallery
 
 <p align="center" style="display: flex; justify-content: center; gap: 10px; flex-wrap: wrap;">
+  <img src="https://i.ibb.co.com/0VmDHxkX/307fed8f-52c5-452a-a66b-58c02d38b1dd.png" width="49%" alt="Unity Shop Showcase 8" style="border-radius: 8px; margin-bottom: 2%;"/>
+   <img src="https://i.ibb.co.com/cKn6ms1y/de8a3db4-ca27-4ffb-9b82-b46ac6925713.png" width="49%" alt="Unity Shop Showcase 7" style="border-radius: 8px; margin-bottom: 2%;"/>
+   <img src="https://i.ibb.co.com/R12gZYY/12f6e5e1-0447-4c7c-b7da-3046fe2cc86f.png" width="49%" alt="Unity Shop Showcase 3" style="border-radius: 8px; margin-bottom: 2%;"/>
+   <img src="https://i.ibb.co.com/fGLWVMHx/27d95240-6634-40f7-850b-e5985706184b.png" width="49%" alt="Unity Shop Showcase 2" style="border-radius: 8px; margin-bottom: 2%;"/>
   <img src="https://i.ibb.co.com/nNRr7h8G/d43f62af-548d-43c0-beae-caf73701c838.png" width="49%" alt="Unity Shop Showcase 1" style="border-radius: 8px; margin-bottom: 2%;"/>
-  <img src="https://i.ibb.co.com/fGLWVMHx/27d95240-6634-40f7-850b-e5985706184b.png" width="49%" alt="Unity Shop Showcase 2" style="border-radius: 8px; margin-bottom: 2%;"/>
-  <img src="https://i.ibb.co.com/R12gZYY/12f6e5e1-0447-4c7c-b7da-3046fe2cc86f.png" width="49%" alt="Unity Shop Showcase 3" style="border-radius: 8px; margin-bottom: 2%;"/>
   <img src="https://i.ibb.co.com/fdqcm0Vs/91ff66b8-7122-4e79-a639-45a7c95fbaf3.png" width="49%" alt="Unity Shop Showcase 4" style="border-radius: 8px; margin-bottom: 2%;"/>
   <img src="https://i.ibb.co.com/RpSy5NLV/bdcb9600-27cf-49a0-b91d-b3c1b1e9b143.png" width="49%" alt="Unity Shop Showcase 5" style="border-radius: 8px; margin-bottom: 2%;"/>
   <img src="https://i.ibb.co.com/GfLBxDwG/d2e0cedf-58f3-497f-8f66-3751b8b35867.png" width="49%" alt="Unity Shop Showcase 6" style="border-radius: 8px; margin-bottom: 2%;"/>
-  <img src="https://i.ibb.co.com/cKn6ms1y/de8a3db4-ca27-4ffb-9b82-b46ac6925713.png" width="49%" alt="Unity Shop Showcase 7" style="border-radius: 8px; margin-bottom: 2%;"/>
-  <img src="https://i.ibb.co.com/0VmDHxkX/307fed8f-52c5-452a-a66b-58c02d38b1dd.png" width="49%" alt="Unity Shop Showcase 8" style="border-radius: 8px; margin-bottom: 2%;"/>
 </p>
 
 ---
