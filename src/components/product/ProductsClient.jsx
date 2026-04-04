@@ -274,7 +274,7 @@ export default function ProductsClient() {
         <div className="flex gap-8 lg:gap-12">
           {/* Desktop Sidebar */}
           <div className="hidden lg:block w-60 shrink-0">
-            <div className="sticky top-8 bg-white rounded-2xl border border-gray-200 p-6">
+            <div className="sticky top-8 bg-white rounded-2xl border border-gray-200 p-6 max-h-[calc(100vh-4rem)] overflow-y-auto overflow-x-hidden scrollbar-hide">
               <ProductFilters
                 activeCategory={activeCategory}
                 setActiveCategory={handleCategoryChange}

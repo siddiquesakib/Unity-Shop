@@ -3,12 +3,21 @@ import Sidebar from "@/components/dashboard/Sidebar";
 import Topbar from "@/components/dashboard/Topbar";
 import { useAuth } from "@/hooks/useAuth";
 import { useRouter, usePathname } from "next/navigation";
-import { useEffect } from "react";
+import { useState, useEffect } from "react";
 
 export default function DashboardLayout({ children }) {
   const { user, loading, getDashboardByRole } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 1024) setMobileOpen(false);
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -59,10 +68,10 @@ export default function DashboardLayout({ children }) {
 
   return (
     <div className="flex min-h-screen bg-[#f7f6f3] text-gray-800 font-sans selection:bg-gray-200">
-      <Sidebar />
+      <Sidebar mobileOpen={mobileOpen} setMobileOpen={setMobileOpen} />
       <div className="flex-1 flex flex-col min-w-0">
-        <Topbar />
-        <main className="flex-1 p-4 pt-6 sm:p-6 lg:p-8 overflow-y-auto">
+        <Topbar onMenuClick={() => setMobileOpen(true)} />
+        <main className="flex-1 p-4 sm:p-6 lg:p-8">
           <div className="max-w-7xl mx-auto space-y-6">{children}</div>
         </main>
       </div>
