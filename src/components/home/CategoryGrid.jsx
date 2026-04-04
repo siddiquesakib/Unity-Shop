@@ -1,129 +1,129 @@
-"use client";
+'use client';
 
-import Image from "next/image";
-import Link from "next/link";
-import { useState, useEffect, useRef } from "react";
-import { FiArrowUpRight } from "react-icons/fi";
-import Button from "@/components/common/Button";
+import Image from 'next/image';
+import Link from 'next/link';
+import { useState, useEffect, useRef } from 'react';
+import { FiArrowUpRight } from 'react-icons/fi';
+import Button from '@/components/common/Button';
 
 /* ━━━━━ Category Data ━━━━━ */
 const categories = [
   {
-    id: 'Fashion',
+    id: 'fashion',
     label: 'Fashion',
     image:
       'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=400&h=400&fit=crop&q=80',
   },
   {
-    id: 'Electronics',
+    id: 'electronics',
     label: 'Electronics',
     image:
       'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&h=400&fit=crop&q=80',
   },
   {
-    id: 'Home & Living',
-    label: 'Home',
+    id: 'home & living',
+    label: 'Home & Living',
     image:
       'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=400&h=400&fit=crop&q=80',
   },
   {
-    id: 'Beauty',
+    id: 'beauty',
     label: 'Beauty',
     image:
       'https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=400&h=400&fit=crop&q=80',
   },
   {
-    id: 'Watches',
-    label: 'Accessories',
+    id: 'watches',
+    label: 'Watches',
     image:
       'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400&h=400&fit=crop&q=80',
   },
   {
-    id: 'Toys & Baby',
-    label: 'Gifts',
+    id: 'toys & baby',
+    label: 'Toys & Baby',
     image:
       'https://www.sandiegofamily.com/images/stories/holidaygallery/gifts-2021-08-30-09-47-28-utc.jpeg',
   },
   {
-    id: 'Mobiles',
+    id: 'mobiles',
     label: 'Mobiles',
     image:
       'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=400&h=400&fit=crop&q=80',
   },
   {
-    id: 'Gaming',
+    id: 'gaming',
     label: 'Gaming',
     image:
       'https://images.unsplash.com/photo-1612287230202-1ff1d85d1bdf?w=400&h=400&fit=crop&q=80',
   },
   {
-    id: 'Sports',
+    id: 'sports',
     label: 'Sports',
     image:
       'https://media.istockphoto.com/id/146863459/photo/sports-objects.jpg?s=612x612&w=0&k=20&c=AKm_AV9Ghq5kqatAKWnzBvBmCSfr7hMjf9KvTTLtN70=',
   },
   {
-    id: 'Books',
+    id: 'books',
     label: 'Books',
     image:
       'https://images.unsplash.com/photo-1512820790803-83ca734da794?w=400&h=400&fit=crop&q=80',
   },
   {
-    id: 'Grocery',
+    id: 'grocery',
     label: 'Grocery',
     image:
       'https://images.unsplash.com/photo-1542838132-92c53300491e?w=400&h=400&fit=crop&q=80',
   },
   {
-    id: 'Health',
+    id: 'health',
     label: 'Health',
     image:
       'https://images.unsplash.com/photo-1505751172876-fa1923c5c528?w=400&h=400&fit=crop&q=80',
   },
   {
-    id: 'Kitchen',
+    id: 'kitchen',
     label: 'Kitchen',
     image:
       'https://plus.unsplash.com/premium_photo-1678375722686-c7ea507c3003?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
   },
   {
-    id: 'Bedroom',
+    id: 'bedroom',
     label: 'Bedroom',
     image:
       'https://images.unsplash.com/photo-1595526114035-0d45ed16cfbf?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
   },
   {
-    id: 'Office',
+    id: 'office',
     label: 'Office',
     image:
       'https://images.unsplash.com/photo-1746021535489-00edc5efb203?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
   },
   {
-    id: 'Audio',
+    id: 'audio',
     label: 'Audio',
     image:
       'https://images.unsplash.com/photo-1631586552668-b31039d4921d?q=80&w=1174&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
   },
   {
-    id: 'Stationery',
+    id: 'stationery',
     label: 'Stationery',
     image:
       'https://images.unsplash.com/photo-1551925608-12e169132446?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
   },
   {
-    id: 'Tools',
+    id: 'tools',
     label: 'Tools',
     image:
       'https://images.unsplash.com/photo-1683115099191-51e617fc5ff1?q=80&w=1176&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
   },
   {
-    id: 'Toys',
+    id: 'toys',
     label: 'Toys',
     image:
       'https://images.unsplash.com/photo-1599623560574-39d485900c95?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
   },
   {
-    id: 'Auction',
+    id: 'auction',
     label: 'Auction',
     image:
       'https://t3.ftcdn.net/jpg/06/36/01/48/360_F_636014891_ne8XUB4YU4WoMeUUjr0TU6wH38wNTU6V.jpg',
@@ -135,7 +135,7 @@ const CategoryCard = ({ cat, count, index }) => {
   const cardRef = useRef(null);
   const shimmerRef = useRef(null);
 
-  const handleMouseMove = (e) => {
+  const handleMouseMove = e => {
     const card = cardRef.current;
     if (!card) return;
     const rect = card.getBoundingClientRect();
@@ -150,15 +150,15 @@ const CategoryCard = ({ cat, count, index }) => {
       const px = (x / rect.width) * 100;
       const py = (y / rect.height) * 100;
       shimmerRef.current.style.background = `radial-gradient(circle at ${px}% ${py}%, rgba(255,255,255,0.28) 0%, transparent 60%)`;
-      shimmerRef.current.style.opacity = "1";
+      shimmerRef.current.style.opacity = '1';
     }
   };
 
   const handleMouseLeave = () => {
     if (cardRef.current)
       cardRef.current.style.transform =
-        "perspective(600px) rotateX(0deg) rotateY(0deg) scale3d(1,1,1)";
-    if (shimmerRef.current) shimmerRef.current.style.opacity = "0";
+        'perspective(600px) rotateX(0deg) rotateY(0deg) scale3d(1,1,1)';
+    if (shimmerRef.current) shimmerRef.current.style.opacity = '0';
   };
 
   return (
@@ -209,13 +209,15 @@ const CategoryGrid = () => {
         if (res.ok) {
           const data = await res.json();
           const counts = {};
-          data.forEach((c) => {
-            counts[c.name] = c.count;
+          data.forEach(c => {
+            if (c.name) {
+              counts[c.name.toLowerCase()] = c.count;
+            }
           });
           setCategoryCounts(counts);
         }
       } catch (err) {
-        console.error("Failed to fetch categories:", err);
+        console.error('Failed to fetch categories:', err);
       } finally {
         setLoading(false);
       }
@@ -479,7 +481,10 @@ const CategoryGrid = () => {
                 {categories.length} collections
               </span>
             </div>
-            <Button href="/products" className="!rounded-full !px-4 !py-1.5 !text-xs !border-[#ddd] hover:!border-black">
+            <Button
+              href="/products"
+              className="!rounded-full !px-4 !py-1.5 !text-xs !border-[#ddd] hover:!border-black"
+            >
               Browse All
             </Button>
           </div>
@@ -503,7 +508,7 @@ const CategoryGrid = () => {
                 <CategoryCard
                   key={cat.id}
                   cat={cat}
-                  count={categoryCounts[cat.id] || 0}
+                  count={categoryCounts[cat.id.toLowerCase()] || 0}
                   index={i}
                 />
               ))}
