@@ -28,12 +28,18 @@ export default function ProductsClient() {
   const router = useRouter();
   const urlCategory = searchParams.get("category") || "all";
   const urlQuery = searchParams.get("q") || "";
+  const urlBrand = searchParams.get("brand") || "";
+  const urlSeller = searchParams.get("seller") || "";
+  const urlSellerName = searchParams.get("sellerName") || "";
 
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState(urlCategory);
   const [sortBy, setSortBy] = useState("featured");
   const [searchQuery, setSearchQuery] = useState(urlQuery);
+  const [brandFilter, setBrandFilter] = useState(urlBrand);
+  const [sellerFilter, setSellerFilter] = useState(urlSeller);
+  const [sellerNameDisplay, setSellerNameDisplay] = useState(urlSellerName);
   const [priceRange, setPriceRange] = useState([0, 5000]);
   const [view, setView] = useState("grid");
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -48,14 +54,29 @@ export default function ProductsClient() {
   }, [urlCategory]);
 
   useEffect(() => {
-    if (urlQuery) setSearchQuery(urlQuery);
+    setSearchQuery(urlQuery);
   }, [urlQuery]);
 
+  useEffect(() => {
+    setBrandFilter(urlBrand);
+  }, [urlBrand]);
+
+  useEffect(() => {
+    setSellerFilter(urlSeller);
+    setSellerNameDisplay(urlSellerName);
+  }, [urlSeller, urlSellerName]);
+
   // Build URL params for browser history
-  const buildUrl = (cat, q) => {
+  const buildUrl = (cat, q, brand, seller, sellerName) => {
     const params = new URLSearchParams();
     if (cat && cat !== "all") params.set("category", cat);
     if (q && q.trim()) params.set("q", q.trim());
+    if (brand && brand.trim()) params.set("brand", brand.trim());
+    if (seller && seller.trim()) {
+      params.set("seller", seller.trim());
+      if (sellerName && sellerName.trim())
+        params.set("sellerName", sellerName.trim());
+    }
     const qs = params.toString();
     return `/products${qs ? `?${qs}` : ""}`;
   };
@@ -63,7 +84,10 @@ export default function ProductsClient() {
   const handleCategoryChange = (cat) => {
     setActiveCategory(cat);
     setCurrentPage(1);
-    router.push(buildUrl(cat, searchQuery), { scroll: false });
+    router.push(
+      buildUrl(cat, searchQuery, brandFilter, sellerFilter, sellerNameDisplay),
+      { scroll: false },
+    );
   };
 
   // Debounce search input — fetch after user stops typing (400ms)
@@ -80,37 +104,63 @@ export default function ProductsClient() {
     setLoading(true);
     try {
       const params = new URLSearchParams();
-      if (debouncedSearch && debouncedSearch.trim()) params.set("q", debouncedSearch.trim());
+      if (debouncedSearch && debouncedSearch.trim())
+        params.set("q", debouncedSearch.trim());
       if (activeCategory !== "all") params.set("category", activeCategory);
+      if (brandFilter) params.set("brand", brandFilter);
+      if (sellerFilter) params.set("seller", sellerFilter);
       if (priceRange[0] > 0) params.set("priceMin", priceRange[0]);
       if (priceRange[1] < 5000) params.set("priceMax", priceRange[1]);
 
       // Map sortBy to backend sort
-      const sortMap = { featured: "recommended", newest: "newest", "price-asc": "price-asc", "price-desc": "price-desc", rating: "rating" };
+      const sortMap = {
+        featured: "recommended",
+        newest: "newest",
+        "price-asc": "price-asc",
+        "price-desc": "price-desc",
+        rating: "rating",
+      };
       params.set("sort", sortMap[sortBy] || "recommended");
       params.set("page", currentPage);
       params.set("limit", PRODUCTS_PER_PAGE);
 
-      const res = await fetch(`${API_URL}/products/search?${params.toString()}`);
+      const res = await fetch(
+        `${API_URL}/products/search?${params.toString()}`,
+      );
       if (res.ok) {
         const data = await res.json();
         let list = data.products || [];
 
         // Client-side sale filter (backend doesn't have this)
         if (onSaleOnly) {
-          list = list.filter((p) => p.originalPrice && p.originalPrice > p.price);
+          list = list.filter(
+            (p) => p.originalPrice && p.originalPrice > p.price,
+          );
         }
 
         setProducts(list);
-        setTotalResults(onSaleOnly ? list.length : (data.total || 0));
-        setTotalPages(onSaleOnly ? Math.ceil(list.length / PRODUCTS_PER_PAGE) : (data.totalPages || 0));
+        setTotalResults(onSaleOnly ? list.length : data.total || 0);
+        setTotalPages(
+          onSaleOnly
+            ? Math.ceil(list.length / PRODUCTS_PER_PAGE)
+            : data.totalPages || 0,
+        );
       }
     } catch (err) {
       console.error("Failed to fetch products:", err);
     } finally {
       setLoading(false);
     }
-  }, [debouncedSearch, activeCategory, sortBy, currentPage, priceRange, onSaleOnly]);
+  }, [
+    debouncedSearch,
+    activeCategory,
+    sortBy,
+    currentPage,
+    priceRange,
+    onSaleOnly,
+    brandFilter,
+    sellerFilter,
+  ]);
 
   useEffect(() => {
     fetchProducts();
@@ -119,10 +169,21 @@ export default function ProductsClient() {
   // Reset page to 1 when filters change (but not currentPage itself)
   useEffect(() => {
     setCurrentPage(1);
-  }, [activeCategory, debouncedSearch, sortBy, priceRange, onSaleOnly]);
+  }, [
+    activeCategory,
+    debouncedSearch,
+    sortBy,
+    priceRange,
+    onSaleOnly,
+    brandFilter,
+    sellerFilter,
+  ]);
 
   const handleReset = () => {
     setSearchQuery("");
+    setBrandFilter("");
+    setSellerFilter("");
+    setSellerNameDisplay("");
     setPriceRange([0, 5000]);
     setSortBy("featured");
     setOnSaleOnly(false);
@@ -139,6 +200,8 @@ export default function ProductsClient() {
   const hasActiveFilters =
     activeCategory !== "all" ||
     searchQuery ||
+    brandFilter ||
+    sellerFilter ||
     onSaleOnly ||
     priceRange[1] < 5000;
 
@@ -158,8 +221,8 @@ export default function ProductsClient() {
                 {searchQuery ? `"${searchQuery}"` : activeLabel}
               </h1>
               <p className="font-body text-gray-500 text-base sm:text-lg mt-3">
-                {displayCount}{" "}
-                {displayCount === 1 ? "product" : "products"} found
+                {displayCount} {displayCount === 1 ? "product" : "products"}{" "}
+                found
                 {searchQuery && activeCategory !== "all" && (
                   <span className="text-gray-400"> in {activeLabel}</span>
                 )}
@@ -331,6 +394,31 @@ export default function ProductsClient() {
                     On Sale
                     <button
                       onClick={() => setOnSaleOnly(false)}
+                      className="hover:text-gray-300"
+                    >
+                      ✕
+                    </button>
+                  </span>
+                )}
+                {brandFilter && (
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-black text-white text-xs rounded-full">
+                    Brand: {brandFilter}
+                    <button
+                      onClick={() => setBrandFilter("")}
+                      className="hover:text-gray-300"
+                    >
+                      ✕
+                    </button>
+                  </span>
+                )}
+                {sellerFilter && (
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-black text-white text-xs rounded-full">
+                    Seller: {sellerNameDisplay || sellerFilter}
+                    <button
+                      onClick={() => {
+                        setSellerFilter("");
+                        setSellerNameDisplay("");
+                      }}
                       className="hover:text-gray-300"
                     >
                       ✕

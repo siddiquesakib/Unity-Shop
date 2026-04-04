@@ -596,11 +596,17 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
       {/* Breadcrumb & Live Stats */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <nav className="flex items-center gap-2 text-[10px] sm:text-xs font-black uppercase tracking-widest text-gray-400 overflow-x-auto no-scrollbar max-w-full">
-          <Link href="/" className="hover:text-black whitespace-nowrap shrink-0">
+          <Link
+            href="/"
+            className="hover:text-black whitespace-nowrap shrink-0"
+          >
             Home
           </Link>
           <FiChevronRight size={12} className="shrink-0" />
-          <Link href="/products" className="hover:text-black whitespace-nowrap shrink-0">
+          <Link
+            href="/products"
+            className="hover:text-black whitespace-nowrap shrink-0"
+          >
             Products
           </Link>
           {product.category && (
@@ -810,8 +816,7 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
           {colors.length > 0 && (
             <div>
               <span className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2 block">
-                Color:{" "}
-                <span className="text-black uppercase">{selColor}</span>
+                Color: <span className="text-black uppercase">{selColor}</span>
               </span>
               <div className="flex gap-2 flex-wrap">
                 {colors.map((c) => {
@@ -936,27 +941,53 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
               <PostaBId product={product} />
             ) : (
               <div className="flex flex-row gap-2">
-                  <button
-                    onClick={addCart}
-                    disabled={product.stock === 0 || cartOk}
-                    className="flex-1 h-12 bg-white border-2 border-black text-black font-bold text-[10px] sm:text-[12px] uppercase tracking-widest rounded-lg hover:bg-black hover:text-white active:scale-95 transition-colors duration-300 flex items-center justify-center gap-1.5 sm:gap-2 px-1 sm:px-0 disabled:opacity-40 group"
-                  >
-                    {cartOk ? <FiCheck strokeWidth={3} size={15} className="sm:w-[18px] sm:h-[18px]" /> : <FiShoppingCart strokeWidth={3} size={15} className="sm:w-[18px] sm:h-[18px]" />}
-                    <span className="whitespace-nowrap group-hover:text-white transition-colors">{cartOk ? "Added" : "Add to Cart"}</span>
-                  </button>
-                  <button
-                    onClick={buyNow}
-                    disabled={product.stock === 0}
-                    className="flex-1 h-12 bg-black border-2 border-black text-white font-bold text-[10px] sm:text-[12px] uppercase tracking-widest rounded-lg hover:bg-transparent hover:text-black active:scale-95 transition-colors flex items-center justify-center gap-1.5 sm:gap-2 px-1 sm:px-0 disabled:opacity-40 group"
-                  >
-                    <FiZap size={15} strokeWidth={3} className="sm:w-[18px] sm:h-[18px] group-hover:text-black transition-colors" /> 
-                    <span className="whitespace-nowrap group-hover:text-black transition-colors">Buy Now</span>
-                  </button>
+                <button
+                  onClick={addCart}
+                  disabled={product.stock === 0 || cartOk}
+                  className="flex-1 h-12 bg-white border-2 border-black text-black font-bold text-[10px] sm:text-[12px] uppercase tracking-widest rounded-lg hover:bg-black hover:text-white active:scale-95 transition-colors duration-300 flex items-center justify-center gap-1.5 sm:gap-2 px-1 sm:px-0 disabled:opacity-40 group"
+                >
+                  {cartOk ? (
+                    <FiCheck
+                      strokeWidth={3}
+                      size={15}
+                      className="sm:w-[18px] sm:h-[18px]"
+                    />
+                  ) : (
+                    <FiShoppingCart
+                      strokeWidth={3}
+                      size={15}
+                      className="sm:w-[18px] sm:h-[18px]"
+                    />
+                  )}
+                  <span className="whitespace-nowrap group-hover:text-white transition-colors">
+                    {cartOk ? "Added" : "Add to Cart"}
+                  </span>
+                </button>
+                <button
+                  onClick={buyNow}
+                  disabled={product.stock === 0}
+                  className="flex-1 h-12 bg-black border-2 border-black text-white font-bold text-[10px] sm:text-[12px] uppercase tracking-widest rounded-lg hover:bg-transparent hover:text-black active:scale-95 transition-colors flex items-center justify-center gap-1.5 sm:gap-2 px-1 sm:px-0 disabled:opacity-40 group"
+                >
+                  <FiZap
+                    size={15}
+                    strokeWidth={3}
+                    className="sm:w-[18px] sm:h-[18px] group-hover:text-black transition-colors"
+                  />
+                  <span className="whitespace-nowrap group-hover:text-black transition-colors">
+                    Buy Now
+                  </span>
+                </button>
                 <button
                   onClick={() => setWish(!wish)}
                   className={`w-12 h-12 border-2 rounded-lg flex items-center justify-center shrink-0 transition-colors ${wish ? "bg-rose-50 border-rose-500 text-rose-500" : "bg-white border-black text-black hover:bg-black hover:text-white group"}`}
                 >
-                  <FiHeart size={16} strokeWidth={wish ? 0 : 2.5} className={wish ? "fill-current" : "sm:w-[18px] sm:h-[18px]"} />
+                  <FiHeart
+                    size={16}
+                    strokeWidth={wish ? 0 : 2.5}
+                    className={
+                      wish ? "fill-current" : "sm:w-[18px] sm:h-[18px]"
+                    }
+                  />
                 </button>
               </div>
             )}
@@ -982,8 +1013,13 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
               { icon: FiShield, label: "Guarantee", color: "text-black" },
               { icon: FiLock, label: "Secure", color: "text-black" },
             ].map(({ icon: I, label, color }) => (
-              <div key={label} className="text-center py-3 flex flex-col items-center gap-1.5 border-2 border-gray-100 rounded-xl hover:border-black transition-colors group">
-                <div className={`p-2 rounded-lg bg-gray-50 group-hover:bg-black group-hover:text-white transition-colors ${color}`}>
+              <div
+                key={label}
+                className="text-center py-3 flex flex-col items-center gap-1.5 border-2 border-gray-100 rounded-xl hover:border-black transition-colors group"
+              >
+                <div
+                  className={`p-2 rounded-lg bg-gray-50 group-hover:bg-black group-hover:text-white transition-colors ${color}`}
+                >
                   <I size={18} strokeWidth={2.5} />
                 </div>
                 <p className="text-[9px] font-black uppercase tracking-widest text-gray-400 group-hover:text-black">
@@ -1004,14 +1040,18 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
                   <span className="text-sm font-black text-black truncate tracking-wide">
                     {product.sellerName}
                   </span>
-                  <FiCheckCircle size={14} className="text-black shrink-0" strokeWidth={3} />
+                  <FiCheckCircle
+                    size={14}
+                    className="text-black shrink-0"
+                    strokeWidth={3}
+                  />
                 </div>
                 <span className="text-[9px] font-black uppercase tracking-widest text-gray-400 mt-0.5 block">
                   Verified Seller
                 </span>
               </div>
               <Link
-                href={`/products?seller=${encodeURIComponent(product.sellerEmail || "")}`}
+                href={`/seller/${encodeURIComponent(product.sellerName || "UnityShop Seller")}`}
                 className="px-4 py-2 border-2 border-gray-100 rounded-lg text-[10px] font-black uppercase tracking-wide text-black hover:border-black hover:bg-black hover:text-white transition-all whitespace-nowrap"
               >
                 Store →
@@ -1617,7 +1657,7 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
                 </div>
                 <div className="flex gap-2 mt-4">
                   <Link
-                    href={`/products?seller=${encodeURIComponent(vendor.email)}`}
+                    href={`/seller/${encodeURIComponent(vendor.name)}`}
                     className="flex-1 h-9 bg-black text-white text-[16px] sm:text-[16px] sm:text-base font-bold rounded-lg flex items-center justify-center hover:bg-gray-800"
                   >
                     All Products
@@ -1948,6 +1988,3 @@ export default function ProductDetailClient({ product, relatedProducts = [] }) {
     </div>
   );
 }
-
-
-
