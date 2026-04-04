@@ -1,7 +1,6 @@
-
 <div align="center">
   <h1>
-    <img src="https://i.ibb.co.com/xSpYwHCv/Unity-Shop-logo.jpg" width="140" alt="Unity Shop logo" align="center" /> 
+    <img src="https://i.ibb.co.com/Qv0xxbwg/unity-shop-logo-crop.png" width="140" alt="Unity Shop logo" align="center" /> 
     ✦ Unity Shop ✦
   </h1>
 
@@ -10,7 +9,6 @@
 </div>
 
 ---
-
 
 <div align="center">
   <a href="https://nextjs.org/"><img src="https://img.shields.io/badge/Next.js-16%2B-000000?style=for-the-badge&logo=next.js&logoColor=white" alt="Next.js"/></a>
@@ -21,14 +19,12 @@
   <a href="https://mongodb.com/atlas"><img src="https://img.shields.io/badge/MongoDB-Atlas-47A248?style=for-the-badge&logo=mongodb&logoColor=white" alt="MongoDB"/></a>
 </div>
 
-
 <div align="center">
   <a href="https://unity-shop-three.vercel.app"><img src="https://img.shields.io/badge/Live_Demo-View_Site-FF4154?style=for-the-badge&logo=vercel&logoColor=white" alt="Live Demo"/></a>
   <a href="https://github.com/siddiquesakib/Unity-Shop"><img src="https://img.shields.io/badge/GitHub-Repo-181717?style=for-the-badge&logo=github&logoColor=white" alt="GitHub"/></a>
 </div>
 
 ---
-
 
 <div align="center">
   <img src="https://img.shields.io/badge/version-1.0.0-C9A84C?style=flat-square" alt="Version"/>
@@ -310,6 +306,16 @@ CLOUDINARY_API_SECRET=your_secret
 **Team Name:** Unity-Stack  
 **Team Leader:** Mohammad Siddique Sakib  
 **Project Type:** Full-Stack Enterprise-Grade Web Application
+
+### 👨‍💻 Meet the Team
+
+| Name                            | Role              | GitHub                                              | LinkedIn                                                        | Portfolio                                                 |
+| :------------------------------ | :---------------- | :-------------------------------------------------- | :-------------------------------------------------------------- | :-------------------------------------------------------- |
+| **Mohammad Siddique Sakib**     | Team Lead         | [siddiquesakib](https://github.com/siddiquesakib)   | [LinkedIn](https://www.linkedin.com/in/mohammad-siddique-sakib) | [Portfolio](https://ssakib-portfolio.vercel.app)          |
+| **Abu Abdullah Mohammed Iqram** | Lead Dev          | [aamiqram](https://github.com/aamiqram)             | [LinkedIn](https://www.linkedin.com/in/aam-iqram)               | [Portfolio](https://portfolio-aami.vercel.app)            |
+| **Ahsan Habib**                 | Designer          | [ahsan-habib01](https://github.com/ahsan-habib01)   | [LinkedIn](https://www.linkedin.com/in/ahsan-habib01)           | [Portfolio](https://ahsan-habib0.netlify.app)             |
+| **Md Ariful Islam**             | Backend Developer | [ArifulIslam016](https://github.com/ArifulIslam016) | [LinkedIn](https://www.linkedin.com/in/arifulislam-dev)         | [Portfolio](https://arifulislam.iam.bd)                   |
+| **Rimi Ruma**                   | Frontend          | [rimiruma](https://github.com/rimiruma)             | [LinkedIn](https://www.linkedin.com/in/rimi-ruma)               | [Portfolio](https://my-portfolio-client-omega.vercel.app) |
 
 ### 🤝 Contributing
 
