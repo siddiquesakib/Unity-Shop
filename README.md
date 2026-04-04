@@ -1,8 +1,8 @@
 
 <div align="center">
   <h1>
-    <img src="https://i.ibb.co.com/FqVS6VG2/Unity-Shop-logo-removebg-preview.png" width="120" alt="Unity Shop logo" align="center" /> 
-    Unity Shop 
+    <img src="https://i.ibb.co.com/xSpYwHCv/Unity-Shop-logo.jpg" width="140" alt="Unity Shop logo" align="center" /> 
+    ✦ Unity Shop ✦
   </h1>
 
   <h3><em>A Scalable, AI-Driven Multi-Vendor E-Commerce Platform</em></h3>
