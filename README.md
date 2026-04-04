@@ -1,28 +1,40 @@
+
 <div align="center">
+  <h1>
+    <img src="https://i.ibb.co.com/xSpYwHCv/Unity-Shop-logo.jpg" width="140" alt="Unity Shop logo" align="center" /> 
+    ✦ Unity Shop ✦
+  </h1>
 
-# ✦ Unity Shop ✦
-
-### _A Scalable, AI-Driven Multi-Vendor E-Commerce Platform_
-
-_Unity Shop isn't just another online storefront. It's a highly scalable, AI-driven ecosystem built for the real world._
-
----
-
-[![Next.js](https://img.shields.io/badge/Next.js-16%2B-000000?style=for-the-badge&logo=next.js&logoColor=white)](https://nextjs.org/)
-[![React](https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://reactjs.org/)
-[![TailwindCSS](https://img.shields.io/badge/TailwindCSS-v4-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
-[![Node.js](https://img.shields.io/badge/Node.js-20%2B-339933?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org/)
-[![Express](https://img.shields.io/badge/Express-5.x-000000?style=for-the-badge&logo=express&logoColor=white)](https://expressjs.com/)
-[![MongoDB](https://img.shields.io/badge/MongoDB-Atlas-47A248?style=for-the-badge&logo=mongodb&logoColor=white)](https://mongodb.com/atlas)
-
-[![Live Demo](https://img.shields.io/badge/Live_Demo-View_Site-FF4154?style=for-the-badge&logo=vercel&logoColor=white)](https://unity-shop-three.vercel.app)
-[![GitHub](https://img.shields.io/badge/GitHub-Repo-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/siddiquesakib/Unity-Shop)
+  <h3><em>A Scalable, AI-Driven Multi-Vendor E-Commerce Platform</em></h3>
+  <p><em>Unity Shop isn't just another online storefront. It's a highly scalable, AI-driven ecosystem built for the real world.</em></p>
+</div>
 
 ---
 
-[![Version](https://img.shields.io/badge/version-1.0.0-C9A84C?style=flat-square)](.)
-[![Status](https://img.shields.io/badge/status-Production_Ready-green?style=flat-square)](.)
-[![Built By](https://img.shields.io/badge/Built_By-Unity--Stack-C9A84C?style=flat-square)](.)
+
+<div align="center">
+  <a href="https://nextjs.org/"><img src="https://img.shields.io/badge/Next.js-16%2B-000000?style=for-the-badge&logo=next.js&logoColor=white" alt="Next.js"/></a>
+  <a href="https://reactjs.org/"><img src="https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react&logoColor=black" alt="React"/></a>
+  <a href="https://tailwindcss.com/"><img src="https://img.shields.io/badge/TailwindCSS-v4-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white" alt="TailwindCSS"/></a>
+  <a href="https://nodejs.org/"><img src="https://img.shields.io/badge/Node.js-20%2B-339933?style=for-the-badge&logo=node.js&logoColor=white" alt="Node.js"/></a>
+  <a href="https://expressjs.com/"><img src="https://img.shields.io/badge/Express-5.x-000000?style=for-the-badge&logo=express&logoColor=white" alt="Express"/></a>
+  <a href="https://mongodb.com/atlas"><img src="https://img.shields.io/badge/MongoDB-Atlas-47A248?style=for-the-badge&logo=mongodb&logoColor=white" alt="MongoDB"/></a>
+</div>
+
+
+<div align="center">
+  <a href="https://unity-shop-three.vercel.app"><img src="https://img.shields.io/badge/Live_Demo-View_Site-FF4154?style=for-the-badge&logo=vercel&logoColor=white" alt="Live Demo"/></a>
+  <a href="https://github.com/siddiquesakib/Unity-Shop"><img src="https://img.shields.io/badge/GitHub-Repo-181717?style=for-the-badge&logo=github&logoColor=white" alt="GitHub"/></a>
+</div>
+
+---
+
+
+<div align="center">
+  <img src="https://img.shields.io/badge/version-1.0.0-C9A84C?style=flat-square" alt="Version"/>
+  <img src="https://img.shields.io/badge/status-Production_Ready-green?style=flat-square" alt="Status"/>
+  <img src="https://img.shields.io/badge/Built_By-Unity--Stack-C9A84C?style=flat-square" alt="Built By"/>
+</div>
 
 </div>
 
@@ -78,14 +90,14 @@ To build a complete digital commerce infrastructure that empowers businesses to:
 ## 📸 Platform Gallery
 
 <p align="center" style="display: flex; justify-content: center; gap: 10px; flex-wrap: wrap;">
+  <img src="https://i.ibb.co.com/0VmDHxkX/307fed8f-52c5-452a-a66b-58c02d38b1dd.png" width="49%" alt="Unity Shop Showcase 8" style="border-radius: 8px; margin-bottom: 2%;"/>
+   <img src="https://i.ibb.co.com/cKn6ms1y/de8a3db4-ca27-4ffb-9b82-b46ac6925713.png" width="49%" alt="Unity Shop Showcase 7" style="border-radius: 8px; margin-bottom: 2%;"/>
+   <img src="https://i.ibb.co.com/R12gZYY/12f6e5e1-0447-4c7c-b7da-3046fe2cc86f.png" width="49%" alt="Unity Shop Showcase 3" style="border-radius: 8px; margin-bottom: 2%;"/>
+   <img src="https://i.ibb.co.com/fGLWVMHx/27d95240-6634-40f7-850b-e5985706184b.png" width="49%" alt="Unity Shop Showcase 2" style="border-radius: 8px; margin-bottom: 2%;"/>
   <img src="https://i.ibb.co.com/nNRr7h8G/d43f62af-548d-43c0-beae-caf73701c838.png" width="49%" alt="Unity Shop Showcase 1" style="border-radius: 8px; margin-bottom: 2%;"/>
-  <img src="https://i.ibb.co.com/fGLWVMHx/27d95240-6634-40f7-850b-e5985706184b.png" width="49%" alt="Unity Shop Showcase 2" style="border-radius: 8px; margin-bottom: 2%;"/>
-  <img src="https://i.ibb.co.com/R12gZYY/12f6e5e1-0447-4c7c-b7da-3046fe2cc86f.png" width="49%" alt="Unity Shop Showcase 3" style="border-radius: 8px; margin-bottom: 2%;"/>
   <img src="https://i.ibb.co.com/fdqcm0Vs/91ff66b8-7122-4e79-a639-45a7c95fbaf3.png" width="49%" alt="Unity Shop Showcase 4" style="border-radius: 8px; margin-bottom: 2%;"/>
   <img src="https://i.ibb.co.com/RpSy5NLV/bdcb9600-27cf-49a0-b91d-b3c1b1e9b143.png" width="49%" alt="Unity Shop Showcase 5" style="border-radius: 8px; margin-bottom: 2%;"/>
   <img src="https://i.ibb.co.com/GfLBxDwG/d2e0cedf-58f3-497f-8f66-3751b8b35867.png" width="49%" alt="Unity Shop Showcase 6" style="border-radius: 8px; margin-bottom: 2%;"/>
-  <img src="https://i.ibb.co.com/cKn6ms1y/de8a3db4-ca27-4ffb-9b82-b46ac6925713.png" width="49%" alt="Unity Shop Showcase 7" style="border-radius: 8px; margin-bottom: 2%;"/>
-  <img src="https://i.ibb.co.com/0VmDHxkX/307fed8f-52c5-452a-a66b-58c02d38b1dd.png" width="49%" alt="Unity Shop Showcase 8" style="border-radius: 8px; margin-bottom: 2%;"/>
 </p>
 
 ---
