@@ -1,4 +1,4 @@
-// components/checkout/PaymentForm.jsx
+// components/checkout/PaymentForm.js
 "use client";
 
 import { useState } from "react";
