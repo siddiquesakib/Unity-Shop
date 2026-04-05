@@ -197,7 +197,9 @@ function QuickViewModal({ product, onClose, formatPrice }) {
             {product.description && (
               <div
                 className="text-sm text-gray-500 mt-4 leading-relaxed line-clamp-3 [&_strong]:font-bold [&_ul]:list-disc [&_ul]:pl-5 [&_li]:mb-1"
-                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(product.description) }}
+                dangerouslySetInnerHTML={{
+                  __html: DOMPurify.sanitize(product.description),
+                }}
               />
             )}
 
@@ -287,7 +289,7 @@ function QuickViewModal({ product, onClose, formatPrice }) {
 }
 
 /* ━━━━━ ProductCard ━━━━━ */
-const ProductCard = ({ product }) => {
+const ProductCard = ({ product, view = "grid" }) => {
   const [isHovered, setIsHovered] = useState(false);
   const [imageError, setImageError] = useState(false);
   const [addedFeedback, setAddedFeedback] = useState(false);
@@ -350,6 +352,175 @@ const ProductCard = ({ product }) => {
     e.stopPropagation();
     setShowQuickView(true);
   };
+
+  if (view === "list") {
+    return (
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 hover:shadow-lg transition-all duration-300 overflow-hidden w-full">
+        <Link href={`/products/${productId}`} className="block">
+          <div className="flex flex-col md:flex-row">
+            {/* Image Section */}
+            <div className="relative md:w-64 lg:w-72 shrink-0 aspect-[4/3] md:aspect-square overflow-hidden bg-[#f7f6f3]/50">
+              <WishlistButton product={product} />
+              {/* Primary Image */}
+              <Image
+                src={primaryImage}
+                alt={product.name}
+                fill
+                unoptimized={true}
+                sizes="(max-width: 768px) 100vw, 300px"
+                className="object-cover hover:scale-105 transition-transform duration-700 ease-out"
+                onError={() => setImageError(true)}
+              />
+              {/* Badges */}
+              {product.badge && (
+                <span className="absolute top-3 left-3 bg-black/90 backdrop-blur-sm text-white text-[10px] font-bold px-2.5 py-1 rounded shadow-sm uppercase tracking-wider z-10">
+                  {product.badge}
+                </span>
+              )}
+              {discount > 0 && (
+                <span className="absolute top-3 left-3 bg-black/90 backdrop-blur-sm text-white text-[10px] font-bold px-2.5 py-1 rounded shadow-sm uppercase tracking-wider z-10">
+                  -{discount}%
+                </span>
+              )}
+            </div>
+
+            {/* Content Section */}
+            <div className="flex-1 p-5 md:p-6 lg:p-8 flex flex-col justify-center">
+              <div className="flex flex-col md:flex-row md:items-start justify-between gap-6">
+                {/* Details side */}
+                <div className="flex-1">
+                  <h3 className="text-xl md:text-2xl font-bold text-black mb-2 line-clamp-2 leading-snug">
+                    {product.name}
+                  </h3>
+
+                  {/* Reviews & Badges */}
+                  <div className="flex flex-wrap items-center gap-3 mb-4">
+                    <div className="flex items-center gap-1">
+                      {[...Array(5)].map((_, i) => (
+                        <FiStar
+                          key={i}
+                          className={`w-4 h-4 ${
+                            i < Math.round(product.rating || 0)
+                              ? "text-yellow-400 fill-yellow-400"
+                              : "text-gray-200 fill-gray-200"
+                          }`}
+                        />
+                      ))}
+                      <span className="text-sm font-semibold text-black ml-1">
+                        {product.rating?.toFixed(1) || "0.0"}
+                      </span>
+                      <span className="text-sm text-gray-500 ml-1">
+                        ({product.reviews || 0})
+                      </span>
+                    </div>
+
+                    <div className="w-1 h-1 rounded-full bg-gray-300" />
+                    <span className="text-sm text-gray-600 font-medium">
+                      {product.brand || "Unbranded"}
+                    </span>
+
+                    {product.sellerName && (
+                      <>
+                        <div className="w-1 h-1 rounded-full bg-gray-300" />
+                        <span className="text-sm text-gray-500">
+                          By{" "}
+                          <span className="font-semibold text-black">
+                            {product.sellerName}
+                          </span>
+                        </span>
+                      </>
+                    )}
+                  </div>
+
+                  {/* Description Snippet */}
+                  {product.description && (
+                    <div
+                      className="text-sm text-gray-500 line-clamp-2 mb-6 max-w-2xl leading-relaxed"
+                      dangerouslySetInnerHTML={{
+                        __html: product.description.replace(/<[^>]*>?/gm, ""),
+                      }}
+                    />
+                  )}
+
+                  {/* Price */}
+                  <div className="flex items-baseline gap-3 mb-2">
+                    <span className="text-3xl font-black text-black">
+                      {formatPrice(product.price, product.currency || "USD")}
+                    </span>
+                    {product.originalPrice &&
+                      product.originalPrice > product.price && (
+                        <span className="text-base text-gray-400 line-through font-medium">
+                          {formatPrice(
+                            product.originalPrice,
+                            product.currency || "USD",
+                          )}
+                        </span>
+                      )}
+                  </div>
+                </div>
+
+                {/* Actions side */}
+                <div className="w-full md:w-48 lg:w-56 shrink-0 flex flex-col gap-3 justify-end md:justify-start">
+                  <div className="mb-2 hidden md:block">
+                    {product.stock > 0 ? (
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-green-50 text-green-700 text-xs font-bold rounded-full whitespace-nowrap">
+                        <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+                        In Stock
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-red-50 text-red-600 text-xs font-bold rounded-full whitespace-nowrap">
+                        <div className="w-1.5 h-1.5 rounded-full bg-red-500" />
+                        Out of Stock
+                      </span>
+                    )}
+                  </div>
+
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      if (product.stock > 0) handleAddToCart(e);
+                    }}
+                    disabled={product.stock === 0}
+                    className={`w-full py-3.5 px-4 rounded-xl flex items-center justify-center gap-2 font-bold text-sm transition-all duration-300 shadow-sm ${
+                      addedFeedback
+                        ? "bg-green-500 hover:bg-green-600 text-white"
+                        : "bg-black hover:bg-gray-800 text-white disabled:opacity-50 disabled:hover:bg-black"
+                    }`}
+                  >
+                    {addedFeedback ? (
+                      <>
+                        <FiCheck className="w-5 h-5" /> Added
+                      </>
+                    ) : (
+                      <>
+                        <FiShoppingCart className="w-5 h-5" /> Add to Cart
+                      </>
+                    )}
+                  </button>
+
+                  <button
+                    onClick={handleQuickView}
+                    className="w-full py-3.5 px-4 rounded-xl flex items-center justify-center gap-2 font-bold text-sm bg-white border-2 border-gray-100 hover:border-black text-black transition-all duration-300"
+                  >
+                    <FiEye className="w-4 h-4" /> Quick View
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </Link>
+
+        {showQuickView && (
+          <QuickViewModal
+            product={product}
+            onClose={() => setShowQuickView(false)}
+            formatPrice={formatPrice}
+          />
+        )}
+      </div>
+    );
+  }
 
   return (
     <>

@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
-import { useAuth } from "@/hooks/useAuth";
-import AIProductPreview from "@/components/ai/AIProductPreview";
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useAuth } from '@/hooks/useAuth';
+import AIProductPreview from '@/components/ai/AIProductPreview';
 import {
   Plus,
   X,
@@ -19,8 +19,8 @@ import {
   Sparkles,
   Calendar,
   Truck,
-} from "lucide-react";
-import Image from "next/image";
+} from 'lucide-react';
+import Image from 'next/image';
 
 const MAX_IMAGES = 5;
 
@@ -29,89 +29,89 @@ export default function AddProductPage() {
   const router = useRouter();
 
   const [formData, setFormData] = useState({
-    name: "",
-    category: "",
-    brand: "",
-    description: "",
-    price: "",
-    originalPrice: "",
-    stock: "1",
-    image: "",
+    name: '',
+    category: '',
+    brand: '',
+    description: '',
+    price: '',
+    originalPrice: '',
+    stock: '1',
+    image: '',
     images: [],
-    endAt: "",
-    weight: "",
-    originCountry: "",
-    originCity: "",
-    length: "",
-    width: "",
-    height: "",
-    shippingType: "paid",
-    hsCode: "",
-    insideCityCost: "",
-    outsideCityCost: "",
-    deliveryDaysInside: "",
-    deliveryDaysOutside: "",
-    internationalStandardCost: "",
-    internationalStandardDays: "",
-    internationalExpressCost: "",
-    internationalExpressDays: "",
+    endAt: '',
+    weight: '',
+    originCountry: '',
+    originCity: '',
+    length: '',
+    width: '',
+    height: '',
+    shippingType: 'paid',
+    hsCode: '',
+    insideCityCost: '',
+    outsideCityCost: '',
+    deliveryDaysInside: '',
+    deliveryDaysOutside: '',
+    internationalStandardCost: '',
+    internationalStandardDays: '',
+    internationalExpressCost: '',
+    internationalExpressDays: '',
   });
 
   const [tags, setTags] = useState([]);
-  const [inputValue, setInputValue] = useState("");
+  const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
-  const [error, setError] = useState("");
+  const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
   const [isGeneratingDesc, setIsGeneratingDesc] = useState(false); // AI description state
 
   // Auction stock fix
   useEffect(() => {
-    if (formData.category === "auction") {
-      setFormData((prev) => ({ ...prev, stock: "1" }));
+    if (formData.category === 'auction') {
+      setFormData(prev => ({ ...prev, stock: '1' }));
     }
   }, [formData.category]);
 
-  const handleChange = (e) => {
+  const handleChange = e => {
     const { name, value } = e.target;
 
-    if (name === "price" || name === "originalPrice") {
-      if (value !== "" && Number(value) < 0) return;
+    if (name === 'price' || name === 'originalPrice') {
+      if (value !== '' && Number(value) < 0) return;
     }
 
-    if (name === "stock") {
-      if (formData.category === "auction") return;
-      if (value !== "" && Number(value) < 1) {
-        setFormData((prev) => ({ ...prev, [name]: "1" }));
+    if (name === 'stock') {
+      if (formData.category === 'auction') return;
+      if (value !== '' && Number(value) < 1) {
+        setFormData(prev => ({ ...prev, [name]: '1' }));
         return;
       }
     }
 
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const addTag = (e) => {
-    if (e.key === "Enter" && inputValue.trim()) {
+  const addTag = e => {
+    if (e.key === 'Enter' && inputValue.trim()) {
       e.preventDefault();
       if (!tags.includes(inputValue.trim())) {
         setTags([...tags, inputValue.trim()]);
       }
-      setInputValue("");
+      setInputValue('');
     }
   };
 
-  const removeTag = (tagToRemove) => {
-    setTags(tags.filter((tag) => tag !== tagToRemove));
+  const removeTag = tagToRemove => {
+    setTags(tags.filter(tag => tag !== tagToRemove));
   };
 
-  const handleImageFileUpload = async (e) => {
+  const handleImageFileUpload = async e => {
     const files = Array.from(e.target.files || []);
     if (!files.length) return;
 
     const existing = formData.images?.length || 0;
     if (existing >= MAX_IMAGES) {
       setError(`You can upload up to ${MAX_IMAGES} photos.`);
-      e.target.value = "";
+      e.target.value = '';
       return;
     }
 
@@ -119,38 +119,38 @@ export default function AddProductPage() {
     const selectedFiles = files.slice(0, slotsLeft);
 
     for (const file of selectedFiles) {
-      if (!file.type.startsWith("image/")) {
-        setError("Please select valid image files only.");
-        e.target.value = "";
+      if (!file.type.startsWith('image/')) {
+        setError('Please select valid image files only.');
+        e.target.value = '';
         return;
       }
 
       if (file.size > 10 * 1024 * 1024) {
-        setError("Each image must be under 10MB.");
-        e.target.value = "";
+        setError('Each image must be under 10MB.');
+        e.target.value = '';
         return;
       }
     }
 
     setIsUploadingImage(true);
-    setError("");
+    setError('');
 
     try {
       const token =
-        typeof window !== "undefined" ? localStorage.getItem("token") : null;
+        typeof window !== 'undefined' ? localStorage.getItem('token') : null;
 
       if (!token) {
-        throw new Error("Session expired. Please login again.");
+        throw new Error('Session expired. Please login again.');
       }
 
       const uploadedUrls = [];
 
       for (const file of selectedFiles) {
         const fd = new FormData();
-        fd.append("image", file);
+        fd.append('image', file);
 
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/upload`, {
-          method: "POST",
+          method: 'POST',
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -160,47 +160,56 @@ export default function AddProductPage() {
         const data = await res.json();
 
         if (!res.ok || !data?.imageUrl) {
-          throw new Error(data?.message || data?.error || "Image upload failed");
+          throw new Error(
+            data?.message || data?.error || 'Image upload failed',
+          );
         }
 
         uploadedUrls.push(data.imageUrl);
       }
 
-      setFormData((prev) => {
-        const nextImages = [...(prev.images || []), ...uploadedUrls].slice(0, MAX_IMAGES);
+      setFormData(prev => {
+        const nextImages = [...(prev.images || []), ...uploadedUrls].slice(
+          0,
+          MAX_IMAGES,
+        );
         return {
           ...prev,
           images: nextImages,
-          image: nextImages[0] || "",
+          image: nextImages[0] || '',
         };
       });
 
       if (files.length > slotsLeft) {
-        setError(`Only first ${slotsLeft} image(s) were uploaded. Max ${MAX_IMAGES} allowed.`);
+        setError(
+          `Only first ${slotsLeft} image(s) were uploaded. Max ${MAX_IMAGES} allowed.`,
+        );
       }
     } catch (err) {
-      setError(err.message || "Image upload failed");
+      setError(err.message || 'Image upload failed');
     } finally {
       setIsUploadingImage(false);
-      e.target.value = "";
+      e.target.value = '';
     }
   };
 
-  const removeUploadedImage = (indexToRemove) => {
-    setFormData((prev) => {
-      const nextImages = (prev.images || []).filter((_, idx) => idx !== indexToRemove);
+  const removeUploadedImage = indexToRemove => {
+    setFormData(prev => {
+      const nextImages = (prev.images || []).filter(
+        (_, idx) => idx !== indexToRemove,
+      );
       return {
         ...prev,
         images: nextImages,
-        image: nextImages[0] || "",
+        image: nextImages[0] || '',
       };
     });
   };
 
   const handleSubmit = async () => {
-    setError("");
+    setError('');
 
-    const isAuction = formData.category === "auction";
+    const isAuction = formData.category === 'auction';
     if (
       !formData.name ||
       !formData.category ||
@@ -220,8 +229,8 @@ export default function AddProductPage() {
     ) {
       setError(
         isAuction
-          ? "Product name, category, price, image, origin, shipping config, and auction end date are required."
-          : "Product name, category, price, image, origin, and shipping config are required.",
+          ? 'Product name, category, price, image, origin, shipping config, and auction end date are required.'
+          : 'Product name, category, price, image, origin, and shipping config are required.',
       );
       return;
     }
@@ -230,10 +239,10 @@ export default function AddProductPage() {
 
     try {
       const token =
-        typeof window !== "undefined" ? localStorage.getItem("token") : null;
+        typeof window !== 'undefined' ? localStorage.getItem('token') : null;
 
       if (!token) {
-        throw new Error("Session expired. Please login again.");
+        throw new Error('Session expired. Please login again.');
       }
 
       const productData = {
@@ -249,11 +258,11 @@ export default function AddProductPage() {
         image: formData.image,
         images: formData.images,
         tags,
-        badge: isAuction ? "Auction" : null,
+        badge: isAuction ? 'Auction' : null,
         rating: 0,
         reviews: 0,
-        sellerName: user?.name || "Unknown Seller",
-        sellerEmail: user?.email || "",
+        sellerName: user?.name || 'Unknown Seller',
+        sellerEmail: user?.email || '',
         endAt: isAuction ? formData.endAt : null,
         weight: formData.weight ? parseFloat(formData.weight) : 0,
         dimensions: {
@@ -288,9 +297,9 @@ export default function AddProductPage() {
       };
 
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/products`, {
-        method: "POST",
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(productData),
@@ -298,12 +307,12 @@ export default function AddProductPage() {
 
       if (!res.ok) {
         const data = await res.json();
-        throw new Error(data.error || "Failed to add product");
+        throw new Error(data.error || 'Failed to add product');
       }
 
       setSuccess(true);
       setTimeout(() => {
-        router.push("/dashboard/seller");
+        router.push('/dashboard/seller');
       }, 2000);
     } catch (err) {
       setError(err.message);
@@ -315,22 +324,22 @@ export default function AddProductPage() {
   // AI Description Generation
   const generateDescription = async () => {
     if (!formData.name) {
-      setError("Please enter a product name first");
+      setError('Please enter a product name first');
       return;
     }
 
     setIsGeneratingDesc(true);
-    setError("");
+    setError('');
 
     try {
       const token =
-        typeof window !== "undefined" ? localStorage.getItem("token") : null;
+        typeof window !== 'undefined' ? localStorage.getItem('token') : null;
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/api/ai/generate-description`,
         {
-          method: "POST",
+          method: 'POST',
           headers: {
-            "Content-Type": "application/json",
+            'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({
@@ -349,15 +358,15 @@ export default function AddProductPage() {
         // Handle rate limit specifically
         if (res.status === 429) {
           setError(
-            "AI service is busy (rate limit). Please try again in a few minutes.",
+            'AI service is busy (rate limit). Please try again in a few minutes.',
           );
           // Optionally set a fallback description
-          setFormData((prev) => ({
+          setFormData(prev => ({
             ...prev,
             description: `${prev.name} – a high-quality product from our collection. Perfect for your needs.`,
           }));
         } else {
-          throw new Error(data.error || "Generation failed");
+          throw new Error(data.error || 'Generation failed');
         }
         return;
       }
@@ -365,15 +374,18 @@ export default function AddProductPage() {
       // Remove any trailing hashtags, "Tags:", or "Keywords:" block that AI might generate
       let cleanDescription = data.description
         .replace(/<p>\s*<strong>(?:Tags|Keywords):?<\/strong>.*<\/p>/gi, '')
-        .replace(/(?:<br\s*\/?>)?\s*<strong>(?:Tags|Keywords):?<\/strong>.*$/gi, '')
+        .replace(
+          /(?:<br\s*\/?>)?\s*<strong>(?:Tags|Keywords):?<\/strong>.*$/gi,
+          '',
+        )
         .replace(/<p>\s*(?:Tags|Keywords):?.*<\/p>/gi, '')
-        .replace(/#[\w-]+/g, "")
+        .replace(/#[\w-]+/g, '')
         .trim();
 
       // Clean up empty paragraphs
       cleanDescription = cleanDescription.replace(/<p>\s*<\/p>/g, '').trim();
 
-      setFormData((prev) => ({ ...prev, description: cleanDescription }));
+      setFormData(prev => ({ ...prev, description: cleanDescription }));
     } catch (err) {
       setError(err.message);
     } finally {
@@ -483,14 +495,25 @@ export default function AddProductPage() {
                     className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 outline-none cursor-pointer"
                   >
                     <option value="">Select Category</option>
-                    <option value="electronics">Electronics</option>
                     <option value="fashion">Fashion</option>
-                    <option value="living">Home & Living</option>
+                    <option value="electronics">Electronics</option>
+                    <option value="home & living">Home & Living</option>
+                    <option value="beauty">Beauty</option>
+                    <option value="watches">Watches</option>
+                    <option value="toys & baby">Toys & Baby</option>
+                    <option value="mobiles">Mobiles</option>
+                    <option value="gaming">Gaming</option>
+                    <option value="sports">Sports</option>
+                    <option value="books">Books</option>
+                    <option value="grocery">Grocery</option>
+                    <option value="health">Health</option>
                     <option value="kitchen">Kitchen</option>
                     <option value="bedroom">Bedroom</option>
-                    <option value="lighting">Lighting</option>
+                    <option value="office">Office</option>
+                    <option value="audio">Audio</option>
                     <option value="stationery">Stationery</option>
-                    <option value="outdoor">Outdoor</option>
+                    <option value="tools">Tools</option>
+                    <option value="toys">Toys</option>
                     <option value="auction">Auction</option>
                   </select>
                 </div>
@@ -556,9 +579,13 @@ export default function AddProductPage() {
               <label className="block">
                 <div className="w-full border-2 border-dashed border-gray-300 hover:border-gray-500 rounded-xl px-4 py-8 text-center cursor-pointer transition-colors bg-gray-50/60">
                   <p className="text-sm font-semibold text-gray-700">
-                    {isUploadingImage ? "Uploading image..." : "Click to upload product photos"}
+                    {isUploadingImage
+                      ? 'Uploading image...'
+                      : 'Click to upload product photos'}
                   </p>
-                  <p className="text-xs text-gray-500 mt-1">JPG, PNG, WEBP (max 10MB each, up to 5 photos)</p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    JPG, PNG, WEBP (max 10MB each, up to 5 photos)
+                  </p>
                   <p className="text-[11px] text-gray-500 mt-2">
                     Uploaded: {formData.images.length}/{MAX_IMAGES}
                   </p>
@@ -568,21 +595,27 @@ export default function AddProductPage() {
                   accept="image/*"
                   multiple
                   onChange={handleImageFileUpload}
-                  disabled={isUploadingImage || formData.images.length >= MAX_IMAGES}
+                  disabled={
+                    isUploadingImage || formData.images.length >= MAX_IMAGES
+                  }
                   className="hidden"
                 />
               </label>
 
               {isUploadingImage && (
                 <p className="text-xs text-gray-500 flex items-center gap-2">
-                  <Loader2 size={14} className="animate-spin" /> Uploading to media server...
+                  <Loader2 size={14} className="animate-spin" /> Uploading to
+                  media server...
                 </p>
               )}
 
               {formData.images.length > 0 && (
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                   {formData.images.map((img, idx) => (
-                    <div key={`${img}-${idx}`} className="relative w-full aspect-square">
+                    <div
+                      key={`${img}-${idx}`}
+                      className="relative w-full aspect-square"
+                    >
                       <Image
                         src={img}
                         alt={`Preview ${idx + 1}`}
@@ -607,15 +640,15 @@ export default function AddProductPage() {
                 </div>
               )}
               <AIProductPreview
-                onImageGenerated={(url) => {
-                  setFormData((prev) => {
+                onImageGenerated={url => {
+                  setFormData(prev => {
                     const existing = prev.images || [];
                     if (existing.length >= MAX_IMAGES) return prev;
                     const nextImages = [...existing, url];
                     return {
                       ...prev,
                       images: nextImages,
-                      image: nextImages[0] || "",
+                      image: nextImages[0] || '',
                     };
                   });
                 }}
@@ -639,9 +672,9 @@ export default function AddProductPage() {
             <div className="space-y-4">
               <div className="space-y-2">
                 <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                  {formData.category === "auction"
-                    ? "Starting Bid ($)"
-                    : "Price ($)"}{" "}
+                  {formData.category === 'auction'
+                    ? 'Starting Bid ($)'
+                    : 'Price ($)'}{' '}
                   <span className="text-red-500">*</span>
                 </label>
                 <div className="relative">
@@ -662,10 +695,10 @@ export default function AddProductPage() {
               </div>
 
               <AnimatePresence>
-                {formData.category === "auction" && (
+                {formData.category === 'auction' && (
                   <motion.div
                     initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: "auto", opacity: 1 }}
+                    animate={{ height: 'auto', opacity: 1 }}
                     exit={{ height: 0, opacity: 0 }}
                     className="overflow-hidden"
                   >
@@ -696,15 +729,15 @@ export default function AddProductPage() {
                     min="1"
                     value={formData.stock}
                     onChange={handleChange}
-                    readOnly={formData.category === "auction"}
-                    className={`w-full bg-gray-50 border border-gray-200 rounded-xl pl-10 pr-4 py-3 outline-none focus:ring-2 focus:ring-emerald-200 ${formData.category === "auction" ? "opacity-60 cursor-not-allowed bg-gray-100 text-gray-500" : ""}`}
+                    readOnly={formData.category === 'auction'}
+                    className={`w-full bg-gray-50 border border-gray-200 rounded-xl pl-10 pr-4 py-3 outline-none focus:ring-2 focus:ring-emerald-200 ${formData.category === 'auction' ? 'opacity-60 cursor-not-allowed bg-gray-100 text-gray-500' : ''}`}
                   />
                   <Package
                     size={16}
                     className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
                   />
                 </div>
-                {formData.category === "auction" && (
+                {formData.category === 'auction' && (
                   <p className="text-[10px] text-amber-600 font-medium">
                     * Auction stock is fixed to 1.
                   </p>
@@ -929,12 +962,12 @@ export default function AddProductPage() {
             </div>
             <div className="space-y-4">
               <div className="flex flex-wrap gap-2">
-                {tags.map((tag) => (
+                {tags.map(tag => (
                   <span
                     key={tag}
                     className="flex items-center gap-1 px-3 py-1 rounded-lg bg-gray-100 text-xs border border-gray-200"
                   >
-                    {tag}{" "}
+                    {tag}{' '}
                     <button
                       onClick={() => removeTag(tag)}
                       className="hover:text-red-500"
@@ -947,7 +980,7 @@ export default function AddProductPage() {
               <input
                 type="text"
                 value={inputValue}
-                onChange={(e) => setInputValue(e.target.value)}
+                onChange={e => setInputValue(e.target.value)}
                 onKeyDown={addTag}
                 placeholder="Add tag..."
                 className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none"

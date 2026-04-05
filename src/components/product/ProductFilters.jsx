@@ -1,5 +1,5 @@
 // src/components/product/ProductFilters.jsx
-"use client";
+'use client';
 
 import {
   FiGrid,
@@ -26,33 +26,30 @@ import {
   FiTool,
   FiTruck,
   FiRefreshCw,
-} from "react-icons/fi";
+} from 'react-icons/fi';
 
 const categories = [
-  { id: "all", label: "All Products", icon: FiGrid },
-  { id: "electronics", label: "Electronics", icon: FiSmartphone },
-  { id: "fashion", label: "Fashion", icon: FiShoppingBag },
-  { id: "living", label: "Home & Living", icon: FiHome },
-  { id: "kitchen", label: "Kitchen", icon: FiCoffee },
-  { id: "bedroom", label: "Bedroom", icon: FiMoon },
-  { id: "office", label: "Office", icon: FiMonitor },
-  { id: "mobile", label: "Mobiles", icon: FiPhone },
-  { id: "watches", label: "Watches", icon: FiWatch },
-  { id: "audio", label: "Audio", icon: FiHeadphones },
-  { id: "cameras", label: "Cameras", icon: FiCamera },
-  { id: "gaming", label: "Gaming", icon: FiPlay },
-  { id: "lighting", label: "Lighting", icon: FiSun },
-  { id: "beauty", label: "Beauty", icon: FiDroplet },
-  { id: "health", label: "Health", icon: FiHeart },
-  { id: "sports", label: "Sports", icon: FiActivity },
-  { id: "outdoor", label: "Outdoor", icon: FiCompass },
-  { id: "books", label: "Books", icon: FiBook },
-  { id: "stationery", label: "Stationery", icon: FiEdit3 },
-  { id: "toys", label: "Toys & Baby", icon: FiGift },
-  { id: "grocery", label: "Grocery", icon: FiShoppingCart },
-  { id: "tools", label: "Tools", icon: FiTool },
-  { id: "automotive", label: "Automotive", icon: FiTruck },
-  { id: "auction", label: "Auction", icon: FiRefreshCw },
+  { id: 'all', label: 'All Products', icon: FiGrid },
+  { id: 'fashion', label: 'Fashion', icon: FiShoppingBag },
+  { id: 'electronics', label: 'Electronics', icon: FiSmartphone },
+  { id: 'home & living', label: 'Home & Living', icon: FiHome },
+  { id: 'beauty', label: 'Beauty', icon: FiDroplet },
+  { id: 'watches', label: 'Watches', icon: FiWatch },
+  { id: 'toys & baby', label: 'Toys & Baby', icon: FiGift },
+  { id: 'mobiles', label: 'Mobiles', icon: FiPhone },
+  { id: 'gaming', label: 'Gaming', icon: FiPlay },
+  { id: 'sports', label: 'Sports', icon: FiActivity },
+  { id: 'books', label: 'Books', icon: FiBook },
+  { id: 'grocery', label: 'Grocery', icon: FiShoppingCart },
+  { id: 'health', label: 'Health', icon: FiHeart },
+  { id: 'kitchen', label: 'Kitchen', icon: FiCoffee },
+  { id: 'bedroom', label: 'Bedroom', icon: FiMoon },
+  { id: 'office', label: 'Office', icon: FiMonitor },
+  { id: 'audio', label: 'Audio', icon: FiHeadphones },
+  { id: 'stationery', label: 'Stationery', icon: FiEdit3 },
+  { id: 'tools', label: 'Tools', icon: FiTool },
+  { id: 'toys', label: 'Toys', icon: FiGift },
+  { id: 'auction', label: 'Auction', icon: FiRefreshCw },
 ];
 
 export default function ProductFilters({
@@ -65,7 +62,7 @@ export default function ProductFilters({
   onReset,
   onClose,
 }) {
-  const handleCategoryClick = (id) => {
+  const handleCategoryClick = id => {
     setActiveCategory(id);
     onClose?.();
   };
@@ -78,7 +75,7 @@ export default function ProductFilters({
           Categories
         </p>
         <nav className="space-y-0.5">
-          {categories.map((cat) => {
+          {categories.map(cat => {
             const Icon = cat.icon;
             const isActive = activeCategory === cat.id;
             return (
@@ -87,13 +84,13 @@ export default function ProductFilters({
                 onClick={() => handleCategoryClick(cat.id)}
                 className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
                   isActive
-                    ? "bg-black text-white"
-                    : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+                    ? 'bg-black text-white'
+                    : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
                 }`}
               >
                 <Icon
                   size={15}
-                  className={isActive ? "text-white" : "text-gray-400"}
+                  className={isActive ? 'text-white' : 'text-gray-400'}
                 />
                 {cat.label}
               </button>
@@ -118,20 +115,20 @@ export default function ProductFilters({
             max={5000}
             step={10}
             value={priceRange[1]}
-            onChange={(e) =>
+            onChange={e =>
               setPriceRange([priceRange[0], Number(e.target.value)])
             }
             className="w-full accent-black cursor-pointer"
           />
           <div className="grid grid-cols-2 gap-2">
-            {[200, 500, 1000, 5000].map((p) => (
+            {[200, 500, 1000, 5000].map(p => (
               <button
                 key={p}
                 onClick={() => setPriceRange([0, p])}
                 className={`text-xs py-2 rounded-lg border font-medium transition-all ${
                   priceRange[1] === p && priceRange[0] === 0
-                    ? "border-black bg-black text-white"
-                    : "border-gray-200 text-gray-600 hover:border-gray-400"
+                    ? 'border-black bg-black text-white'
+                    : 'border-gray-200 text-gray-600 hover:border-gray-400'
                 }`}
               >
                 Under ${p}
@@ -150,12 +147,12 @@ export default function ProductFilters({
           <div
             onClick={() => setOnSaleOnly(!onSaleOnly)}
             className={`relative w-11 h-6 rounded-full transition-colors duration-300 ${
-              onSaleOnly ? "bg-black" : "bg-gray-200"
+              onSaleOnly ? 'bg-black' : 'bg-gray-200'
             }`}
           >
             <span
               className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full shadow transition-transform duration-300 ${
-                onSaleOnly ? "translate-x-5" : "translate-x-0"
+                onSaleOnly ? 'translate-x-5' : 'translate-x-0'
               }`}
             />
           </div>
