@@ -1133,6 +1133,27 @@ const Navbar = () => {
                 </span>
               )}
             </Link>
+
+            {/* Profile */}
+            {user && (
+              <Link href="/dashboard" className="shrink-0 pl-1.5">
+                {user.image || user.picture ? (
+                  <div className="relative w-7 h-7 rounded-full overflow-hidden ring-1 ring-gray-300">
+                    <Image
+                      src={user.image || user.picture}
+                      alt={user.name || "User"}
+                      fill
+                      className="object-cover"
+                      unoptimized={true}
+                    />
+                  </div>
+                ) : (
+                  <div className="w-7 h-7 rounded-full bg-black flex items-center justify-center text-white text-[10px] font-bold ring-1 ring-gray-300">
+                    {user.name?.charAt(0)?.toUpperCase() || "U"}
+                  </div>
+                )}
+              </Link>
+            )}
           </div>
         </div>
       </nav>
@@ -1160,13 +1181,12 @@ const Navbar = () => {
                 className="flex-1 h-10 px-3 text-base text-gray-900 bg-gray-100 rounded-l-xl outline-none placeholder:text-gray-400"
                 autoFocus
               />
-              <button
-                type="button"
-                onClick={startVoiceSearch}
-                className={`h-10 px-3 bg-gray-100 border-l border-gray-200 ${isListening ? "text-red-500 animate-pulse" : "text-gray-400"}`}
-              >
-                <FiMic size={18} />
-              </button>
+              <div className="bg-gray-100 flex items-center justify-center">
+                <VoiceSearch
+                  setSearchQuery={setSearchQuery}
+                  setShowAutocomplete={setShowAutocomplete}
+                />
+              </div>
               <button
                 type="submit"
                 className="h-10 px-4 bg-black text-white rounded-r-xl font-semibold"
@@ -1250,7 +1270,7 @@ const Navbar = () => {
                       className="inline-flex items-center gap-1.5 px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded-full text-sm text-gray-700 transition-colors"
                     >
                       <span>{cat.icon}</span>
-                      {cat.label}
+                      {cat.labelEn}
                     </Link>
                   ))}
                 </div>
@@ -1390,7 +1410,11 @@ const Navbar = () => {
             <div className="p-4 border-t border-black/10">
               {user ? (
                 <div className="space-y-3">
-                  <div className="flex items-center gap-2.5">
+                  <Link
+                    href="/dashboard"
+                    onClick={() => setIsOpen(false)}
+                    className="flex items-center gap-2.5 cursor-pointer hover:bg-gray-100 p-2 -mx-2 rounded-lg transition-colors"
+                  >
                     {user.image || user.picture ? (
                       <div className="relative w-9 h-9 rounded-full overflow-hidden ring-2 ring-gray-200 shrink-0">
                         <Image
@@ -1414,7 +1438,7 @@ const Navbar = () => {
                         {user.role || "Customer"}
                       </p>
                     </div>
-                  </div>
+                  </Link>
                   <button
                     onClick={() => {
                       logout();
